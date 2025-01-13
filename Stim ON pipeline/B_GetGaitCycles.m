@@ -1,40 +1,27 @@
 % Output: B_cycles_Struct.mat (cycles_struct)
-
-COMP = "wind"; % or 'wind'
-SUBJ = "SSCY";
-%%
-
-% Places the finalized 0to100 normalized segements in a matrix:\
-if COMP == "mac"
-    % UPDATE WHEN WOKRING ON MAC:
-    
-elseif COMP == "wind"
-    subject_path_MASTER = "Y:\Spinal Stim_Stroke R01\AIM 1\Record while stim ON";
-    addpath('C:\Users\nveit\OneDrive - Northwestern University\Research\GITHUB\PhD\Aim1\CODE\Gait Cycles analysis XSENS_DELSYS\functions');
-end
-%%
-
-subject_path = fullfile(subject_path_MASTER, SUBJ);
+global plot_status;
 filename = "A_xsens_delsys_processed.mat"; % from A_PreProcess_xsens_emg.m
 % Load structure: called walks_struct
-load(fullfile(subject_path, filename)) % walks_struct 
+load(fullfile(subject_save_path, filename)) % walks_struct 
 
 %%
 
 % Get the cycles:
 signal = walks_struct.EMG.FILTERED.Walk_1.RTA(1,:); 
-figure()
-plot(signal)
-hold on; 
-% Add vertical lines
-index_Table = walks_struct.XSENS.Walk_1;
-% right indices:
-indices_right_Table = index_Table(index_Table.leg_side == "R", :);
+if plot_status==true
+    figure()
+    plot(signal)
+    hold on; 
+    % Add vertical lines
+    index_Table = walks_struct.XSENS.Walk_1;
+    % right indices:
+    indices_right_Table = index_Table(index_Table.leg_side == "R", :);
 
-indices_right=indices_right_Table.start_emgIDX;
+    indices_right=indices_right_Table.start_emgIDX;
 
-for i = 1:length(indices_right)
-    xline(indices_right(i), '--r'); % Dashed red line at each index
+    for i = 1:length(indices_right)
+        xline(indices_right(i), '--r'); % Dashed red line at each index
+    end
 end
 
 %%%% ####### start segmenting 
@@ -42,7 +29,7 @@ end
 % that side 
 walk_filename_dict = table('Size', [0, 3], 'VariableTypes', {'int32', 'int32', 'string'}, 'VariableNames', {'WalkNum', 'Frequency', 'Intervention'});
 
-muscles_general = {"HAM", "RF", "VL", "TA", "MG"}; 
+muscles_general = {'HAM', 'RF', 'VL', 'TA', 'MG'}; 
 
 % get walk numbers that exist
 existingWalkNums = ~ismissing(walks_struct.WalksDictionary.Filename_EMG) & ~ismissing(walks_struct.WalksDictionary.Filename_XSENS);
@@ -184,6 +171,6 @@ cycles_struct.WalksDict = walk_filename_dict;
 
 % SAVE GAIT CYCLE STRUCT
 
-save(fullfile(subject_path,'B_cycles_Struct.mat'), 'cycles_struct');
+save(fullfile(subject_save_path,'B_cycles_Struct.mat'), 'cycles_struct');
 
 

@@ -1,41 +1,22 @@
-% Input: C_matrixStruct_Cycles (variable name: matrix_struct)
-
-SUBJ = "SS13";
-subjPath = fullfile("Y:\Spinal Stim_Stroke R01\AIM 1\Record while stim ON", SUBJ); 
-
 % general code given a table with muscle_Channels (rows) x EMG signal
 
 
-% Input: B_cycles_Struct.mat (cycles_struct), where the cycles were segemented,
+% Input: C_matrixStruct_Cycles.mat (cycles_struct), where the cycles were segemented,
 % filtered, and normalized
-% Output: C_matrixStruct_Cycles.mat, (matrix_struct)
+% Output: D_synergiesStruct.mat, (matrix_struct)
 % Places the finalized 0to100 normalized segements in a matrix:
 
-COMP = "wind"; % or 'wind'
-SUBJ = "SS13";
 
 %%
-
-if COMP == "mac"
-    % UPDATE WHEN WOKRING ON MAC:
-    
-elseif COMP == "wind"
-    subject_path_MASTER = "Y:\Spinal Stim_Stroke R01\AIM 1\Record while stim ON";
-    addpath('C:\Users\nveit\OneDrive - Northwestern University\Research\GITHUB\PhD\Aim1\CODE\Gait Cycles analysis XSENS_DELSYS\functions');
-end
-
-
-%%
-subject_path = fullfile(subject_path_MASTER, SUBJ);
 filename = "C_matrixStruct_Cycles_noOut.mat"; % from C
 % Load structure: called matrix_struct
-load(fullfile(subject_path, filename)) % matrix_struct 
+load(fullfile(subject_save_path, filename)) % matrix_struct 
 
 %%
-PLOT = true;
+PLOT = false;
 PLOTvaf = false;
-WALK_FIELD = 'Walk_8';
-side_array = {"L","R"};
+% WALK_FIELD = 'Walk_8';
+side_array = {'L','R'};
 
 walks_list = fieldnames(matrix_struct.AverageCycle);
 walkDict_modified = matrix_struct.matrixALL.WalksDict;
@@ -54,12 +35,12 @@ walkDict_modified.R_VAF2                 = NaN(height(walkDict_modified), 1);
 for wnum =1:length(walks_list)
     WALK_FIELD = walks_list{wnum};
     if WALK_FIELD == "WalksDict" 
-        break;
+        continue;
     end
     
     
     for i =1: length(side_array)
-        side = side_array{i}+'_MusclesAvg';
+        side = side_array{i}+"_MusclesAvg";
 
         rows_muscle_legend = find(startsWith(matrix_struct.AverageCycle.(WALK_FIELD).AllMusclesAvg_MuscleLegend , side_array{i}));
 
@@ -174,5 +155,5 @@ matrix_struct.WalksDict   = walkDict_modified;
 synergies_struct = matrix_struct; 
 
 
-SAVEPATH = fullfile(subject_path, "D_synergiesStruct.mat");
+SAVEPATH = fullfile(subject_save_path, "D_synergiesStruct.mat");
 save(SAVEPATH, "synergies_struct")

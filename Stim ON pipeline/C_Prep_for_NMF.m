@@ -3,24 +3,11 @@
 % Output: C_matrixStruct_Cycles.mat, (matrix_struct)
 % Places the finalized 0to100 normalized segements in a matrix:
 
-COMP = "wind"; % or 'wind'
-SUBJ = "SS13";
-%%
-
-if COMP == "mac"
-    % UPDATE WHEN WOKRING ON MAC:
-    
-elseif COMP == "wind"
-    subject_path_MASTER = "Y:\Spinal Stim_Stroke R01\AIM 1\Record while stim ON";
-    addpath('C:\Users\nveit\OneDrive - Northwestern University\Research\GITHUB\PhD\Aim1\CODE\Gait Cycles analysis XSENS_DELSYS\functions');
-end
-
 
 %%
-subject_path = fullfile(subject_path_MASTER, SUBJ);
 filename = "B_cycles_Struct.mat"; % from B
 % Load structure: called cycles_struct
-load(fullfile(subject_path, filename)) % cycles_struct 
+load(fullfile(subject_save_path, filename)) % cycles_struct 
 
 %%
 % Places the finalized 0to100 normalized segements in a matrix:
@@ -34,16 +21,17 @@ walkDict_modified = cycles_struct.WalksDict;
 walkDict_modified.MuscleOrder = cell(height(walkDict_modified), 1);
 walkDict_modified.outliersNumbers = cell(height(walkDict_modified), 1);
 walkDict_modified.originalAmountSteps = cell(height(walkDict_modified), 1);
+walkDict_modified.indices_ofOutliers = cell(height(walkDict_modified), 1);
 for wnum =1:length(walks_list)
     WALK_FIELD = walks_list{wnum};
-    if WALK_FIELD == "WalksDict" 
-        break;
+    if isequal(WALK_FIELD,'WalksDict')
+        continue; % break?
     end
     walk_number  = str2double(regexp(WALK_FIELD, '\d+', 'match'));
     corres_freq  = cycles_struct.WalksDict(cycles_struct.WalksDict.WalkNum== walk_number, :).Frequency; 
     corres_inter = cycles_struct.WalksDict(cycles_struct.WalksDict.WalkNum== walk_number, :).Intervention; 
 
-    muscle_list = {"RHAM", "LHAM", "RVL", "LVL", "RRF", "LRF", "RTA", "LTA", "RMG", "LMG"};
+    muscle_list = {'RHAM', 'LHAM', 'RVL', 'LVL', 'RRF', 'LRF', 'RTA', 'LTA', 'RMG', 'LMG'};
 
 
     averageCyclesMatrix_10muscles = zeros(length(muscle_list), 100); % Preallocate for efficiency
@@ -195,7 +183,7 @@ matrix_struct.AverageCycle.WalksDict = cycles_struct.WalksDict;
 %%% - AllMusclesAvg: contains 10 muscles x 100 points (avg of each muscle)
 % IndividualCycles = 3D matrix 10 muscles x 100 points (per stride) x #strides
 
-SAVEPATH = fullfile(subject_path, "C_matrixStruct_Cycles_noOut.mat");
+SAVEPATH = fullfile(subject_save_path, "C_matrixStruct_Cycles_noOut.mat");
 save(SAVEPATH, "matrix_struct")
 
 

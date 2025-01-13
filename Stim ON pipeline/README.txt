@@ -1,0 +1,1 @@
+This code is from Nicole's dissertation, and analyzes treadmill walking while stimulation is continuously applied.

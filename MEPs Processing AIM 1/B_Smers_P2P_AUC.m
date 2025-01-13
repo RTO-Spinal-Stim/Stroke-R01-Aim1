@@ -1,12 +1,14 @@
-INITIALS = "NV";
+INITIALS = "MT";
 
-SUBJ_list = ["01"]%, "01","02", "03", "04", "05", "06"];%, "08", "09", "10"];
-TP_list = ["PRE","POST"]; 
-
-INTER_list = ["RMT50"]%,RMT30 "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"]; 
+% SUBJ_list = ["01"]%, "01","02", "03", "04", "05", "06"];%, "08", "09", "10"];
+% TP_list = ["PRE","POST"]; 
+% 
+% INTER_list = ["RMT50"]%,RMT30 "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"]; 
 
 colors = { [0 0 1 0.1],[0.9290 0.6940 0.1250], [1 0 0 0.5]};
                 % blue, yellow, red - blue comes first 
+                
+subj_path_suffix = '\TEPs\TEPsProcessed';
                 
 plotMethod = "BandPass";
 rectifiedMethod = "Rectified_afterAligSmooth";
@@ -14,8 +16,8 @@ rectifiedMethod = "Rectified_afterAligSmooth";
 %% Read in master TEPs file
 % Obtains the bad pulses for each MEP trial. 
 
-aim1_folder = "Y:\Spinal Stim_Stroke R01\AIM 1"; 
-subj_path = fullfile(aim1_folder, 'Subject Data');
+% aim1_folder = "Y:\Spinal Stim_Stroke R01\AIM 1"; 
+% subj_path = fullfile(aim1_folder, 'Subject Data');
 
 p2p_table = table();  % gets ALLL IN ONE TABLE
 % NEED TO DO CODE THAT READS IN THE SAVED STRUCT AND ONLY DOES THE ONES
@@ -27,12 +29,13 @@ p2p_table = table();  % gets ALLL IN ONE TABLE
 %% START ITERATION
 for SUBJ_i = 1:length(SUBJ_list)
     missingFiles = {};
-    SUBJ = SUBJ_list(SUBJ_i);
-    subj_path = "Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\SS" + SUBJ +"\TEPs\TEPsProcessed";
+    SUBJ = SUBJ_list{SUBJ_i};
+    curr_subj_path = strcat(subj_path_prefix, SUBJ, subj_path_suffix);
+    curr_subj_save_path = strcat(subj_save_path_prefix, SUBJ, subj_path_suffix);
     
     % CREATE THE PROCESSED LOG:
     % Initialize Excel file and header (if it doesn't exist)
-    outputFile = fullfile(subj_path, 'ProcessedCombinations.xlsx');
+    outputFile = fullfile(curr_subj_path, 'ProcessedCombinations.xlsx');
     
         % Check if the file exists
     if isfile(outputFile)
@@ -47,7 +50,7 @@ for SUBJ_i = 1:length(SUBJ_list)
   
 
     % find the latest one
-    a_smers_files = {dir(fullfile(subj_path, '*.mat')).name}; 
+    a_smers_files = {dir(fullfile(curr_subj_path, '*.mat')).name}; 
     % filter to those that contain "_pre_processedTEPs_"
     a_smers_files = a_smers_files(contains(a_smers_files, "A_" +SUBJ  +"_pre_processedTEPs_"));
     if length(a_smers_files)>1
@@ -62,23 +65,23 @@ for SUBJ_i = 1:length(SUBJ_list)
         continue;
     end
     
-    final_path = fullfile(subj_path, filename_preprocessed);
+    final_path = fullfile(curr_subj_path, filename_preprocessed);
     % Load the struct:
     load(final_path) % subj_Struct
     
     
     
     for INTER_i = 1: length(INTER_list)
-        INTER = INTER_list(INTER_i);
+        INTER_number_first = INTER_list{INTER_i};
+        INTER = inter_valid_names(INTER_number_first);
         
         % CHECK IF SS0x_B_TEPs_PulsesFeatsStruct.mat exist, 
         
         % if it does - load 
-        mat_struct_path = fullfile(subj_path, "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat");
+        mat_struct_path = fullfile(curr_subj_path, "B_" +SUBJ+"_" + INTER_number_first  +"_TEPs_PulsesFeatsStruct.mat");
         if exist(mat_struct_path, 'file') == 2
             % the file for that intervention was already processed:
             disp( "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat" + " was already processed. Skipping.");
-            load(mat_struct_path);
             
             % Check if pre or post is missing:
             TP_LIST_DONE = fieldnames(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER));
@@ -269,8 +272,11 @@ for SUBJ_i = 1:length(SUBJ_list)
                    
 
 
-                        new_row = table(SUBJ,INTER, TP,convertCharsToStrings(muscle_channel), pulseNum, intensity_value, ...
-                            minIDX, maxIDX, min_mV, max_mV, p2p, AUC_lat_100,AUC_smoothed,STIM_ARTIFACT_PEAK, latency,latency_fromOnset_idx,   End,  maxIDX_picked,minIDX_picked , sitmIDX_picked);
+                        new_row = table({SUBJ},{INTER}, {TP},{convertCharsToStrings(muscle_channel)},...
+                                        pulseNum, intensity_value, minIDX, maxIDX, min_mV, max_mV, p2p,AUC_lat_100, AUC_smoothed, STIM_ARTIFACT_PEAK, latency, latency_fromOnset_idx,  End,...
+                                        maxIDX_picked,minIDX_picked,...
+                                        'VariableNames', {'SUBJ','INTER','TP','MUSCLE','pulseNum','intensity_value','minIDX','maxIDX','min_mV','max_mV','p2p','AUC_lat_100','AUC_smoothed',...
+                                        'STIM_ARTIFACT_PEAK','latency','latency_fromOnset_idx','End','maxIDX_picked','minIDX_picked'}); 
                         new_row.Data = {cell_signal};
                         p2p_table = [p2p_table; new_row];
                         
@@ -279,9 +285,14 @@ for SUBJ_i = 1:length(SUBJ_list)
                         
                    else
                        % Create a row to save in excel file:
-                       new_row = table(SUBJ,INTER, TP,convertCharsToStrings(muscle_channel),...
+%                        new_row = table(SUBJ,INTER, TP,convertCharsToStrings(muscle_channel),...
+%                                         pulseNum, intensity_value, minIDX, maxIDX, min_mV, max_mV, p2p,AUC_lat_100, AUC_smoothed, STIM_ARTIFACT_PEAK, latency, latency_fromOnset_idx,  End,...
+%                                         maxIDX_picked,minIDX_picked, sitmIDX_picked ); 
+                        new_row = table({SUBJ},{INTER}, {TP},{convertCharsToStrings(muscle_channel)},...
                                         pulseNum, intensity_value, minIDX, maxIDX, min_mV, max_mV, p2p,AUC_lat_100, AUC_smoothed, STIM_ARTIFACT_PEAK, latency, latency_fromOnset_idx,  End,...
-                                        maxIDX_picked,minIDX_picked, sitmIDX_picked ); 
+                                        maxIDX_picked,minIDX_picked,...
+                                        'VariableNames', {'SUBJ','INTER','TP','MUSCLE','pulseNum','intensity_value','minIDX','maxIDX','min_mV','max_mV','p2p','AUC_lat_100','AUC_smoothed',...
+                                        'STIM_ARTIFACT_PEAK','latency','latency_fromOnset_idx','End','maxIDX_picked','minIDX_picked'}); 
 
                         % Saving"
                         %maxIDX_picked,minIDX_picked - this is what was clicked in
@@ -317,7 +328,7 @@ for SUBJ_i = 1:length(SUBJ_list)
     end
     
     ALL_SUBJ_STRUCT.("SS"+SUBJ).("plotMethod")=plotMethod;
-    SAVEPATH = fullfile(subj_path, "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat");
+    SAVEPATH = fullfile(curr_subj_save_path, "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat");
     save(SAVEPATH, "ALL_SUBJ_STRUCT")
 end
 
