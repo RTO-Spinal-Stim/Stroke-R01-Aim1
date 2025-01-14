@@ -1,9 +1,15 @@
 {
+    "EMG_SAMPLING_FREQUENCY": 2000,
+    "GAITRITE_SAMPLING_FREQUENCY": 100,
+    "XSENS_SAMPLING_FREQUENCY": 100,
     "DATA_TYPE_FOLDERS": [
         "Delsys", "Gaitrite", "XSENS"
     ],
     "INTERVENTION_FOLDERS": [
         "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
+    ],
+    "MAPPED_INTERVENTION_FIELDS": [
+        "RMT30", "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"
     ],
     "FILE_EXTENSIONS": [
         "*.mat", "*.xlsx", "*.xlsx"
@@ -14,5 +20,14 @@
         "SS10": [
             "SHAM2", "RMT30", "RMT50"
         ]
+    },
+    "FILTER_EMG": {
+        "BANDPASS_ORDER": 4,
+        "BANDPASS_CUTOFF": [
+            4, 
+            100
+        ],
+        "LOWPASS_ORDER": 2,
+        "LOWPASS_CUTOFF": 5        
     }
 }

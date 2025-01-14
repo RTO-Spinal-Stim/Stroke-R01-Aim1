@@ -1,0 +1,470 @@
+% MT 01/14/25: Editing to make work with config file, and adding lots of comments.
+
+clear
+clc
+
+% Path to save the data to.
+subjectSavePath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\Processed Outcomes\SS13_Outcomes.mat';
+% Folder to load the data from.
+subjectLoadPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\SS13';
+
+% Extract folder name from the path
+[~, subjFolderName, ~] = fileparts(subjectLoadPath);
+
+% Create a struct with dynamic field names
+folderStruct = struct();
+
+% Assign an empty struct to the dynamic field
+folderStruct.(subjFolderName) = struct();
+
+%% Get configuration
+config = jsondecode(fileread('config.json'));
+
+% One subfolder per data type
+dataTypeFolders = config.DATA_TYPE_FOLDERS;
+
+% One subfolder per intervention. Note that intervention folder names are
+% not valid MATLAB names, hence the need for a mapping.
+interventionFolders = config.INTERVENTION_FOLDERS;
+interventionFoldersMap = containers.Map(interventionFolders, ...
+    config.MAPPED_INTERVENTION_FIELDS);
+
+% Define the file extensions for each subfolder type
+fileExtensions = config.FILE_EXTENSIONS;
+
+%% Load all of the data for one subject and place it in a nested struct.
+% folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName)
+for i = 1:length(interventionFolders)
+    interventionFolder = interventionFolders{i};
+    % Use the mapping to get the correct struct field name
+    interventionStructName = interventionFoldersMap(interventionFolder);
+    
+    % Initialize sub-struct for the intervention folder
+    folderStruct.(subjFolderName).(interventionStructName) = struct();
+    
+    % Iterate over dataTypeFolders
+    for j = 1:length(dataTypeFolders)
+        dataTypeFolder = dataTypeFolders{j};
+        
+        % Initialize a struct for each dataTypeFolder
+        folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder) = struct();
+        
+        % Construct the path to the files
+        filesPath = fullfile(subjectLoadPath, dataTypeFolder, interventionFolder, fileExtensions{j});
+        files = dir(filesPath);
+        
+        % Load the data based on file type
+        for k = 1:length(files)
+            if isempty(files(k).name)
+                continue;
+            end
+            fileName = files(k).name;
+            fullFilePath = fullfile(files(k).folder, fileName); % The full path of the file being loaded.
+            fieldName = matlab.lang.makeValidName(files(k).name);
+            
+            disp(['Now loading: ' fullFilePath]);
+            
+            % Load .mat files for 'Delsys'
+            if strcmp(dataTypeFolder, 'Delsys')
+                data = load(fullFilePath);                
+            % Load .xlsx files for 'Gaitrite'
+            elseif strcmp(dataTypeFolder, 'Gaitrite')
+                [num, txt, raw] = xlsread(fullFilePath);
+            % Load .xlsx files for 'Gaitrite'
+            elseif strcmp(dataTypeFolder, 'XSENS')
+                [num, txt, raw] = xlsread(fullFilePath, 'Joint Angles XZY');
+            end
+            
+            % Store data to struct
+            if any(strcmp(dataTypeFolder, {'Gaitrite', 'XSENS'}))                
+                % Store the data in a struct with the file name as the field
+                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).num = num;
+                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).txt = txt;
+                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).raw = raw;
+            elseif strcmp(dataTypeFolder, 'Delsys')
+                % Store the data in a struct with the file name as the field                
+                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName) = data;
+            end                
+        end
+    end
+end
+
+%% Organize EMG data into separate muscles
+interventions = fieldnames(folderStruct.(subjFolderName));
+for i = 1:length(interventions)
+    EMGStruct = folderStruct.(subjFolderName).(interventions{i}).Delsys;
+    folderStruct.(subjFolderName).(interventions{i}).loadedDelsys = loadMatFiles(EMGStruct);    
+end
+
+%% Extract .num field of Gaitrite data
+for i = 1:length(interventions)
+    GaitStruct = folderStruct.(subjFolderName).(interventions{i}).Gaitrite;
+    folderStruct.(subjFolderName).(interventions{i}).loadedGaitrite = loadExcelFiles(GaitStruct);
+    
+end
+
+%% Extract .num field of XSENS data
+for i = 1:length(interventions)
+    XsensStruct = folderStruct.(subjFolderName).(interventions{i}).XSENS;
+    folderStruct.(subjFolderName).(interventions{i}).loadedXSENS = loadExcelFiles(XsensStruct);
+end
+
+%% Fix muscle mappings for specific subject & interventions.
+
+% Define valid subjFolderName and intervention mappings
+validCombinations = config.VALID_COMBINATIONS;
+
+for i = 1:length(interventions)
+    intervention = interventions{i};
+    
+    if isfield(validCombinations, subjFolderName) && ...
+            any(strcmp(intervention, validCombinations.(subjFolderName)))
+        % Log original and updated values for validation
+        disp(['Processing: ', subjFolderName, ' -> ', intervention]);
+        
+        % Apply muscle correction for the valid combination
+        fixMuscleMappings(folderStruct, subjFolderName, intervention);
+        
+        % Display the updated fields for validation
+        disp('Updated fields:');
+        disp(folderStruct.(subjFolderName).(intervention).loadedDelsys);
+    end
+end
+
+
+%% Pre-Process DATA
+
+configFilterEMG = config.FILTER_EMG; % Get the EMG filtering configuration
+EMG_Fs = config.EMG_SAMPLING_FREQUENCY; %Delsys sampling freq
+GAIT_Fs = config.GAITRITE_SAMPLING_FREQUENCY;
+X_Fs = config.XSENS_SAMPLING_FREQUENCY;
+
+for i = 1:length(interventions)
+    EMGStruct = folderStruct.(subjFolderName).(interventions{i}).loadedDelsys;
+    %Pre-Process EMG Data
+    folderStruct.(subjFolderName).(interventions{i}).filteredEMG = preprocessEMG(EMGStruct, configFilterEMG, EMG_Fs);
+end
+
+for i = 1:length(interventions)
+    gaitStruct = folderStruct.(subjFolderName).(interventions{i}).loadedGaitrite;
+    %Process GAITRite Data
+    folderStruct.(subjFolderName).(interventions{i}).processedGait = processGAITRite(gaitStruct,GAIT_Fs, EMG_Fs, X_Fs);
+end
+
+%% Put the data in the "organizedData" struct.
+for x = 1:length(interventions)
+    
+    organizedData.(subjFolderName).raw.(interventions{x}).Delsys  = folderStruct.(subjFolderName).(interventions{x}).Delsys;
+    organizedData.(subjFolderName).raw.(interventions{x}).Gaitrite  = folderStruct.(subjFolderName).(interventions{x}).Gaitrite;
+    organizedData.(subjFolderName).raw.(interventions{x}).XSENS  = folderStruct.(subjFolderName).(interventions{x}).XSENS;
+    
+    organizedData.(subjFolderName).processed.(interventions{x}).loadedDelsys  = folderStruct.(subjFolderName).(interventions{x}).loadedDelsys;
+    organizedData.(subjFolderName).processed.(interventions{x}).loadedGaitrite  = folderStruct.(subjFolderName).(interventions{x}).loadedGaitrite;
+    organizedData.(subjFolderName).processed.(interventions{x}).loadedXSENS  = folderStruct.(subjFolderName).(interventions{x}).loadedXSENS;
+    organizedData.(subjFolderName).processed.(interventions{x}).filteredEMG  = folderStruct.(subjFolderName).(interventions{x}).filteredEMG;
+    organizedData.(subjFolderName).processed.(interventions{x}).processedGait  = folderStruct.(subjFolderName).(interventions{x}).processedGait;
+    
+end
+
+for i = 1:length(interventions)
+    
+    % Assign 's'  struct
+    s = organizedData.(subjFolderName).processed.(interventions{i}).processedGait;
+    fields = fieldnames(s);
+    
+    for i = 1:numel(fields)
+        if contains(fields{i}, 'POST_FV')
+            s = renameStructField(s, fields{i}, 'postFV');
+        elseif contains(fields{i}, 'POST_SSV')
+            s = renameStructField(s, fields{i}, 'postSSV');
+        elseif contains(fields{i}, 'PRE_FV')
+            s = renameStructField(s, fields{i}, 'preFV');
+        elseif contains(fields{i}, 'PRE_SSV')
+            s = renameStructField(s, fields{i}, 'preSSV');
+        end
+    end
+    organizedData.(subjFolderName).processed.(interventions{x}).processedGait = s;
+    
+end
+
+for x = 1:length(interventions)
+    % Assign 's'  struct
+    s = organizedData.(subjFolderName).processed.(interventions{x}).filteredEMG;
+    fields = fieldnames(s);
+    newStruct = struct();
+    
+    for i = 1:numel(fields)
+        trialNum = extractBetween(fields{i}, 'V', '_mat'); % Extract trial number
+        if contains(fields{i}, 'POST_FV')
+            newStruct.postFV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'POST_SSV')
+            newStruct.postSSV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'PRE_FV')
+            newStruct.preFV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'PRE_SSV')
+            newStruct.preSSV.(['trial' trialNum{1}]) = s.(fields{i});
+        end
+    end
+    organizedData.(subjFolderName).processed.(interventions{x}).filteredEMG = newStruct;
+end
+
+for x = 1:length(interventions)
+    % Assign 's'  struct
+    s = organizedData.(subjFolderName).processed.(interventions{x}).loadedXSENS;
+    fields = fieldnames(s);
+    newStruct = struct();
+    
+    for i = 1:numel(fields)
+        trialNum = extractBetween(fields{i}, 'V_00', '_xlsx'); % Extract trial number
+        if contains(fields{i}, 'POST_FV')
+            newStruct.postFV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'POST_SSV')
+            newStruct.postSSV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'PRE_FV')
+            newStruct.preFV.(['trial' trialNum{1}]) = s.(fields{i});
+        elseif contains(fields{i}, 'PRE_SSV')
+            newStruct.preSSV.(['trial' trialNum{1}]) = s.(fields{i});
+        end
+    end
+    organizedData.(subjFolderName).processed.(interventions{x}).loadedXSENS = newStruct;
+end
+
+%waitbar(7/total_checkpoints, h, 'Organized Data Complete');
+
+%%
+for x = 1:length(interventions)
+    
+    emg = organizedData.(subjFolderName).processed.(interventions{x}).filteredEMG;
+    gait = organizedData.(subjFolderName).processed.(interventions{x}).processedGait;
+    xsens = organizedData.(subjFolderName).processed.(interventions{x}).loadedXSENS;
+    
+    f = fieldnames(emg);
+    
+    for j = 1:length(f)
+        
+        %Average EMG for all gait cycles and trials
+        [averagedEMG, accumulatedEMG] = downSampleAveragedEMG(emg.(f{j}), gait.(f{j}));
+        
+        %Average XSens for all gait cycles and trials
+        [accumulatedJointAngles, averagedXSENS]  = downSampleAveragedXSENS(xsens.(f{j}), gait.(f{j}));
+        
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).averagedEMG = averagedEMG;
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).accumulatedEMG = accumulatedEMG;
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).accumulatedJointAngles = accumulatedJointAngles;
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).averagedXSENS = averagedXSENS;
+        
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).stepLenSym = mean([gait.(f{j}).trial1.avgStepLenSym,gait.(f{j}).trial2.avgStepLenSym,gait.(f{j}).trial3.avgStepLenSym]);
+        organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.(f{j}).swingTimeSym = mean([gait.(f{j}).trial1.avgSwingTimeSym,gait.(f{j}).trial2.avgSwingTimeSym,gait.(f{j}).trial3.avgSwingTimeSym]);
+        
+        
+        
+        
+    end
+    
+    
+end
+
+
+%waitbar(8/total_checkpoints, h, 'Processed EMG/XSENS Complete');
+
+
+%% Analysis
+
+for x = 1:length(interventions)
+    
+    s = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials;
+    
+    f = fieldnames(s);
+    
+    for j = 1:length(f)
+        
+        %Calculate Muslce Synergies
+        avgSynergies = calculateSynergies(s.(f{j}).accumulatedEMG);
+        
+        %SPM Analysis for both XSens and EMG
+        X_SPM = SPM_Analysis(s.(f{j}).accumulatedJointAngles);
+        EMG_SPM = SPM_Analysis(s.(f{j}).accumulatedEMG);
+        
+        %Calculate the differences between right and left side for both XSENS and EMG
+        X_RLdifference = differenceInRLCalc(X_SPM, s.(f{j}).averagedXSENS);
+        EMG_RLdifference = differenceInRLCalc(EMG_SPM, s.(f{j}).averagedEMG);
+        
+        organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.(f{j}).XSENS = X_RLdifference;
+        organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.(f{j}).EMG = EMG_RLdifference;
+        organizedData.(subjFolderName).processed.(interventions{x}).synergies.(f{j}) = avgSynergies;
+        
+    end
+    
+    
+end
+
+%waitbar(9/total_checkpoints, h, 'EMG/XSENS Analysis Complete');
+
+%%
+outcomes = struct();
+
+for x = 1:length(interventions)
+    %XSENS DATA
+    X_SenPostFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.XSENS;
+    X_SenPreFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.XSENS;
+    
+    X_SenPostSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.XSENS;
+    X_SenPreSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.XSENS;
+    
+    %EMG DATA
+    emgPostFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.EMG;
+    emgPreFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.EMG;
+    
+    emgPostSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.EMG;
+    emgPreSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.EMG;
+    
+    %SYNERGY DATA
+    synPostFV = organizedData.(subjFolderName).processed.(interventions{x}).synergies.postFV;
+    synPreFV = organizedData.(subjFolderName).processed.(interventions{x}).synergies.preFV;
+    
+    synPostSSV = organizedData.(subjFolderName).processed.(interventions{x}).synergies.postSSV;
+    synPreSSV = organizedData.(subjFolderName).processed.(interventions{x}).synergies.preSSV;
+    
+    %GAITRITE DATA
+    %stepLen
+    stepLenSymPostFV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.postFV.stepLenSym;
+    stepLenSymPreFV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.preFV.stepLenSym;
+    
+    stepLenSymPostSSV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.postSSV.stepLenSym;
+    stepLenSymPreSSV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.preSSV.stepLenSym;
+    %swing time
+    swingTimeSymPostFV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.postFV.swingTimeSym;
+    swingTimeSymPreFV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.preFV.swingTimeSym;
+    
+    swingTimeSymPostSSV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.postSSV.swingTimeSym;
+    swingTimeSymPreSSV = organizedData.(subjFolderName).processed.(interventions{x}).combinedTrials.preSSV.swingTimeSym;
+    
+    muscles = fieldnames(organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.EMG.amplitude);
+    joints = fieldnames(organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.XSENS.amplitude);
+    
+    for m = 1:length(muscles)
+        
+        postAmplitudeSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.EMG.amplitude.(muscles{m});
+        preAmplitudeSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.EMG.amplitude.(muscles{m});
+        postAmplitudeFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.EMG.amplitude.(muscles{m});
+        preAmplitudeFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.EMG.amplitude.(muscles{m});
+        
+        postDurationSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.EMG.duration.(muscles{m});
+        preDurationSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.EMG.duration.(muscles{m});
+        postDurationFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.EMG.duration.(muscles{m});
+        preDurationFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.EMG.duration.(muscles{m});
+        
+        
+        amplitudeDiffSSV = preAmplitudeSSV - postAmplitudeSSV;
+        amplitudeDiffFV = preAmplitudeFV - postAmplitudeFV;
+        durationDiffSSV = preDurationSSV - postDurationSSV;
+        durationDiffFV = preDurationFV - postDurationFV;
+        
+        if isnan(amplitudeDiffSSV)
+            
+            amplitudeDiffSSV = 0;
+            
+        end
+        
+        if isnan(amplitudeDiffFV)
+            
+            amplitudeDiffFV = 0;
+            
+        end
+        
+        if isnan(durationDiffSSV)
+            
+            durationDiffSSV = 0;
+            
+        end
+        
+        if isnan(durationDiffFV)
+            
+            durationDiffFV = 0;
+            
+        end
+        
+        outcomes.(interventions{x}).EMG.(muscles{m}).amplitudeSSV = amplitudeDiffSSV;
+        outcomes.(interventions{x}).EMG.(muscles{m}).amplitudeFV = amplitudeDiffFV;
+        outcomes.(interventions{x}).EMG.(muscles{m}).durationSSV = durationDiffSSV;
+        outcomes.(interventions{x}).EMG.(muscles{m}).durationFV = durationDiffFV;
+        
+    end
+    
+    
+    for m = 1:length(joints)
+        
+        postAmplitudeSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.XSENS.amplitude.(joints{m});
+        preAmplitudeSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.XSENS.amplitude.(joints{m});
+        postAmplitudeFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.XSENS.amplitude.(joints{m});
+        preAmplitudeFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.XSENS.amplitude.(joints{m});
+        
+        postDurationSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postSSV.XSENS.duration.(joints{m});
+        preDurationSSV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preSSV.XSENS.duration.(joints{m});
+        postDurationFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.postFV.XSENS.duration.(joints{m});
+        preDurationFV = organizedData.(subjFolderName).processed.(interventions{x}).RLDiff.preFV.XSENS.duration.(joints{m});
+        
+        
+        amplitudeDiffSSV = preAmplitudeSSV - postAmplitudeSSV;
+        amplitudeDiffFV = preAmplitudeFV - postAmplitudeFV;
+        durationDiffSSV = preDurationSSV - postDurationSSV;
+        durationDiffFV = preDurationFV - postDurationFV;
+        
+        if isnan(amplitudeDiffSSV)
+            
+            amplitudeDiffSSV = 0;
+            
+        end
+        
+        if isnan(amplitudeDiffFV)
+            
+            amplitudeDiffFV = 0;
+            
+        end
+        
+        if isnan(durationDiffSSV)
+            
+            durationDiffSSV = 0;
+            
+        end
+        
+        if isnan(durationDiffFV)
+            
+            durationDiffFV = 0;
+            
+        end
+        
+        outcomes.(interventions{x}).XSENS.(joints{m}).amplitudeSSV = amplitudeDiffSSV;
+        outcomes.(interventions{x}).XSENS.(joints{m}).amplitudeFV = amplitudeDiffFV;
+        outcomes.(interventions{x}).XSENS.(joints{m}).durationSSV = durationDiffSSV;
+        outcomes.(interventions{x}).XSENS.(joints{m}).durationFV = durationDiffFV;
+        
+    end
+    
+    
+    outcomes.(interventions{x}).synergies.FV = synPostFV - synPreFV;
+    outcomes.(interventions{x}).synergies.SSV = synPostSSV - synPreSSV;
+    
+    % Gaitrite Outcomes spatial/temporal
+    
+    outcomes.(interventions{x}).stepLenSym.FV = ((stepLenSymPreFV - stepLenSymPostFV)/stepLenSymPreFV)*100;
+    outcomes.(interventions{x}).stepLenSym.SSV = ((stepLenSymPreSSV - stepLenSymPostSSV)/stepLenSymPreSSV)*100;
+    
+    outcomes.(interventions{x}).swingTimeSym.FV = ((swingTimeSymPreFV - swingTimeSymPostFV)/swingTimeSymPreFV)*100;
+    outcomes.(interventions{x}).swingTimeSym.SSV = ((swingTimeSymPreSSV - swingTimeSymPostSSV)/swingTimeSymPreSSV)*100;
+    
+end
+
+%% Save Outcomes for subject, specify subject
+% save(subjectSavePath, 'outcomes');
+
+
+
+
+
+
+
+
+
+
+
