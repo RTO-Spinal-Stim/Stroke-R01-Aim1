@@ -1,0 +1,18 @@
+{
+    "DATA_TYPE_FOLDERS": [
+        "Delsys", "Gaitrite", "XSENS"
+    ],
+    "INTERVENTION_FOLDERS": [
+        "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
+    ],
+    "FILE_EXTENSIONS": [
+        "*.mat", "*.xlsx", "*.xlsx"
+    ],
+    "VALID_COMBINATIONS": {
+        "SS08": "RMT30",
+        "SS09": "SHAM2",
+        "SS10": [
+            "SHAM2", "RMT30", "RMT50"
+        ]
+    }
+}
