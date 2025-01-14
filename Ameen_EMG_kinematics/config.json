@@ -1,6 +1,18 @@
 {
+    "MUSCLES": [
+        "HAM",
+        "RF",
+        "MG",
+        "TA",
+        "VL"
+    ],
+    "JOINTS": [
+        "H",
+        "K",
+        "A"
+    ],
     "EMG_SAMPLING_FREQUENCY": 2000,
-    "GAITRITE_SAMPLING_FREQUENCY": 100,
+    "GAITRITE_SAMPLING_FREQUENCY": 120,
     "XSENS_SAMPLING_FREQUENCY": 100,
     "DATA_TYPE_FOLDERS": [
         "Delsys", "Gaitrite", "XSENS"
@@ -29,5 +41,10 @@
         ],
         "LOWPASS_ORDER": 2,
         "LOWPASS_CUTOFF": 5        
+    },
+    "FILTER_JOINT_ANGLES": {
+        "LOWPASS_CUTOFF": 6,
+        "LOWPASS_ORDER": 4
     }
+    
 }

@@ -33,7 +33,7 @@ interventionFoldersMap = containers.Map(interventionFolders, ...
 fileExtensions = config.FILE_EXTENSIONS;
 
 %% Load all of the data for one subject and place it in a nested struct.
-% folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName)
+% FORMAT: folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName)
 for i = 1:length(interventionFolders)
     interventionFolder = interventionFolders{i};
     % Use the mapping to get the correct struct field name
@@ -69,10 +69,10 @@ for i = 1:length(interventionFolders)
                 data = load(fullFilePath);                
             % Load .xlsx files for 'Gaitrite'
             elseif strcmp(dataTypeFolder, 'Gaitrite')
-                [num, txt, raw] = xlsread(fullFilePath);
+                [num, txt, raw_data] = xlsread(fullFilePath);
             % Load .xlsx files for 'Gaitrite'
             elseif strcmp(dataTypeFolder, 'XSENS')
-                [num, txt, raw] = xlsread(fullFilePath, 'Joint Angles XZY');
+                [num, txt, raw_data] = xlsread(fullFilePath, 'Joint Angles XZY');
             end
             
             % Store data to struct
@@ -80,7 +80,7 @@ for i = 1:length(interventionFolders)
                 % Store the data in a struct with the file name as the field
                 folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).num = num;
                 folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).txt = txt;
-                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).raw = raw;
+                folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName).raw = raw_data;
             elseif strcmp(dataTypeFolder, 'Delsys')
                 % Store the data in a struct with the file name as the field                
                 folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName) = data;
@@ -89,7 +89,8 @@ for i = 1:length(interventionFolders)
     end
 end
 
-%% Organize EMG data into separate muscles
+%% Extract EMG data into separate muscles
+disp(['Extracting EMG data']);
 interventions = fieldnames(folderStruct.(subjFolderName));
 for i = 1:length(interventions)
     EMGStruct = folderStruct.(subjFolderName).(interventions{i}).Delsys;
@@ -97,6 +98,7 @@ for i = 1:length(interventions)
 end
 
 %% Extract .num field of Gaitrite data
+disp(['Extracting Gaitrite data']);
 for i = 1:length(interventions)
     GaitStruct = folderStruct.(subjFolderName).(interventions{i}).Gaitrite;
     folderStruct.(subjFolderName).(interventions{i}).loadedGaitrite = loadExcelFiles(GaitStruct);
@@ -104,16 +106,15 @@ for i = 1:length(interventions)
 end
 
 %% Extract .num field of XSENS data
+disp(['Extracting XSENS data']);
 for i = 1:length(interventions)
     XsensStruct = folderStruct.(subjFolderName).(interventions{i}).XSENS;
     folderStruct.(subjFolderName).(interventions{i}).loadedXSENS = loadExcelFiles(XsensStruct);
 end
 
 %% Fix muscle mappings for specific subject & interventions.
-
-% Define valid subjFolderName and intervention mappings
-validCombinations = config.VALID_COMBINATIONS;
-
+disp('Fixing muscle mappings for specific subjects & interventions');
+validCombinations = config.VALID_COMBINATIONS; % Define valid subjFolderName and intervention mappings
 for i = 1:length(interventions)
     intervention = interventions{i};
     
@@ -129,29 +130,32 @@ for i = 1:length(interventions)
         disp('Updated fields:');
         disp(folderStruct.(subjFolderName).(intervention).loadedDelsys);
     end
+    
 end
 
 
-%% Pre-Process DATA
-
+%% Pre-Process Data
 configFilterEMG = config.FILTER_EMG; % Get the EMG filtering configuration
 EMG_Fs = config.EMG_SAMPLING_FREQUENCY; %Delsys sampling freq
 GAIT_Fs = config.GAITRITE_SAMPLING_FREQUENCY;
 X_Fs = config.XSENS_SAMPLING_FREQUENCY;
 
+%Pre-Process EMG Data
+disp('Preprocessing EMG data');
 for i = 1:length(interventions)
-    EMGStruct = folderStruct.(subjFolderName).(interventions{i}).loadedDelsys;
-    %Pre-Process EMG Data
+    EMGStruct = folderStruct.(subjFolderName).(interventions{i}).loadedDelsys;    
     folderStruct.(subjFolderName).(interventions{i}).filteredEMG = preprocessEMG(EMGStruct, configFilterEMG, EMG_Fs);
 end
 
+%Process GAITRite Data
+disp('Preprocessing GaitRite data');
 for i = 1:length(interventions)
-    gaitStruct = folderStruct.(subjFolderName).(interventions{i}).loadedGaitrite;
-    %Process GAITRite Data
+    gaitStruct = folderStruct.(subjFolderName).(interventions{i}).loadedGaitrite;    
     folderStruct.(subjFolderName).(interventions{i}).processedGait = processGAITRite(gaitStruct,GAIT_Fs, EMG_Fs, X_Fs);
 end
 
 %% Put the data in the "organizedData" struct.
+disp('Copying loaded data to organizedData struct');
 for i = 1:length(interventions)
     
     intervention = interventions{i};
@@ -167,7 +171,8 @@ for i = 1:length(interventions)
     
 end
 
-%% Rename GaitRite struct fields
+%% Rename GaitRite struct fields to remove redundant info
+disp('Removing redundancies from GaitRite struct field names');
 for i = 1:length(interventions)
     
     % Assign 's'  struct
@@ -190,6 +195,7 @@ for i = 1:length(interventions)
 end
 
 %% Rename EMG struct fields
+disp('Removing redundancies from EMG struct field names');
 for i = 1:length(interventions)
     % Assign 's'  struct
     s = organizedData.(subjFolderName).processed.(interventions{i}).filteredEMG;
@@ -212,6 +218,7 @@ for i = 1:length(interventions)
 end
 
 %% Rename XSENS struct fields
+disp('Removing redundancies from XSENS struct field names');
 for i = 1:length(interventions)
     % Assign 's'  struct
     s = organizedData.(subjFolderName).processed.(interventions{i}).loadedXSENS;
@@ -234,6 +241,10 @@ for i = 1:length(interventions)
 end
 
 %% Downsample EMG & XSENS
+disp('Downsampling EMG and XSENS to GaitRite frequencies');
+muscle_names = config.MUSCLES;
+joint_names = config.JOINTS;
+filterJointsConfig = config.FILTER_JOINT_ANGLES;
 for i = 1:length(interventions)
     
     intervention = interventions{i};
@@ -246,10 +257,10 @@ for i = 1:length(interventions)
     for j = 1:length(f)
         
         %Average EMG for all gait cycles and trials
-        [averagedEMG, accumulatedEMG] = downSampleAveragedEMG(emg.(f{j}), gait.(f{j}));
+        [averagedEMG, accumulatedEMG] = downSampleAveragedEMG(emg.(f{j}), gait.(f{j}), muscle_names);
         
         %Average XSens for all gait cycles and trials
-        [accumulatedJointAngles, averagedXSENS]  = downSampleAveragedXSENS(xsens.(f{j}), gait.(f{j}));
+        [accumulatedJointAngles, averagedXSENS]  = downSampleAveragedXSENS(xsens.(f{j}), gait.(f{j}), joint_names, filterJointsConfig, X_Fs);
         
         organizedData.(subjFolderName).processed.(intervention).combinedTrials.(f{j}).averagedEMG = averagedEMG;
         organizedData.(subjFolderName).processed.(intervention).combinedTrials.(f{j}).accumulatedEMG = accumulatedEMG;
@@ -265,7 +276,7 @@ end
 
 %% ---------------------- STARTING ANALYSIS ---------------------- 
 %% Statistical Parametric Mapping (SPM) Analysis
-
+addpath(genpath('spm1dmatlab-master'));
 for i = 1:length(interventions)
     
     intervention = interventions{i};
@@ -295,7 +306,6 @@ end
 
 %%
 outcomes = struct();
-
 for i = 1:length(interventions)
     
     intervention = interventions{i};
@@ -348,8 +358,7 @@ for i = 1:length(interventions)
         postDurationSSV = organizedData.(subjFolderName).processed.(intervention).RLDiff.postSSV.EMG.duration.(muscles{m});
         preDurationSSV = organizedData.(subjFolderName).processed.(intervention).RLDiff.preSSV.EMG.duration.(muscles{m});
         postDurationFV = organizedData.(subjFolderName).processed.(intervention).RLDiff.postFV.EMG.duration.(muscles{m});
-        preDurationFV = organizedData.(subjFolderName).processed.(intervention).RLDiff.preFV.EMG.duration.(muscles{m});
-        
+        preDurationFV = organizedData.(subjFolderName).processed.(intervention).RLDiff.preFV.EMG.duration.(muscles{m});        
         
         amplitudeDiffSSV = preAmplitudeSSV - postAmplitudeSSV;
         amplitudeDiffFV = preAmplitudeFV - postAmplitudeFV;
@@ -377,8 +386,7 @@ for i = 1:length(interventions)
         outcomes.(intervention).EMG.(muscles{m}).durationSSV = durationDiffSSV;
         outcomes.(intervention).EMG.(muscles{m}).durationFV = durationDiffFV;
         
-    end
-    
+    end    
     
     for m = 1:length(joints)
         
@@ -436,7 +444,7 @@ for i = 1:length(interventions)
 end
 
 %% Save Outcomes for subject, specify subject
-% save(subjectSavePath, 'outcomes');
+save(subjectSavePath, 'outcomes');
 
 
 
