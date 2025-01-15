@@ -12,19 +12,37 @@
             "TOE_ON": "ToeOn"
         }
     },
-    "MUSCLES": [
-        "HAM",
-        "RF",
-        "MG",
-        "TA",
-        "VL"
-    ],
+    "DELSYS_EMG": {
+        "SAMPLING_FREQUENCY": 2000,
+        "MUSCLES": [
+            "HAM",
+            "RF",
+            "MG",
+            "TA",
+            "VL"
+        ],
+        "VALID_COMBINATIONS": {
+            "SS08": "RMT30",
+            "SS09": "SHAM2",
+            "SS10": [
+                "SHAM2", "RMT30", "RMT50"
+            ]
+        },
+        "FILTER": {
+            "BANDPASS_ORDER": 4,
+            "BANDPASS_CUTOFF": [
+                4, 
+                100
+            ],
+            "LOWPASS_ORDER": 2,
+            "LOWPASS_CUTOFF": 5        
+        }
+    },    
     "JOINTS": [
         "H",
         "K",
         "A"
     ],
-    "EMG_SAMPLING_FREQUENCY": 2000,
     "XSENS_SAMPLING_FREQUENCY": 100,
     "DATA_TYPE_FOLDERS": [
         "Delsys", "Gaitrite", "XSENS"
@@ -37,23 +55,7 @@
     ],
     "FILE_EXTENSIONS": [
         "*.mat", "*.xlsx", "*.xlsx"
-    ],
-    "VALID_COMBINATIONS": {
-        "SS08": "RMT30",
-        "SS09": "SHAM2",
-        "SS10": [
-            "SHAM2", "RMT30", "RMT50"
-        ]
-    },
-    "FILTER_EMG": {
-        "BANDPASS_ORDER": 4,
-        "BANDPASS_CUTOFF": [
-            4, 
-            100
-        ],
-        "LOWPASS_ORDER": 2,
-        "LOWPASS_CUTOFF": 5        
-    },
+    ],        
     "FILTER_JOINT_ANGLES": {
         "LOWPASS_CUTOFF": 6,
         "LOWPASS_ORDER": 4

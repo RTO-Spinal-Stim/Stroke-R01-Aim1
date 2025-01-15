@@ -1,4 +1,4 @@
-function [filtered_emg] = filterEMG(raw_emg, filterEMGConfig, EMG_Fs)
+function [filtered_emg] = filterEMGOneMuscle(raw_emg, filterEMGConfig, EMG_Fs)
 
 %% PURPOSE: PARSE CONFIGURATION AND FILTER THE RAW EMG DATA
 % config.json format:
