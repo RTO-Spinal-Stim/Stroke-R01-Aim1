@@ -30,6 +30,7 @@ for i = 1:length(unique_trials)
     trials_struct.(trial_name) = num_data(num_data(:,trialsColIdx) == trial_number, :);
 end
 
+%% Process each trial
 trial_names = fieldnames(trials_struct);
 for i = 1:length(trial_names)
     trial_name = trial_names{i};
