@@ -60,7 +60,7 @@ for i = 1:length(interventionFolders)
             end
             fileName = files(k).name;
             fullFilePath = fullfile(files(k).folder, fileName); % The full path of the file being loaded.
-            fieldName = matlab.lang.makeValidName(files(k).name);
+            fieldName = matlab.lang.makeValidName(files(k).name);            
             
             disp(['Now loading: ' fullFilePath]);
             

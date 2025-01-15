@@ -1,4 +1,17 @@
 {
+    "GAITRITE": {
+        "SAMPLING_FREQUENCY": 120,
+        "COLUMN_NAMES": {
+            "GAIT_ID": "Gait_Id",
+            "LEFT_RIGHT": "Foot",
+            "HEEL_ON": "HeelOn",
+            "TOE_OFF": "ToeOff",
+            "STEP_LENGTH": "Step_length",
+            "SWING_TIME": "Swing_time",
+            "HEEL_OFF": "HeelOff",
+            "TOE_ON": "ToeOn"
+        }
+    },
     "MUSCLES": [
         "HAM",
         "RF",
@@ -12,7 +25,6 @@
         "A"
     ],
     "EMG_SAMPLING_FREQUENCY": 2000,
-    "GAITRITE_SAMPLING_FREQUENCY": 120,
     "XSENS_SAMPLING_FREQUENCY": 100,
     "DATA_TYPE_FOLDERS": [
         "Delsys", "Gaitrite", "XSENS"
