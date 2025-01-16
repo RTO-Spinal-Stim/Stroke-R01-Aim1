@@ -1,18 +1,13 @@
 {
-    "GAITRITE": {
-        "SAMPLING_FREQUENCY": 120,
-        "COLUMN_NAMES": {
-            "GAIT_ID": "Gait_Id",
-            "LEFT_RIGHT": "Foot",
-            "HEEL_ON": "HeelOn",
-            "TOE_OFF": "ToeOff",
-            "STEP_LENGTH": "Step_length",
-            "SWING_TIME": "Swing_time",
-            "HEEL_OFF": "HeelOff",
-            "TOE_ON": "ToeOn"
-        }
-    },
+    "INTERVENTION_FOLDERS": [
+        "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
+    ],
+    "MAPPED_INTERVENTION_FIELDS": [
+        "RMT30", "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"
+    ],
     "DELSYS_EMG": {
+        "FOLDER_NAME": "Delsys",
+        "FILE_EXTENSION": "*.mat",
         "SAMPLING_FREQUENCY": 2000,
         "MUSCLES": [
             "HAM",
@@ -37,28 +32,44 @@
             "LOWPASS_ORDER": 2,
             "LOWPASS_CUTOFF": 5        
         }
+    },
+    "GAITRITE": {
+        "FOLDER_NAME": "Gaitrite",
+        "FILE_EXTENSION": "*.xlsx",
+        "HEADER_ROW_NUM": 3,
+        "SAMPLING_FREQUENCY": 120,
+        "COLUMN_NAMES": {
+            "GAIT_ID": "Gait_Id",
+            "LEFT_RIGHT": "Foot",
+            "HEEL_ON": "HeelOn",
+            "TOE_OFF": "ToeOff",
+            "STEP_LENGTH": "Step_length",
+            "SWING_TIME": "Swing_time",
+            "HEEL_OFF": "HeelOff",
+            "TOE_ON": "ToeOn"
+        }
     },    
-    "JOINTS": [
-        "H",
-        "K",
-        "A"
-    ],
-    "XSENS_SAMPLING_FREQUENCY": 100,
-    "DATA_TYPE_FOLDERS": [
-        "Delsys", "Gaitrite", "XSENS"
-    ],
-    "INTERVENTION_FOLDERS": [
-        "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
-    ],
-    "MAPPED_INTERVENTION_FIELDS": [
-        "RMT30", "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"
-    ],
-    "FILE_EXTENSIONS": [
-        "*.mat", "*.xlsx", "*.xlsx"
-    ],        
-    "FILTER_JOINT_ANGLES": {
-        "LOWPASS_CUTOFF": 6,
-        "LOWPASS_ORDER": 4
-    }
-    
+    "XSENS": {
+        "FOLDER_NAME": "XSENS",
+        "FILE_EXTENSION": "*.xlsx",
+        "HEADER_ROW_NUM": 3,
+        "SAMPLING_FREQUENCY": 100,
+        "COLUMN_NAMES": {
+            "RHIP": "Right Hip Flexion/Extension",
+            "RKNEE": "Right Knee Flexion/Extension",
+            "RANKLE": "Right Ankle Dorsiflexion/Plantarflexion",
+            "LHIP": "Left Hip Flexion/Extension",
+            "LKNEE": "Left Knee Flexion/Extension",
+            "LANKLE": "Left Ankle Dorsiflexion/Plantarflexion"
+        },
+        "FILTER": {
+            "LOWPASS_CUTOFF": 6,
+            "LOWPASS_ORDER": 4
+        },
+        "JOINTS": [
+            "H",
+            "K",
+            "A"
+        ]
+    }      
 }

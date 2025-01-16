@@ -1,6 +1,6 @@
-function [processed_data] = processGaitRiteOneTrial(gaitRiteConfig, header_row, data)
+function [processed_data] = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, data)
 
-%% PURPOSE: PROCESS ONE PARSED OUT GAITRITE TRIAL
+%% PURPOSE: PREPROCESS ONE PARSED OUT GAITRITE TRIAL
 
 %% Configuration
 num_points = 101;
@@ -96,19 +96,13 @@ rightStanceProportion = rightStanceTime/totalRight;
 leftSwingIdx = round(leftStanceProportion * num_points)+1;
 rightSwingIdx = round(rightStanceProportion * num_points)+1;
 
-%Average Step Len Sym
-avgStepLenSym = mean(stepLenSym);
-
-%Average Swing Time Sym
-avgSwingTimeSym = mean(swingTimeSym);
-
 processed_data = struct(...    
     'leftSwingIdx', leftSwingIdx, ...
     'rightSwingIdx', rightSwingIdx, ...
     'leftNormal', leftNormal, ...
     'rightNormal', rightNormal, ...
-    'avgStepLenSym', avgStepLenSym, ...
-    'avgSwingTimeSym', avgSwingTimeSym...
+    'stepLenSym', stepLenSym, ...
+    'swingTimeSym', swingTimeSym...
 );
 
 %% Previously exported variables. This is being ported elsewhere.

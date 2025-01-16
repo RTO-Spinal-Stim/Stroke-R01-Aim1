@@ -1,23 +1,11 @@
-function fixMuscleMappings(folderStruct, folderName, interName)
-    currentFix = folderStruct.(folderName).(interName).loadedDelsys;
-    tasks = fieldnames(currentFix);
+function [preprocessed_data_new] = fixMuscleMappings(preprocessed_data)
 
-    for r = 1:length(tasks)
-        RVL = currentFix.(tasks{r}).RTA;
-        LHAM = currentFix.(tasks{r}).RVL;
-        LRF = currentFix.(tasks{r}).LHAM;
-        LMG = currentFix.(tasks{r}).LRF;
-        LTA = currentFix.(tasks{r}).LMG;
-        LVL = currentFix.(tasks{r}).LTA;
-        RTA = currentFix.(tasks{r}).LVL;
+%% PURPOSE: REARRANGE THE MUSCLE NAMES FOR SPECIFIC SUBJECTS & INTERVENTIONS
 
-        % Update the corrected fields in folderStruct
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).RVL = RVL;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).LHAM = LHAM;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).LRF = LRF;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).LMG = LMG;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).LTA = LTA;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).LVL = LVL;
-        folderStruct.(folderName).(interName).loadedDelsys.(tasks{r}).RTA = RTA;
-    end
-end
+preprocessed_data_new.RVL = preprocessed_data.RTA;
+preprocessed_data_new.LHAM = preprocessed_data.RVL;
+preprocessed_data_new.LRF = preprocessed_data.LHAM;
+preprocessed_data_new.LMG = preprocessed_data.LRF;
+preprocessed_data_new.LTA = preprocessed_data.LMG;
+preprocessed_data_new.LVL = preprocessed_data.LTA;
+preprocessed_data_new.RTA = preprocessed_data.LVL;

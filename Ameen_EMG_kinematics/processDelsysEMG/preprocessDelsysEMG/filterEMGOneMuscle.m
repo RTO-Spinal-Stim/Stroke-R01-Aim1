@@ -1,4 +1,4 @@
-function [filtered_emg] = filterEMGOneMuscle(raw_emg, filterEMGConfig, EMG_Fs)
+function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig, EMG_Fs)
 
 %% PURPOSE: PARSE CONFIGURATION AND FILTER THE RAW EMG DATA
 % config.json format:
@@ -28,7 +28,7 @@ fcut = filterEMGConfig.LOWPASS_CUTOFF;
 [b_low, a_low] = butter(2, fcut / (EMG_Fs / 2), 'low');
 
 % Subtract mean
-emg_subtracted_mean = raw_emg - mean(raw_emg);
+emg_subtracted_mean = raw_emg_one_muscle - mean(raw_emg_one_muscle);
 
 % Bandpass filter
 emg_bandpass = filtfilt(b_band, a_band, emg_subtracted_mean);

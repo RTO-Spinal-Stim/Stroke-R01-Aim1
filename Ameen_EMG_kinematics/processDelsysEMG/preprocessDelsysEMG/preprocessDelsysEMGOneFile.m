@@ -1,9 +1,9 @@
-function [processed_data] = processDelsysEMGOneFile(emgFilePath, delsysEMGConfig)
+function [processed_data] = preprocessDelsysEMGOneFile(emgFilePath, delsysEMGConfig)
 
-%% PURPOSE: PROCESS THE DELSYS EMG DATA. PROBABLY DOES NOT WORK FOR MEPs
+%% PURPOSE: PREPROCESS THE DELSYS EMG DATA. PROBABLY DOES NOT WORK FOR MEPs
 
 %% Configuration
-validCombinations = config.VALID_COMBINATIONS;
+% validCombinations = config.VALID_COMBINATIONS;
 emgFilterConfig = delsysEMGConfig.FILTER;
 EMG_Fs = delsysEMGConfig.SAMPLING_FREQUENCY;
 
@@ -32,20 +32,6 @@ for i = 1:length(muscle_names)
     data.(muscle_names{i}) = loaded_data.data(startData:endData);
 
 end
-
-%% Fix muscle mappings for specific subject & interventions
-% if isfield(validCombinations, subjFolderName) && ...
-%         any(strcmp(intervention, validCombinations.(subjFolderName)))
-%     % Log original and updated values for validation
-%     disp(['Processing: ', subjFolderName, ' -> ', intervention]);
-% 
-%     % Apply muscle correction for the valid combination
-%     fixMuscleMappings(folderStruct, subjFolderName, intervention);
-% 
-%     % Display the updated fields for validation
-%     disp('Updated fields:');
-%     disp(folderStruct.(subjFolderName).(intervention).loadedDelsys);
-% end
 
 %% Filter the data
 for i = 1:length(muscle_names)

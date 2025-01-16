@@ -1,9 +1,9 @@
-function [GaitRite] = processGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
+function [GaitRite] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
 
-%% PURPOSE: LOAD AND PROCESS THE DATA FROM ONE GAITRITE FILE.
+%% PURPOSE: LOAD AND PREPROCESS THE DATA FROM ONE GAITRITE FILE.
 
 % Configuration
-header_row_num = 3;
+header_row_num = gaitRiteConfig.HEADER_ROW_NUM;
 trialsColName = strtrim(gaitRiteConfig.COLUMN_NAMES.GAIT_ID);
 
 GaitRite = struct();
@@ -16,8 +16,6 @@ end
 trialsColIdx = ismember(header_row, trialsColName);
 
 GaitRite.RawNumeric = num_data; % This is where the data is?
-% GaitRite.Raw.txt = txt_data;
-% GaitRite.Raw.data = cell_data;
 
 %% Separate each trial
 unique_trials = unique(num_data(:, trialsColIdx)); % Find the unique trial numbers
@@ -34,5 +32,5 @@ end
 trial_names = fieldnames(trials_struct);
 for i = 1:length(trial_names)
     trial_name = trial_names{i};
-    GaitRite.(trial_name) = processGaitRiteOneTrial(gaitRiteConfig, header_row, trials_struct.(trial_name));
+    GaitRite.(trial_name) = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, trials_struct.(trial_name));
 end
