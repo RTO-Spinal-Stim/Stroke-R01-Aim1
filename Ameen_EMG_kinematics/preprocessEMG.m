@@ -16,7 +16,7 @@ for trialIndex = 1:numel(trialFields)
     for muscleIndex = 1:numel(muscleFields)
         emg_signal = trialData.(muscleFields{muscleIndex});
         
-        [emg_envelope] = filterEMG(emg_signal, filterEMGConfig, EMG_Fs);
+        [emg_envelope] = filterEMGOneMuscle(emg_signal, filterEMGConfig, EMG_Fs);
         
         % Store filtered EMG in filtered trial EMG struct
         filteredTrialEMG.(muscleFields{muscleIndex}) = emg_envelope;

@@ -2,7 +2,7 @@
 
 clear
 clc
-
+addpath(genpath('Y:\Spinal Stim_Stroke R01\AIM 1\GitRepo\Stroke-R01\Ameen_EMG_kinematics'));
 % Path to save the data to.
 subjectSavePath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\Processed Outcomes\SS13_Outcomes.mat';
 % Folder to load the data from.
@@ -21,7 +21,7 @@ folderStruct.(subjFolderName) = struct();
 config = jsondecode(fileread('config.json'));
 
 % One subfolder per data type
-dataTypeFolders = config.DATA_TYPE_FOLDERS;
+dataTypeFolders = {'Delsys','Gaitrite','XSENS'};
 
 % One subfolder per intervention. Note that intervention folder names are
 % not valid MATLAB names, hence the need for a mapping.
@@ -30,7 +30,7 @@ interventionFoldersMap = containers.Map(interventionFolders, ...
     config.MAPPED_INTERVENTION_FIELDS);
 
 % Define the file extensions for each subfolder type
-fileExtensions = config.FILE_EXTENSIONS;
+fileExtensions = {'*.mat','*.xlsx','*.xlsx'};
 
 %% Load all of the data for one subject and place it in a nested struct.
 % FORMAT: folderStruct.(subjFolderName).(interventionStructName).(dataTypeFolder).(fieldName)
@@ -114,7 +114,10 @@ end
 
 %% Fix muscle mappings for specific subject & interventions.
 disp('Fixing muscle mappings for specific subjects & interventions');
-validCombinations = config.VALID_COMBINATIONS; % Define valid subjFolderName and intervention mappings
+validCombinations.SS08 = 'RMT30';
+validCombinations.SS09 = 'SHAM2';
+validCombinations.SS10 = {'SHAM2','RMT30','RMT50'};
+% validCombinations = config.VALID_COMBINATIONS; % Define valid subjFolderName and intervention mappings
 for i = 1:length(interventions)
     intervention = interventions{i};
     
@@ -135,10 +138,10 @@ end
 
 
 %% Pre-Process Data
-configFilterEMG = config.FILTER_EMG; % Get the EMG filtering configuration
-EMG_Fs = config.EMG_SAMPLING_FREQUENCY; %Delsys sampling freq
-GAIT_Fs = config.GAITRITE_SAMPLING_FREQUENCY;
-X_Fs = config.XSENS_SAMPLING_FREQUENCY;
+configFilterEMG = config.DELSYS_EMG.FILTER; % Get the EMG filtering configuration
+EMG_Fs = config.DELSYS_EMG.SAMPLING_FREQUENCY; %Delsys sampling freq
+GAIT_Fs = config.GAITRITE.SAMPLING_FREQUENCY;
+X_Fs = config.XSENS.SAMPLING_FREQUENCY;
 
 %Pre-Process EMG Data
 disp('Preprocessing EMG data');
@@ -242,9 +245,9 @@ end
 
 %% Downsample EMG & XSENS
 disp('Downsampling EMG and XSENS to GaitRite frequencies');
-muscle_names = config.MUSCLES;
-joint_names = config.JOINTS;
-filterJointsConfig = config.FILTER_JOINT_ANGLES;
+muscle_names = {'HAM','RF','MG','TA','VL'};
+joint_names = {'H','K','A'};
+filterJointsConfig = struct('LOWPASS_CUTOFF', 6, 'LOWPASS_ORDER', 4);
 for i = 1:length(interventions)
     
     intervention = interventions{i};

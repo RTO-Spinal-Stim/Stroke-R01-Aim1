@@ -40,21 +40,21 @@ for k = 1:length(xlsFileNames)
         step_Len = data(:,16);
         swing_time = data(:,21);
 
-        leftStance = zeros(length(left_right)-2,2);
-        rightStance = zeros(length(left_right)-2,2);
-        leftSwing = zeros(length(left_right)-2,2);
-        rightSwing = zeros(length(left_right)-2,2);
+        leftStanceSeconds = zeros(length(left_right)-2,2);
+        rightStanceSeconds = zeros(length(left_right)-2,2);
+        leftSwingSeconds = zeros(length(left_right)-2,2);
+        rightSwingSeconds = zeros(length(left_right)-2,2);
         
         stepLenSym = NaN(length(left_right)-2,1);
         swingTimeSym = NaN(length(left_right)-3,1);
 
         for i = 1:length(left_right)-2
             if left_right(i) == 0
-                leftStance(i,:) = [heel_on(i), toe_off(i)];
-                leftSwing(i,:) = [toe_off(i), heel_on(i+2)];
+                leftStanceSeconds(i,:) = [heel_on(i), toe_off(i)];
+                leftSwingSeconds(i,:) = [toe_off(i), heel_on(i+2)];
             else
-                rightStance(i,:) = [heel_on(i), toe_off(i)];
-                rightSwing(i,:) = [toe_off(i), heel_on(i+2)];
+                rightStanceSeconds(i,:) = [heel_on(i), toe_off(i)];
+                rightSwingSeconds(i,:) = [toe_off(i), heel_on(i+2)];
             end
         end
         
@@ -68,53 +68,53 @@ for k = 1:length(xlsFileNames)
             swingTimeSym(i-2) = (2*abs(swing_time(i)-swing_time(i+1)))/(swing_time(i)+swing_time(i+1));
         end
 
-        leftZeroRows = all(leftStance == 0, 2);
-        rightZeroRows = all(rightStance == 0,2);
+        leftZeroRows = all(leftStanceSeconds == 0, 2);
+        rightZeroRows = all(rightStanceSeconds == 0,2);
 
         % Remove the NaN rows.
-        leftStance(leftZeroRows, :) = [];
-        rightStance(rightZeroRows, :) = [];
-        leftSwing(leftZeroRows, :) = [];
-        rightSwing(rightZeroRows, :) = [];
+        leftStanceSeconds(leftZeroRows, :) = [];
+        rightStanceSeconds(rightZeroRows, :) = [];
+        leftSwingSeconds(leftZeroRows, :) = [];
+        rightSwingSeconds(rightZeroRows, :) = [];
 
-        % Convert durations to seconds
-        leftStance = round(leftStance * GAIT_Fs);
-        rightStance = round(rightStance * GAIT_Fs);
-        leftSwing = round(leftSwing * GAIT_Fs);
-        rightSwing = round(rightSwing * GAIT_Fs);
+        % Convert durations from seconds to GaitRite indices
+        leftStanceIndices = round(leftStanceSeconds * GAIT_Fs);
+        rightStanceIndices = round(rightStanceSeconds * GAIT_Fs);
+        leftSwingIndices = round(leftSwingSeconds * GAIT_Fs);
+        rightSwingIndices = round(rightSwingSeconds * GAIT_Fs);
 
-        leftStanceTime = leftStance(:,2)-leftStance(:,1);
-        rightStanceTime = rightStance(:,2)-rightStance(:,1);
-        leftSwingTime = leftSwing(:,2)-leftSwing(:,1);
-        rightSwingTime = rightSwing(:,2)-rightSwing(:,1);
+        leftStanceDurations = leftStanceIndices(:,2)-leftStanceIndices(:,1);
+        rightStanceDurations = rightStanceIndices(:,2)-rightStanceIndices(:,1);
+        leftSwingTimeDurations = leftSwingIndices(:,2)-leftSwingIndices(:,1);
+        rightSwingTimeDurations = rightSwingIndices(:,2)-rightSwingIndices(:,1);
 
-        leftStanceTime = round(mean(leftStanceTime));
-        rightStanceTime = round(mean(rightStanceTime));
-        leftSwingTime = round(mean(leftSwingTime));
-        rightSwingTime = round(mean(rightSwingTime));
+        leftStanceDuration = round(mean(leftStanceDurations));
+        rightStanceDuration = round(mean(rightStanceDurations));
+        leftSwingTimeDuration = round(mean(leftSwingTimeDurations));
+        rightSwingTimeDuration = round(mean(rightSwingTimeDurations));
 
-        totalLeft = leftStanceTime + leftSwingTime;
-        totalRight = rightStanceTime + rightSwingTime;
+        totalLeft = leftStanceDuration + leftSwingTimeDuration;
+        totalRight = rightStanceDuration + rightSwingTimeDuration;
 
-        leftStanceProportion = leftStanceTime/totalLeft;
-        leftSwingProportion = leftSwingTime/totalLeft;
-        rightStanceProportion = rightStanceTime/totalRight;
-        rightSwingProportion = rightSwingTime/totalRight;        
+        leftStanceProportion = leftStanceDuration/totalLeft;
+        leftSwingProportion = leftSwingTimeDuration/totalLeft;
+        rightStanceProportion = rightStanceDuration/totalRight;
+        rightSwingProportion = rightSwingTimeDuration/totalRight;        
 
         leftSwingIdx = round(leftStanceProportion * num_points)+1;
         rightSwingIdx = round(rightStanceProportion * num_points)+1;
 
         % Convert time indices to 2000 Hz frequency for EMG
-        leftStanceEMG = round(leftStance * EMG_Fs / GAIT_Fs);
-        rightStanceEMG = round(rightStance * EMG_Fs / GAIT_Fs);
-        leftSwingEMG = round(leftSwing * EMG_Fs / GAIT_Fs);
-        rightSwingEMG = round(rightSwing * EMG_Fs / GAIT_Fs);
+        leftStanceEMG = round(leftStanceIndices * EMG_Fs / GAIT_Fs);
+        rightStanceEMG = round(rightStanceIndices * EMG_Fs / GAIT_Fs);
+        leftSwingEMG = round(leftSwingIndices * EMG_Fs / GAIT_Fs);
+        rightSwingEMG = round(rightSwingIndices * EMG_Fs / GAIT_Fs);
 
         % Convert time indices to 100 Hz frequency for XSENS
-        leftStanceXSENS = round(leftStance * X_Fs / GAIT_Fs);
-        rightStanceXSENS = round(rightStance * X_Fs / GAIT_Fs);
-        leftSwingXSENS = round(leftSwing * X_Fs / GAIT_Fs);
-        rightSwingXSENS = round(rightSwing * X_Fs / GAIT_Fs);
+        leftStanceXSENS = round(leftStanceIndices * X_Fs / GAIT_Fs);
+        rightStanceXSENS = round(rightStanceIndices * X_Fs / GAIT_Fs);
+        leftSwingXSENS = round(leftSwingIndices * X_Fs / GAIT_Fs);
+        rightSwingXSENS = round(rightSwingIndices * X_Fs / GAIT_Fs);
 
         %Average Step Len Sym
         avgStepLenSym = mean(stepLenSym);

@@ -1,4 +1,4 @@
-function [filtered_data] = preprocessXSENS(xsensFilePath, xsensConfig)
+function [filtered_data] = preprocessXSENSOneFile(xsensFilePath, xsensConfig)
 
 %% PURPOSE: PREPROCESS XSENS DATA
 
