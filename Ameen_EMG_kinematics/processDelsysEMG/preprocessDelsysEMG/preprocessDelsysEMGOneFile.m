@@ -23,7 +23,7 @@ data = struct();
 for i = 1:length(muscle_names)
 
     startData = loaded_data.datastart(i);
-    endData = loaded_data.datastart(i);
+    endData = loaded_data.dataend(i);
 
     if startData == -1
         continue;

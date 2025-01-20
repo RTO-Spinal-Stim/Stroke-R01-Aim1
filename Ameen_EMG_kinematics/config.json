@@ -1,4 +1,14 @@
 {
+    "REGEXS": {
+        "SUBJECT_ID": "SS\\d{2}",
+        "INTERVENTIONS": [
+            "\\d+_RMT",
+            "\\d+_TOL",
+            "SHAM[12]"            
+        ],
+        "PRE_POST": "PRE|POST",
+        "SPEED": "FV|SSV"
+    },
     "INTERVENTION_FOLDERS": [
         "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
     ],
@@ -52,7 +62,6 @@
     "XSENS": {
         "FOLDER_NAME": "XSENS",
         "FILE_EXTENSION": "*.xlsx",
-        "HEADER_ROW_NUM": 3,
         "SAMPLING_FREQUENCY": 100,
         "COLUMN_NAMES": {
             "RHIP": "Right Hip Flexion/Extension",

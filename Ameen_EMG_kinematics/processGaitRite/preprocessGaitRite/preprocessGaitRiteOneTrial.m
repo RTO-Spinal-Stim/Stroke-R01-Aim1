@@ -62,36 +62,15 @@ rightToeOffsSeconds = toe_off(right_events_idx);
 rightHeeloffsSeconds = heel_off(right_events_idx);
 rightToeOnsSeconds = toe_on(right_events_idx);
 
-processed_data.gaitEvents.seconds.leftHeelStrikes = leftHeelStrikesSeconds;
-processed_data.gaitEvents.seconds.leftToeOffs = leftToeOffsSeconds;
-processed_data.gaitEvents.seconds.leftHeelOffs = leftHeelOffsSeconds;
-processed_data.gaitEvents.seconds.leftToeOns = leftToeOnsSeconds;
+processed_data.seconds.gaitEvents.leftHeelStrikes = leftHeelStrikesSeconds;
+processed_data.seconds.gaitEvents.leftToeOffs = leftToeOffsSeconds;
+processed_data.seconds.gaitEvents.leftHeelOffs = leftHeelOffsSeconds;
+processed_data.seconds.gaitEvents.leftToeOns = leftToeOnsSeconds;
 
-processed_data.gaitEvents.seconds.rightHeelStrikes = rightHeelStrikesSeconds;
-processed_data.gaitEvents.seconds.rightToeOffs = rightToeOffsSeconds;
-processed_data.gaitEvents.seconds.rightHeeloffs = rightHeeloffsSeconds;
-processed_data.gaitEvents.seconds.rightToeOns = rightToeOnsSeconds;
-
-%% Gait events (frames)
-leftHeelStrikesFrames = leftHeelStrikesSeconds * Gait_Fs;
-leftToeOffsFrames = leftToeOffsSeconds * Gait_Fs;
-leftHeelOffsFrames = leftHeelOffsSeconds * Gait_Fs;
-leftToeOnsFrames = leftToeOnsSeconds * Gait_Fs;
-
-rightHeelStrikesFrames = rightHeelStrikesSeconds * Gait_Fs;
-rightToeOffsFrames = rightToeOffsSeconds * Gait_Fs;
-rightHeeloffsFrames = rightHeeloffsSeconds * Gait_Fs;
-rightToeOnsFrames = rightToeOnsSeconds * Gait_Fs;
-
-processed_data.gaitEvents.frames.leftHeelStrikes = leftHeelStrikesFrames;
-processed_data.gaitEvents.frames.leftToeOffs = leftToeOffsFrames;
-processed_data.gaitEvents.frames.leftHeelOffs = leftHeelOffsFrames;
-processed_data.gaitEvents.frames.leftToeOns = leftToeOnsFrames;
-
-processed_data.gaitEvents.frames.rightHeelStrikes = rightHeelStrikesFrames;
-processed_data.gaitEvents.frames.rightToeOffs = rightToeOffsFrames;
-processed_data.gaitEvents.frames.rightHeeloffs = rightHeeloffsFrames;
-processed_data.gaitEvents.frames.rightToeOns = rightToeOnsFrames;
+processed_data.seconds.gaitEvents.rightHeelStrikes = rightHeelStrikesSeconds;
+processed_data.seconds.gaitEvents.rightToeOffs = rightToeOffsSeconds;
+processed_data.seconds.gaitEvents.rightHeeloffs = rightHeeloffsSeconds;
+processed_data.seconds.gaitEvents.rightToeOns = rightToeOnsSeconds;
 
 %% Gait phases start & stop (seconds)
 for i = 1:length(left_right)-2
@@ -112,21 +91,10 @@ rightStanceStartStopSeconds(rightZeroRows, :) = [];
 leftSwingStartStopSeconds(leftZeroRows, :) = [];
 rightSwingStartStopSeconds(rightZeroRows, :) = [];
 
-processed_data.gaitPhases.seconds.leftStanceStartStop = leftStanceStartStopSeconds;
-processed_data.gaitPhases.seconds.rightStanceStartStop = rightStanceStartStopSeconds;
-processed_data.gaitPhases.seconds.leftSwingStartStop = leftSwingStartStopSeconds;
-processed_data.gaitPhases.seconds.rightSwingStartStop = rightSwingStartStopSeconds;
-
-%% Gait phases start & stop (frames)
-leftStanceStartStopFrames = leftStanceStartStopSeconds * Gait_Fs;
-rightStanceStartStopFrames = rightStanceStartStopSeconds * Gait_Fs;
-leftSwingStartStopFrames = leftSwingStartStopSeconds * Gait_Fs;
-rightSwingStartStopFrames = rightSwingStartStopSeconds * Gait_Fs;
-
-processed_data.gaitPhases.frames.leftStanceStartStop = leftStanceStartStopFrames;
-processed_data.gaitPhases.frames.rightStanceStartStop = rightStanceStartStopFrames;
-processed_data.gaitPhases.frames.leftSwingStartStop = leftSwingStartStopFrames;
-processed_data.gaitPhases.frames.rightSwingStartStop = rightSwingStartStopFrames;
+processed_data.seconds.gaitPhases.leftStanceStartStop = leftStanceStartStopSeconds;
+processed_data.seconds.gaitPhases.rightStanceStartStop = rightStanceStartStopSeconds;
+processed_data.seconds.gaitPhases.leftSwingStartStop = leftSwingStartStopSeconds;
+processed_data.seconds.gaitPhases.rightSwingStartStop = rightSwingStartStopSeconds;
 
 %% Gait phase durations (seconds)
 leftStanceDurationsSeconds = leftStanceStartStopSeconds(:,2)-leftStanceStartStopSeconds(:,1);
@@ -134,21 +102,13 @@ rightStanceDurationsSeconds = rightStanceStartStopSeconds(:,2)-rightStanceStartS
 leftSwingDurationsSeconds = leftSwingStartStopSeconds(:,2)-leftSwingStartStopSeconds(:,1);
 rightSwingDurationsSeconds = rightSwingStartStopSeconds(:,2)-rightSwingStartStopSeconds(:,1);
 
-processed_data.gaitPhasesDurations.seconds.leftStanceDurations = leftStanceDurationsSeconds;
-processed_data.gaitPhasesDurations.seconds.rightStanceDurations = rightStanceDurationsSeconds;
-processed_data.gaitPhasesDurations.seconds.leftSwingDurations = leftSwingDurationsSeconds;
-processed_data.gaitPhasesDurations.seconds.rightSwingDurations = rightSwingDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.leftStanceDurations = leftStanceDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.rightStanceDurations = rightStanceDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.leftSwingDurations = leftSwingDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurationsSeconds;
 
-%% Gait phase durations (frames)
-leftStanceDurationsFrames = leftStanceDurationsSeconds * Gait_Fs;
-rightStanceDurationsFrames = rightStanceDurationsSeconds * Gait_Fs;
-leftSwingDurationsFrames = leftSwingDurationsSeconds * Gait_Fs;
-rightSwingDurationsFrames = rightSwingDurationsSeconds * Gait_Fs;
-
-processed_data.gaitPhasesDurations.frames.leftStanceDurations = leftStanceDurationsFrames;
-processed_data.gaitPhasesDurations.frames.rightStanceDurations = rightStanceDurationsFrames;
-processed_data.gaitPhasesDurations.frames.leftSwingDurations = leftSwingDurationsFrames;
-processed_data.gaitPhasesDurations.frames.rightSwingDurations = rightSwingDurationsFrames;
+%% Convert all times from seconds to GaitRite frames.
+processed_data.frames = getHardwareIndicesFromSeconds(processed_data.seconds, Gait_Fs);
 
 %% Previously exported variables. This is being ported elsewhere.
 % 'leftStanceEMG', leftStanceEMG, ...

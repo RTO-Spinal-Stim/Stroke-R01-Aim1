@@ -1,4 +1,4 @@
-function [GaitRite] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
+function [GaitRite, num_data] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
 
 %% PURPOSE: LOAD AND PREPROCESS THE DATA FROM ONE GAITRITE FILE.
 
@@ -14,8 +14,6 @@ for i = 1:length(header_row)
     header_row{i} = strtrim(header_row{i});
 end
 trialsColIdx = ismember(header_row, trialsColName);
-
-GaitRite.RawNumeric = num_data; % This is where the data is?
 
 %% Separate each trial
 unique_trials = unique(num_data(:, trialsColIdx)); % Find the unique trial numbers
