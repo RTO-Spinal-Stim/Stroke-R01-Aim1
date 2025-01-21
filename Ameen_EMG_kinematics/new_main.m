@@ -57,6 +57,7 @@ end
 
 %% Time Synchronization
 % Get gait event indices, phase durations, etc. in Delsys & XSENS indices
+disp('Time synchronizing XSENS & Delsys');
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     trialNames = fieldnames(gaitrite_processed_intervention.(intervention_field_name));
@@ -69,6 +70,9 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Split Data by Gait Cycle
+% QUESTION: USE L OR R HEEL STRIKES TO DENOTE GAIT CYCLES? MAKE IT SPECIFIC
+% TO L/R SENSOR/MEASURE?
+disp('Splitting XSENS & Delsys data by gait cycle');
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     trialNames = fieldnames(gaitrite_processed_intervention.(intervention_field_name));
@@ -76,9 +80,46 @@ for i = 1:length(intervention_field_names)
         trialName = trialNames{trialNum};
         delsysDataStruct = delsys_processed_intervention.(intervention_field_name);
         xsensDataStruct = xsens_processed_intervention.(intervention_field_name);
-        delsys_processed_intervention.(intervention_field_name).(trialName).musclesByGaitCycle = splitDelsysTrialByGaitCycle(delsysDataStruct.(trialName).muscles, delsysDataStruct.(trialName).frames.gaitEvents.leftHeelStrikes);
-        xsens_processed_intervention.(intervention_field_name).(trialName).jointsByGaitCycle = splitXSENSTrialByGaitCycle(xsensDataStruct.(trialName).joints, xsensDataStruct.(trialName).frames.gaitEvents.leftHeelStrikes);
+        delsysLHS = delsysDataStruct.(trialName).frames.gaitEvents.leftHeelStrikes;
+        delsysRHS = delsysDataStruct.(trialName).frames.gaitEvents.rightHeelStrikes;
+        xsensLHS = xsensDataStruct.(trialName).frames.gaitEvents.leftHeelStrikes;
+        xsensRHS = xsensDataStruct.(trialName).frames.gaitEvents.rightHeelStrikes;
+        delsys_processed_intervention.(intervention_field_name).(trialName).musclesByGaitCycle = splitDelsysTrialByGaitCycle(delsysDataStruct.(trialName).muscles, delsysLHS, delsysRHS);
+        xsens_processed_intervention.(intervention_field_name).(trialName).jointsByGaitCycle = splitXSENSTrialByGaitCycle(xsensDataStruct.(trialName).joints, xsensLHS, xsensRHS);
     end
 end
+
+%% Downsample each gait cycle's data to 101 points.
+n_points = 101;
+disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points'])
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    trialNames = fieldnames(gaitrite_processed_intervention.(intervention_field_name));
+    for trialNum = 1:length(trialNames)
+        trialName = trialNames{trialNum};        
+        muscle_names = fieldnames(delsys_processed_intervention.(intervention_field_name).(trialName).musclesByGaitCycle);
+        joint_names = fieldnames(xsens_processed_intervention.(intervention_field_name).(trialName).jointsByGaitCycle);    
+        % Delsys EMG
+        for muscleNum = 1:length(muscle_names)
+            muscle_name = muscle_names{muscleNum};
+            muscleByGaitCycle = delsys_processed_intervention.(intervention_field_name).(trialName).musclesByGaitCycle.(muscle_name);   
+            delsys_processed_intervention.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name) = cell(length(muscleByGaitCycle),1);
+            for gait_cycle_num = 1:length(muscleByGaitCycle)
+                delsys_processed_intervention.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name){gait_cycle_num} = downsampleData(muscleByGaitCycle{gait_cycle_num}, n_points);             
+            end
+        end
+        for jointNum = 1:length(joint_names)
+            joint_name = joint_names{jointNum};            
+            jointsByGaitCycle = xsens_processed_intervention.(intervention_field_name).(trialName).jointsByGaitCycle.(joint_name);
+            xsens_processed_intervention.(intervention_field_name).(trialName).jointsDownsampled.(joint_name) = cell(length(jointsByGaitCycle),1);
+            for gait_cycle_num = 1:length(jointsByGaitCycle)
+                xsens_processed_intervention.(intervention_field_name).(trialName).jointsDownsampled.(joint_name){gait_cycle_num} = downsampleData(jointsByGaitCycle{gait_cycle_num}, n_points);
+            end
+        end        
+    end
+end
+
+
+%% Aggregate the downsampled timeseries data
 
 %% Pre-Post Analysis

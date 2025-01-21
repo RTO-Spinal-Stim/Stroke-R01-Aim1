@@ -5,6 +5,7 @@ function [indicesStruct] = getHardwareIndicesFromSeconds(secondsStruct, fs)
 
 indicesStruct = struct;
 secondsStructFieldNames = fieldnames(secondsStruct);
+numDigits = length(num2str(fs));
 for i = 1:length(secondsStructFieldNames)
     fieldName = secondsStructFieldNames{i};
     indicesStruct.(fieldName) = struct;
@@ -12,7 +13,10 @@ for i = 1:length(secondsStructFieldNames)
     subFieldNames = fieldnames(secondsStruct.(fieldName));
     for j = 1:length(subFieldNames)
         subFieldName = subFieldNames{j};
-        indicesStruct.(fieldName).(subFieldName) = secondsStruct.(fieldName).(subFieldName) .* fs;
+        indicesStruct.(fieldName).(subFieldName) = round(round(secondsStruct.(fieldName).(subFieldName), numDigits-1) .* fs); % Second round is to remove the zeros (and approximation errors?)
+        if ~all(rem(indicesStruct.(fieldName).(subFieldName),1)==0)
+            error('Not whole-number indices');
+        end
     end
 
 end
