@@ -35,10 +35,12 @@ Filter EMG for each muscle in each trial:
 2. Rename struct fields for GaitRite, EMG, and XSENS to remove naming redundancies
 
 # Downsample & append EMG and XSENS to 101 frames
-1. Get the number of gait cycles (N)
+1. Get the number of gait cycles in each trial (N) (N ~ 3)
 2. Extract the data within each gait cycle
 3. Vertically append each gait cycle's data, yielding a N x 101 matrix for each trial
-4. Vertically append each trial's N x 101 matrix for each of pre & post SSV & FV
+4. Vertically append each trial's N x 101 matrix for each of pre & post SSV & FV, for left and right separately (for 3 trials, will be a 3N x 101 matrix)
+5. EMG only: Obtain the MVC as the maximum observed value for each muscle. Divide the muscle's EMG data by that value to normalize the matrix to 0-1.
+6. Take the average of this matrix along the first dimension, resulting in a 1x101 matrix.
 
 # Data Analysis
 1. Calculate muscle synergies

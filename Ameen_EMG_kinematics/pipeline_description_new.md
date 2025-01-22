@@ -58,6 +58,9 @@
 
 # 7. Time-normalize each gait cycle of XSENS & Delsys data to 101 points
 1. Resample the data using `resample()`.
+2. Aggregate together across gait cycles within one trial
+    - EMG: delsys_processed_intervention.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name)(gait_cycle_num,:) 
+    - XSENS: xsens_processed_intervention.(intervention_field_name).(trialName).jointsDownsampled.(joint_name)(gait_cycle_num,:)
 
 # 8. Aggregate the timeseries data.
 1. 
