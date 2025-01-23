@@ -1,6 +1,6 @@
 % MT 01/14/25: Editing to make work with config file, and adding lots of comments.
 
-clear
+clearvars
 clc
 addpath(genpath('Y:\Spinal Stim_Stroke R01\AIM 1\GitRepo\Stroke-R01\Ameen_EMG_kinematics'));
 % Path to save the data to.
@@ -289,7 +289,7 @@ for i = 1:length(interventions)
     for j = 1:length(f)
         
         %Calculate Muslce Synergies
-        avgSynergies = calculateSynergies(s.(f{j}).accumulatedEMG);
+        avgSynergies = calculateSynergiesOld(s.(f{j}).accumulatedEMG);
         
         %SPM Analysis for both XSens and EMG
         X_SPM = SPM_Analysis(s.(f{j}).accumulatedJointAngles);

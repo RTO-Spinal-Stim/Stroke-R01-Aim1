@@ -145,4 +145,11 @@ for i = 1:length(intervention_field_names)
     end
 end
 
-%% Pre-Post Analysis
+%% Calculate the number of muscle synergies in each gait cycle of each trial
+% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
+% NEED TO TRY BOTH AND COMPARE
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    trialNames = fieldnames(gaitrite_processed_intervention.(intervention_field_name));  
+
+end
