@@ -100,6 +100,7 @@ for i = 1:length(intervention_field_names)
                 delsysRHS = delsysTrialStruct.frames.gaitEvents.rightHeelStrikes;
                 xsensLHS = xsensTrialStruct.frames.gaitEvents.leftHeelStrikes;
                 xsensRHS = xsensTrialStruct.frames.gaitEvents.rightHeelStrikes;
+                % disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' PrePost: ' prePost ' Trial: ' trialName]);
                 xsensCyclesData = splitTrialByGaitCycle(xsensTrialStruct.Filtered, xsensLHS, xsensRHS);
                 delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS); 
                 % Put the parsed data into each gait cycle's field in the struct.
@@ -135,6 +136,8 @@ for i = 1:length(intervention_field_names)
                     cycleName = gaitCycleNames{cycleNum};
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
                     xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
+                    % Need to aggregate within each field name (muscles or
+                    % joints).
                     xsensAggData = [xsensAggData; xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
                     delsysAggData = [delsysAggData; delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
                 end

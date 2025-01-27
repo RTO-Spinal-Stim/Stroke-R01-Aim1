@@ -7,6 +7,7 @@ function [cellCyclesData] = splitTrialByGaitCycle(structData, left_heel_strike_i
 
 fieldNames = fieldnames(structData);
 perGaitCycleStruct = struct();
+maxNumCycles = 0;
 for fieldNum=1:length(fieldNames)
     fieldName = fieldNames{fieldNum};
     if fieldName(1) == 'L'
@@ -16,15 +17,20 @@ for fieldNum=1:length(fieldNames)
     else
         error('Joint name does not begin with L or R');
     end
+    maxNumCycles = max([maxNumCycles, length(perGaitCycleStruct.(fieldName))]);
 end
 
 %% Convert this format to be a cell array, and a struct inside each cell array.
-cellCyclesData = cell(size(perGaitCycleStruct.(fieldName)));
-for cycleNum = 1:length(cellCyclesData)
+cellCyclesData = cell(maxNumCycles, 1);
+for cycleNum = 1:maxNumCycles
     currentCycleData = struct;
     for fieldNum = 1:length(fieldNames)
         jointName = fieldNames{fieldNum};
-        currentCycleData.(jointName) = perGaitCycleStruct.(jointName){cycleNum};
+        if length(perGaitCycleStruct.(jointName)) >= cycleNum
+            currentCycleData.(jointName) = perGaitCycleStruct.(jointName){cycleNum};
+        else
+            currentCycleData.(jointName) = []; % For when number of L & R gait cycles are mismatching
+        end
     end
     cellCyclesData{cycleNum} = currentCycleData;
 end

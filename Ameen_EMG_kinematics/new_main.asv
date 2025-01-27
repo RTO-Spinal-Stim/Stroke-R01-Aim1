@@ -100,6 +100,7 @@ for i = 1:length(intervention_field_names)
                 delsysRHS = delsysTrialStruct.frames.gaitEvents.rightHeelStrikes;
                 xsensLHS = xsensTrialStruct.frames.gaitEvents.leftHeelStrikes;
                 xsensRHS = xsensTrialStruct.frames.gaitEvents.rightHeelStrikes;
+                disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' '])
                 xsensCyclesData = splitTrialByGaitCycle(xsensTrialStruct.Filtered, xsensLHS, xsensRHS);
                 delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS); 
                 % Put the parsed data into each gait cycle's field in the struct.
@@ -126,75 +127,24 @@ for i = 1:length(intervention_field_names)
         for prePostNum = 1:length(prePosts)
             prePost = prePosts{prePostNum};
             trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            xsensAggData = [];
+            delsysAggData = [];
             for trialNum = 1:length(trialNames)
                 trialName = trialNames{trialNum};
                 gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
                 for cycleNum = 1:length(gaitCycleNames)
                     cycleName = gaitCycleNames{cycleNum};
-                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName)
-
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
+                    xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
+                    xsensAggData = [xsensAggData; xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
+                    delsysAggData = [delsysAggData; delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
                 end
             end
+            delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated = delsysAggData;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).Aggregated = xsensAggData;
+            delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged = mean(delsysAggData,1);
+            xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged = mean(xsensAggData, 1);
         end
-    end
-end
-
-
-
-
-
-
-
-aggregatedStruct = struct();
-for i = 1:length(intervention_field_names)
-    intervention_field_name = intervention_field_names{i};
-    trialNames = fieldnames(gaitRiteStruct.(intervention_field_name));    
-    aggregatedStruct.(intervention_field_name).EMG.PRE.SSV = struct();
-    aggregatedStruct.(intervention_field_name).EMG.PRE.FV = struct();
-    aggregatedStruct.(intervention_field_name).EMG.POST.SSV = struct();
-    aggregatedStruct.(intervention_field_name).EMG.POST.FV = struct();
-    aggregatedStruct.(intervention_field_name).XSENS.PRE.SSV = struct();
-    aggregatedStruct.(intervention_field_name).XSENS.PRE.FV = struct();
-    aggregatedStruct.(intervention_field_name).XSENS.POST.SSV = struct();
-    aggregatedStruct.(intervention_field_name).XSENS.POST.FV = struct();    
-    numTrials = length(trialNames);
-    for trialNum = 1:numTrials
-        trialName = trialNames{trialNum};   
-        trialNameParts = strsplit(trialName, '_');
-        prePost = upper(trialNameParts{1});
-        trialCount = str2double(regexp(trialNameParts{2}, '\d+$', 'match'));
-        speed = upper(regexp(trialNameParts{2}, '^[A-Za-z]+', 'match'));
-        speed = speed{1};
-        muscle_names = fieldnames(delsysStruct.(intervention_field_name).(trialName).musclesByGaitCycle);
-        joint_names = fieldnames(xsensStruct.(intervention_field_name).(trialName).jointsByGaitCycle);    
-        % Delsys EMG
-        for muscleNum = 1:length(muscle_names)
-            muscle_name = muscle_names{muscleNum};
-            muscleByGaitCycle = delsysStruct.(intervention_field_name).(trialName).musclesByGaitCycle.(muscle_name); 
-            num_gait_cycles = length(muscleByGaitCycle);
-            if ~isfield(aggregatedStruct.(intervention_field_name).EMG.(prePost).(speed), muscle_name)
-                aggregatedStruct.(intervention_field_name).EMG.(prePost).(speed).(muscle_name) = [];
-            end
-            delsysStruct.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name) = NaN(num_gait_cycles,n_points);
-            for gait_cycle_num = 1:num_gait_cycles
-                delsysStruct.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name)(gait_cycle_num,:) = downsampleData(muscleByGaitCycle{gait_cycle_num}, n_points);
-            end
-            aggregatedStruct.(intervention_field_name).EMG.(prePost).(speed).(muscle_name) = [aggregatedStruct.(intervention_field_name).EMG.(prePost).(speed).(muscle_name); delsysStruct.(intervention_field_name).(trialName).musclesDownsampled.(muscle_name)];
-        end
-        % XSENS
-        for jointNum = 1:length(joint_names)
-            joint_name = joint_names{jointNum};            
-            jointsByGaitCycle = xsensStruct.(intervention_field_name).(trialName).jointsByGaitCycle.(joint_name);
-            num_gait_cycles = length(jointsByGaitCycle);
-            if ~isfield(aggregatedStruct.(intervention_field_name).XSENS.(prePost).(speed), joint_name)
-                aggregatedStruct.(intervention_field_name).XSENS.(prePost).(speed).(joint_name) = [];
-            end
-            xsensStruct.(intervention_field_name).(trialName).jointsDownsampled.(joint_name) = NaN(num_gait_cycles,n_points);
-            for gait_cycle_num = 1:num_gait_cycles
-                xsensStruct.(intervention_field_name).(trialName).jointsDownsampled.(joint_name)(gait_cycle_num,:) = downsampleData(jointsByGaitCycle{gait_cycle_num}, n_points);
-            end
-            aggregatedStruct.(intervention_field_name).XSENS.(prePost).(speed).(joint_name) = [aggregatedStruct.(intervention_field_name).XSENS.(prePost).(speed).(joint_name); xsensStruct.(intervention_field_name).(trialName).jointsDownsampled.(joint_name)];
-        end        
     end
 end
 
