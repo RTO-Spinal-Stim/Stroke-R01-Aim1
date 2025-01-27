@@ -1,4 +1,4 @@
-function [filtered_data] = preprocessXSENSOneFile(xsensFilePath, xsensConfig)
+function [extracted_data, filtered_data] = loadAndFilterXSENSOneFile(xsensFilePath, xsensConfig)
 
 %% PURPOSE: PREPROCESS XSENS DATA
 
@@ -43,5 +43,5 @@ end
 filtered_data = struct();
 for i = 1:length(colNamesFieldNames)
     colNameFieldName = colNamesFieldNames{i};
-    filtered_data.joints.(colNameFieldName) = filtfilt(b, a, extracted_data.(colNameFieldName));
+    filtered_data.(colNameFieldName) = filtfilt(b, a, extracted_data.(colNameFieldName));
 end

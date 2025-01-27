@@ -2,7 +2,7 @@
 
 clearvars
 clc
-addpath(genpath('Y:\Spinal Stim_Stroke R01\AIM 1\GitRepo\Stroke-R01\Ameen_EMG_kinematics'));
+addpath(genpath('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics'));
 % Path to save the data to.
 subjectSavePath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\Processed Outcomes\SS13_Outcomes.mat';
 % Folder to load the data from.
@@ -447,7 +447,7 @@ for i = 1:length(interventions)
 end
 
 %% Save Outcomes for subject, specify subject
-save(subjectSavePath, 'outcomes');
+% save(subjectSavePath, 'outcomes');
 
 
 
