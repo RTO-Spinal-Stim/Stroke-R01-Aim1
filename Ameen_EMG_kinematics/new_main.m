@@ -203,3 +203,59 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+
+%% SPM Analysis for EMG & XSENS
+musclesLR = delsysConfig.MUSCLES;
+jointsLR = xsensConfig.JOINTS;
+musclesL = cell(size(musclesLR));
+musclesR = cell(size(musclesLR));
+jointsL = cell(size(jointsLR));
+jointsR = cell(size(jointsLR));
+for i = 1:length(musclesLR)
+    musclesL{i} = ['L' musclesLR{i}];
+    musclesR{i} = ['R' musclesLR{i}];
+end
+for i = 1:length(jointsLR)
+    jointsL{i} = ['L' jointsLR{i}];
+    jointsR{i} = ['R' jointsLR{i}];
+end
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            aggEMG = delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated;
+            aggXSENS = xsensStruct.(intervention_field_name).(speedName).(prePost).Aggregated;
+            delsysSPM = SPM_Analysis(aggEMG, musclesL, musclesR);
+            xsensSPM = SPM_Analysis(aggXSENS, jointsL, jointsR);
+            delsysStruct.(intervention_field_name).(speedName).(prePost).SPM = delsysSPM;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).SPM = xsensSPM;
+        end
+    end
+end
+
+%% Calculate the magnitude and duration of L vs. R differences obtained from SPM
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            delsysSPM = delsysStruct.(intervention_field_name).(speedName).(prePost).SPM;
+            xsensSPM = xsensStruct.(intervention_field_name).(speedName).(prePost).SPM;
+            delsysAverages = delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged;
+            xsensAverages = xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged;
+            [delsysMags, delsysDurs] = mags_durs_diffsLR(delsysSPM, delsysAverages);
+            [xsensMags, xsensDurs] = mags_durs_diffsLR(xsensSPM, xsensAverages);
+            delsysStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Magnitudes = delsysMags;
+            delsysStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Durations = delsysDurs;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Magnitudes = xsensMags;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Durations = xsensDurs;
+        end
+    end
+end

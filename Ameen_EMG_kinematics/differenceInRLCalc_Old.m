@@ -1,4 +1,4 @@
-function RLdifference = differenceInRLCalc(SPM, average)
+function RLdifference = differenceInRLCalc_Old(SPM, average)
 
 %% PURPOSE: CALCULATE THE DIFFERENCE IN R & L AMPLITUDE, AND THE DURATION OF THAT DIFFERENCE
 

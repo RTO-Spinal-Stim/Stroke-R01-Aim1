@@ -12,17 +12,27 @@ function [numSynergies] = calculateSynergies(emgData, maxNumSynergies, VAFthresh
 % Outputs:
 % numSynergies: scalar double. The number of synergies found.
 
-%% Aggregate the data into a matrix.
+%% If the data is inconsistent in length, get the shortest amount of data to prep for resampling.
+min_n_points = inf;
 muscle_names = fieldnames(emgData);
-n_points = max(size(emgData.(muscle_names{1})));
-aggEMGData = NaN(length(muscle_names), n_points);
 for i = 1:length(muscle_names)
     muscle_name = muscle_names{i};
-    try
-        aggEMGData(i, :) = emgData.(muscle_name);
-    catch
-        disp('test');
+    if length(emgData.(muscle_name)) < min_n_points
+        min_n_points = length(emgData.(muscle_name));
     end
+end
+
+%% Aggregate the data into a matrix.
+aggEMGData = NaN(length(muscle_names), min_n_points);
+for i = 1:length(muscle_names)
+    muscle_name = muscle_names{i};
+    n_points_original = length(emgData.(muscle_name));
+    if n_points_original > min_n_points
+        dataToStore = resample(emgData.(muscle_name), min_n_points, n_points_original);        
+    else
+        dataToStore = emgData.(muscle_name);
+    end
+    aggEMGData(i,:) = dataToStore;
 end
 
 %% Calculate Variance Accounted For (VAF)

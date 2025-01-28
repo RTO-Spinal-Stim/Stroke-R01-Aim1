@@ -78,9 +78,9 @@
             "LOWPASS_ORDER": 4
         },
         "JOINTS": [
-            "H",
-            "K",
-            "A"
+            "HIP",
+            "KNEE",
+            "ANKLE"
         ]
     }      
 }
