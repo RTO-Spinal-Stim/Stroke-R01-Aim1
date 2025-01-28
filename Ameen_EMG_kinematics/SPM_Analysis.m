@@ -28,7 +28,8 @@ result = struct;
 for fieldNum = 1:numFields
     field1 = fields1{fieldNum};
     field2 = fields2{fieldNum};
-    field = intersect(field1, field2, 'stable');
+    assert(strcmp(field1(2:end), field2(2:end)));
+    field = field1(2:end);
     result.(field) = []; % Initialize the field.
 
     data1 = spm_input.(field1);
@@ -54,5 +55,9 @@ for fieldNum = 1:numFields
         for endpointNum = 1:size(result.(field),1)
             result.(field)(endpointNum,:) = [ceil(result.(field)(endpointNum,1)), floor(result.(field)(endpointNum,2))];
         end
+
+        % Change range from 0 - (N-1) to 1-N
+        result.(field) = result.(field) + 1;
+        assert(result.(field)(end,end) <= length(data1)); % Double check that this doesn't give an out of bound index at the upper end.
     end
 end

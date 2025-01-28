@@ -10,6 +10,9 @@ function [magnitudes, durations] = mags_durs_diffsLR(spm_result, averages)
 %
 % NOTE: This relies on the field names of averages being the same as the
 % field names of spm_result, just with 'L' or 'R' prepended.
+%
+% NOTE 2: Magnitude is (L - R), so positive means L is larger, negative
+% means R is larger.
 
 spm_fields = fieldnames(spm_result);
 for i = 1:length(spm_fields)
@@ -30,8 +33,9 @@ for i = 1:length(spm_fields)
     for j = 1:size(endpoints,1)
         curr_start = endpoints(j,1);
         curr_end = endpoints(j,2);
-        currMag = abs(mean(averages.(fieldL)(curr_start:curr_end)) - mean(averages.(fieldR)(curr_start:curr_end)));
-        currDur = abs(curr_end - curr_start);
+        currMag = mean(averages.(fieldL)(curr_start:curr_end)) - mean(averages.(fieldR)(curr_start:curr_end));
+        currDur = (curr_end - curr_start) + 1; % +1 because we want the number of points that it is different for. If only one singular point is different, should yield 1, not 0.
+        assert(currDur > 0);
         magnitudes.(spm_field)(j) = currMag;
         durations.(spm_field)(j) = currDur;
     end

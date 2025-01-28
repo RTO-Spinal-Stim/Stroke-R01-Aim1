@@ -175,24 +175,24 @@ end
 %% Calculate the number of muscle synergies in each gait cycle of each trial
 % NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
 % NEED TO TRY BOTH AND COMPARE
-disp('Computing the number of muscle synergies');
-config = jsondecode(fileread(configFilePath));
-VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
-for i = 1:length(intervention_field_names)
-    intervention_field_name = intervention_field_names{i};
-    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
-    for speedNum = 1:length(speedNames)
-        speedName = speedNames{speedNum};
-        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
-        for prePostNum = 1:length(prePosts)
-            prePost = prePosts{prePostNum};
-            aggData = delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated;
-            nSynergies = calculateSynergies(aggData, maxNumSynergies, VAFthresh);
-            delsysStruct.(intervention_field_name).(speedName).(prePost).NumSynergies = nSynergies;
-        end
-    end
-end
+% disp('Computing the number of muscle synergies');
+% config = jsondecode(fileread(configFilePath));
+% VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
+% maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
+% for i = 1:length(intervention_field_names)
+%     intervention_field_name = intervention_field_names{i};
+%     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+%     for speedNum = 1:length(speedNames)
+%         speedName = speedNames{speedNum};
+%         prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+%         for prePostNum = 1:length(prePosts)
+%             prePost = prePosts{prePostNum};
+%             aggData = delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated;
+%             nSynergies = calculateSynergies(aggData, maxNumSynergies, VAFthresh);
+%             delsysStruct.(intervention_field_name).(speedName).(prePost).NumSynergies = nSynergies;
+%         end
+%     end
+% end
 
 %% SPM Analysis for EMG & XSENS
 musclesLR = delsysConfig.MUSCLES;
@@ -228,6 +228,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM
+disp('Calculating magnitude & durations of L vs. R differences from SPM')
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
