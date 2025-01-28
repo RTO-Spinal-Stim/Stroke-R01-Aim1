@@ -1,20 +1,22 @@
-function [result] = SPM_Analysis(spm_input, fields1, fields2, alphaValue)
+function [result] = SPM_Analysis(spm_input, side1Fields, side2Fields, alphaValue)
 
 %% PURPOSE: RUN SPM ANALYSIS
 % Inputs:
-% spm_input: struct, where each field is a MxN vector of doubles (M
+% spm_input: struct, where each field is a MxN double array (M
 % repetitions of N timepoints)
-% fields1: Cell array of chars, where each char is a field name of
+% side1Fields: Cell array of chars, where each char is a field name of
 % spm_input (not overlapping with fields2).
-% fields2: Cell array of chars, where each char is a field name of
+% side2Fields: Cell array of chars, where each char is a field name of
 % spm_input (not overlapping with fields1).
 %
-% SPM will be performed iteratively on each element of fields1 and fields2,
-% respectively. Often, fields1 and fields2 are named like {'LHAM'} and
-% {'RHAM'}, so that the SPM result will be stored in the field 'HAM'.
+% SPM will be performed iteratively on each element of side1Fields and side2Fields,
+% respectively. 
+% 
+% NOTE: It is required that side1Fields and side2Fields are named like {'LHAM'} and
+% {'RHAM'} (i.e. prefixed by 'L' and 'R'), so that the SPM result will be stored in the field 'HAM'.
 
 % Check that the field name groupings for SPM are the same length
-if length(fields1) ~= length(fields2)
+if length(side1Fields) ~= length(side2Fields)
     error('SPM comparison field names are not the same length!');
 end
 
@@ -23,11 +25,11 @@ if ~exist('alphaValue','var')
     alphaValue = 0.05;
 end
 
-numFields = length(fields1);
+numFields = length(side1Fields);
 result = struct;
 for fieldNum = 1:numFields
-    field1 = fields1{fieldNum};
-    field2 = fields2{fieldNum};
+    field1 = side1Fields{fieldNum};
+    field2 = side2Fields{fieldNum};
     assert(strcmp(field1(2:end), field2(2:end)));
     field = field1(2:end);
     result.(field) = []; % Initialize the field.
