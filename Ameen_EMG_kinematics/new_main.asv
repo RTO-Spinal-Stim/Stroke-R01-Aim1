@@ -12,8 +12,8 @@ addpath(genpath(codeFolderPath));
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
-disp(['Loading configuration from: ' configFilePath])
 config = jsondecode(fileread(configFilePath));
+disp(['Loaded configuration from: ' configFilePath]);
 
 intervention_folders = config.INTERVENTION_FOLDERS;
 intervention_field_names = config.MAPPED_INTERVENTION_FIELDS;
@@ -100,7 +100,7 @@ for i = 1:length(intervention_field_names)
                 delsysRHS = delsysTrialStruct.frames.gaitEvents.rightHeelStrikes;
                 xsensLHS = xsensTrialStruct.frames.gaitEvents.leftHeelStrikes;
                 xsensRHS = xsensTrialStruct.frames.gaitEvents.rightHeelStrikes;
-                disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' '])
+                % disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' PrePost: ' prePost ' Trial: ' trialName]);
                 xsensCyclesData = splitTrialByGaitCycle(xsensTrialStruct.Filtered, xsensLHS, xsensRHS);
                 delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS); 
                 % Put the parsed data into each gait cycle's field in the struct.
@@ -117,7 +117,6 @@ end
 %% Downsample each gait cycle's data to 101 points and aggregate together, within and across trials.
 n_points = 101;
 disp(['Downsampling and aggregating the data within each gait cycle to ' num2str(n_points) ' points']);
-
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -127,8 +126,8 @@ for i = 1:length(intervention_field_names)
         for prePostNum = 1:length(prePosts)
             prePost = prePosts{prePostNum};
             trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
-            xsensAggData = [];
-            delsysAggData = [];
+            xsensAggData = struct;
+            delsysAggData = struct;
             for trialNum = 1:length(trialNames)
                 trialName = trialNames{trialNum};
                 gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
@@ -136,14 +135,39 @@ for i = 1:length(intervention_field_names)
                     cycleName = gaitCycleNames{cycleNum};
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
                     xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized = downsampleData(xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered, n_points);
-                    xsensAggData = [xsensAggData; xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
-                    delsysAggData = [delsysAggData; delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized];
+                    % Need to aggregate within each field name (muscles or joints).
+                    jointNames = fieldnames(xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized);
+                    muscleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized);
+                    for jointNum = 1:length(jointNames)
+                        jointName = jointNames{jointNum};
+                        if ~isfield(xsensAggData, jointName)
+                            xsensAggData.(jointName) = [];
+                        end
+                        xsensAggData.(jointName) = [xsensAggData.(jointName); xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(jointName)];
+                    end
+                    for muscleNum = 1:length(muscleNames)
+                        muscleName = muscleNames{muscleNum};
+                        if ~isfield(delsysAggData, muscleName)
+                            delsysAggData.(muscleName) = [];
+                        end
+                        delsysAggData.(muscleName) = [delsysAggData.(muscleName); delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(muscleName)];                    
+                    end                                                            
                 end
             end
             delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated = delsysAggData;
             xsensStruct.(intervention_field_name).(speedName).(prePost).Aggregated = xsensAggData;
-            delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged = mean(delsysAggData,1);
-            xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged = mean(xsensAggData, 1);
+            muscleNames = fieldnames(delsysAggData);
+            for muscleNum = 1:length(muscleNames)
+                muscleName = muscleNames{muscleNum};
+                averagedEMG.(muscleName) = mean(delsysAggData.(muscleName),1);
+            end
+            jointNames = fieldnames(xsensAggData);
+            for jointNum = 1:length(jointNames)
+                jointName = jointNames{jointNum};
+                averagedJointAngles.(jointName) = mean(xsensAggData.(jointName),1);
+            end
+            delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedEMG;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedJointAngles;
         end
     end
 end
@@ -151,8 +175,31 @@ end
 %% Calculate the number of muscle synergies in each gait cycle of each trial
 % NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
 % NEED TO TRY BOTH AND COMPARE
+config = jsondecode(fileread(configFilePath));
+VAFthresh = config.DElSYS_EMG.VAF_THRESHOLD;
+maxNumSynergies = config.MAX_NUM_SYNERGIES;
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
-    trialNames = fieldnames(gaitRiteStruct.(intervention_field_name));  
-
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            for trialNum = 1:length(trialNames)
+                trialName = trialNames{trialNum};
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    cycleDataFiltered = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered;
+                    cycleDataTimeNormalized = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    nSynergiesFiltered = calculateSynergies(cycleDataFiltered, maxNumSynergies, VAFthresh);
+                    nSynergiesTimeNormalized = calculateSynergies(cycleDataTimeNormalized, maxNumSynergies, VAFthresh);
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesFiltered = nSynergiesFiltered;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesTimeNormalized = nSynergiesTimeNormalized;
+                end
+            end
+        end
+    end
 end

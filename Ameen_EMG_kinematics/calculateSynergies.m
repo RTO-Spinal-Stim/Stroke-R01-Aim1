@@ -18,7 +18,11 @@ n_points = max(size(emgData.(muscle_names{1})));
 aggEMGData = NaN(length(muscle_names), n_points);
 for i = 1:length(muscle_names)
     muscle_name = muscle_names{i};
-    aggEMGData(i, :) = emgData.(muscle_name);
+    try
+        aggEMGData(i, :) = emgData.(muscle_name);
+    catch
+        disp('test');
+    end
 end
 
 %% Calculate Variance Accounted For (VAF)
@@ -31,4 +35,4 @@ for i = 1:maxNumSynergies
 end
 
 %% Get the number of synergies
-numSynergies = find(VAFs > VAFthresh,1,'first');
+numSynergies = find(VAFs >= VAFthresh,1,'first');

@@ -12,8 +12,8 @@ addpath(genpath(codeFolderPath));
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
-disp(['Loading configuration from: ' configFilePath])
 config = jsondecode(fileread(configFilePath));
+disp(['Loaded configuration from: ' configFilePath]);
 
 intervention_folders = config.INTERVENTION_FOLDERS;
 intervention_field_names = config.MAPPED_INTERVENTION_FIELDS;
@@ -117,7 +117,6 @@ end
 %% Downsample each gait cycle's data to 101 points and aggregate together, within and across trials.
 n_points = 101;
 disp(['Downsampling and aggregating the data within each gait cycle to ' num2str(n_points) ' points']);
-
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -176,6 +175,9 @@ end
 %% Calculate the number of muscle synergies in each gait cycle of each trial
 % NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
 % NEED TO TRY BOTH AND COMPARE
+config = jsondecode(fileread(configFilePath));
+VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
+maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -185,11 +187,18 @@ for i = 1:length(intervention_field_names)
         for prePostNum = 1:length(prePosts)
             prePost = prePosts{prePostNum};
             trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
-            xsensAggData = [];
-            delsysAggData = [];
             for trialNum = 1:length(trialNames)
                 trialName = trialNames{trialNum};
-
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    cycleDataFiltered = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered;
+                    cycleDataTimeNormalized = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    nSynergiesFiltered = calculateSynergies(cycleDataFiltered, maxNumSynergies, VAFthresh);
+                    nSynergiesTimeNormalized = calculateSynergies(cycleDataTimeNormalized, maxNumSynergies, VAFthresh);
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesFiltered = nSynergiesFiltered;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesTimeNormalized = nSynergiesTimeNormalized;
+                end
             end
         end
     end
