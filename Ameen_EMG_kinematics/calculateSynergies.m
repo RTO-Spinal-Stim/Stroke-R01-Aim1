@@ -22,6 +22,19 @@ for i = 1:length(muscle_names)
     end
 end
 
+% When there is an asymmetrical number of gait cycles in L vs. R, the fields for the side
+% with fewer gait cycles will be empty in the last gait cycle. In this
+% case, return NaN.
+if min_n_points == 0
+    numSynergies = NaN;
+    return;
+end
+
+% Turn off the warning
+warningName = 'stats:nnmf:LowRank';
+warningStruct = warning('query', warningName);
+warning('off', warningStruct.identifier);
+
 %% Aggregate the data into a matrix.
 aggEMGData = NaN(length(muscle_names), min_n_points);
 for i = 1:length(muscle_names)
@@ -46,3 +59,6 @@ end
 
 %% Get the number of synergies
 numSynergies = find(VAFs >= VAFthresh,1,'first');
+
+% Reset the warning back to its original state.
+warning(warningStruct.state, warningStruct.identifier);
