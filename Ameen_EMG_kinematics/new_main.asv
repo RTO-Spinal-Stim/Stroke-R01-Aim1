@@ -6,7 +6,7 @@ subject = 'SS13';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 % Path to save the data to.
-subjectSavePath = strcat('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\Processed Outcomes\', subject, '_Outcomes.mat');
+subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\', subject, '.mat');
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
@@ -73,7 +73,7 @@ for i = 1:length(intervention_field_names)
                 trialData = gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName);
                 secondsStruct = trialData.seconds;
                 delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, delsysConfig.SAMPLING_FREQUENCY);
-                xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, xsensConfig.SAMPLING_FREQUENCY);
+                xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, xsensConfig.SAMPLING_FREQUENCY);                
             end
         end
     end
@@ -100,12 +100,13 @@ for i = 1:length(intervention_field_names)
                 delsysRHS = delsysTrialStruct.frames.gaitEvents.rightHeelStrikes;
                 xsensLHS = xsensTrialStruct.frames.gaitEvents.leftHeelStrikes;
                 xsensRHS = xsensTrialStruct.frames.gaitEvents.rightHeelStrikes;
-                % disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' PrePost: ' prePost ' Trial: ' trialName]);
                 xsensCyclesData = splitTrialByGaitCycle(xsensTrialStruct.Filtered, xsensLHS, xsensRHS);
-                delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS); 
+                delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS);                 
                 % Put the parsed data into each gait cycle's field in the struct.
                 for gaitCycleNum = 1:length(xsensCyclesData)
                     gaitCycleName = ['cycle' num2str(gaitCycleNum)];
+                    delsysPlotConfig.title = ['Filtered EMG: ' intervention_field_name ' ' speedName ' ' prePost ' ' trialName ' ' gaitCycleName];
+                    fig = plotOneTrialData(delsysCyclesData{gaitCycleNum}, gcf, delsysPlotConfig);
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = delsysCyclesData{gaitCycleNum};
                     xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = xsensCyclesData{gaitCycleNum};
                 end
@@ -173,6 +174,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Set up muscle & joint names for analyses
+disp('Defining L & R names');
 musclesLR = delsysConfig.MUSCLES;
 jointsLR = xsensConfig.JOINTS;
 musclesL = cell(size(musclesLR));
@@ -194,7 +196,6 @@ end
 disp('Computing the number of muscle synergies');
 config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -211,14 +212,13 @@ for i = 1:length(intervention_field_names)
                 gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
                 for cycleNum = 1:length(gaitCycleNames)
                     cycleName = gaitCycleNames{cycleNum};
-                    emgDataTimeNormalized = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
-                    emgDataFiltered = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered;
-                    [nSynergies.L.TimeNormalized, VAFs.L.TimeNormalized, ] = calculateSynergies(emgDataTimeNormalized, musclesL, maxNumSynergies, VAFthresh);
-                    [nSynergies.R.TimeNormalized, VAFs.R.TimeNormalized] = calculateSynergies(emgDataTimeNormalized, musclesR, maxNumSynergies, VAFthresh);
-                    [nSynergies.L.Filtered, VAFs.L.Filtered] = calculateSynergies(emgDataFiltered, musclesL, maxNumSynergies, VAFthresh);
-                    [nSynergies.R.Filtered, VAFs.R.Filtered] = calculateSynergies(emgDataFiltered, musclesR, maxNumSynergies, VAFthresh);
-                    delsysStruct.(intervention_field_name).(speedName).(prePost).NumSynergies = nSynergies;
-                    delsysStruct.(intervention_field_name).(speedName).(prePost).VAFs = VAFs;
+                    emgData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    [nSynergies.L, VAFs.L, W.L, H.L] = calculateSynergies(emgData, musclesL, VAFthresh);
+                    [nSynergies.R, VAFs.R, W.R, H.R] = calculateSynergies(emgData, musclesR, VAFthresh);
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergies = nSynergies;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).VAFs = VAFs;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).W = W;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).H = H;
                 end
             end        
         end
@@ -226,6 +226,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% SPM Analysis for EMG & XSENS
+disp('Running SPM analysis');
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -267,3 +268,6 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+
+%% Save the structs to the participant's save folder.
+save(subjectSavePath, 'delsysStruct','gaitRiteStruct','xsensStruct','-v6');

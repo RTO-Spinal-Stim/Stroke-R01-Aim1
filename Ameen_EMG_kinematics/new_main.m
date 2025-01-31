@@ -73,7 +73,7 @@ for i = 1:length(intervention_field_names)
                 trialData = gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName);
                 secondsStruct = trialData.seconds;
                 delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, delsysConfig.SAMPLING_FREQUENCY);
-                xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, xsensConfig.SAMPLING_FREQUENCY);
+                xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).frames = getHardwareIndicesFromSeconds(secondsStruct, xsensConfig.SAMPLING_FREQUENCY);                
             end
         end
     end
@@ -100,12 +100,13 @@ for i = 1:length(intervention_field_names)
                 delsysRHS = delsysTrialStruct.frames.gaitEvents.rightHeelStrikes;
                 xsensLHS = xsensTrialStruct.frames.gaitEvents.leftHeelStrikes;
                 xsensRHS = xsensTrialStruct.frames.gaitEvents.rightHeelStrikes;
-                % disp(['Intervention: ' intervention_field_name ' Speed: ' speedName ' PrePost: ' prePost ' Trial: ' trialName]);
                 xsensCyclesData = splitTrialByGaitCycle(xsensTrialStruct.Filtered, xsensLHS, xsensRHS);
-                delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS); 
+                delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS);                 
                 % Put the parsed data into each gait cycle's field in the struct.
                 for gaitCycleNum = 1:length(xsensCyclesData)
                     gaitCycleName = ['cycle' num2str(gaitCycleNum)];
+                    delsysPlotConfig.title = ['Filtered EMG: ' intervention_field_name ' ' speedName ' ' prePost ' ' trialName ' ' gaitCycleName];
+                    fig = plotOneTrialData(delsysCyclesData{gaitCycleNum}, gcf, delsysPlotConfig);
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = delsysCyclesData{gaitCycleNum};
                     xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = xsensCyclesData{gaitCycleNum};
                 end
@@ -173,6 +174,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Set up muscle & joint names for analyses
+disp('Defining L & R names');
 musclesLR = delsysConfig.MUSCLES;
 jointsLR = xsensConfig.JOINTS;
 musclesL = cell(size(musclesLR));
@@ -224,6 +226,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% SPM Analysis for EMG & XSENS
+disp('Running SPM analysis');
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
