@@ -1,3 +1,10 @@
+# 01-31-2025
+## Question:
+For calculating muscle synergies, does time normalizing the data affect the outcome?
+
+## Answer:
+Nope! The VAFs appear to be the same whether the data is at its original sampling rate or time normalized to 101 points. Deciding to use time normalized because it's more interpretable and matches what's found in the literature.
+
 # 01-28-2025
 ## Problem: 
 Previously in our data analysis, muscle synergies were quantified by combining the L & R muscles into one matrix. There are two issues with this:

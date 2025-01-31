@@ -42,8 +42,7 @@
             "LOWPASS_ORDER": 2,
             "LOWPASS_CUTOFF": 5        
         },
-        "VAF_THRESHOLD": 0.9,
-        "MAX_NUM_SYNERGIES": 6
+        "VAF_THRESHOLD": 0.9
     },
     "GAITRITE": {
         "FOLDER_NAME": "Gaitrite",

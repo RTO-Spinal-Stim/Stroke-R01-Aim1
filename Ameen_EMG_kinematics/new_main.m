@@ -172,29 +172,7 @@ for i = 1:length(intervention_field_names)
     end
 end
 
-%% Calculate the number of muscle synergies in each gait cycle of each trial
-% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
-% NEED TO TRY BOTH AND COMPARE
-% disp('Computing the number of muscle synergies');
-% config = jsondecode(fileread(configFilePath));
-% VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-% maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
-% for i = 1:length(intervention_field_names)
-%     intervention_field_name = intervention_field_names{i};
-%     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
-%     for speedNum = 1:length(speedNames)
-%         speedName = speedNames{speedNum};
-%         prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
-%         for prePostNum = 1:length(prePosts)
-%             prePost = prePosts{prePostNum};
-%             aggData = delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated;
-%             nSynergies = calculateSynergies(aggData, maxNumSynergies, VAFthresh);
-%             delsysStruct.(intervention_field_name).(speedName).(prePost).NumSynergies = nSynergies;
-%         end
-%     end
-% end
-
-%% SPM Analysis for EMG & XSENS
+%% Set up muscle & joint names for analyses
 musclesLR = delsysConfig.MUSCLES;
 jointsLR = xsensConfig.JOINTS;
 musclesL = cell(size(musclesLR));
@@ -209,6 +187,44 @@ for i = 1:length(jointsLR)
     jointsL{i} = ['L' jointsLR{i}];
     jointsR{i} = ['R' jointsLR{i}];
 end
+
+%% Calculate the number of muscle synergies in each gait cycle of each trial
+% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
+% NEED TO TRY BOTH AND COMPARE
+disp('Computing the number of muscle synergies');
+config = jsondecode(fileread(configFilePath));
+VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
+maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            xsensAggDataTimeNormalized = struct;
+            delsysAggDataTimeNormalized = struct;
+            for trialNum = 1:length(trialNames)
+                trialName = trialNames{trialNum};
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    emgData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    [nSynergies.L, VAFs.L, W.L, H.L] = calculateSynergies(emgData, musclesL, VAFthresh);
+                    [nSynergies.R, VAFs.R, W.R, H.R] = calculateSynergies(emgData, musclesR, VAFthresh);
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergies = nSynergies;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).VAFs = VAFs;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).W = W;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).H = H;
+                end
+            end        
+        end
+    end
+end
+
+%% SPM Analysis for EMG & XSENS
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));

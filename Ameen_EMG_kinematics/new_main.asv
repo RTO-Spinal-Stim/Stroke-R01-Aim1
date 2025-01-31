@@ -126,8 +126,8 @@ for i = 1:length(intervention_field_names)
         for prePostNum = 1:length(prePosts)
             prePost = prePosts{prePostNum};
             trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
-            xsensAggData = struct;
-            delsysAggData = struct;
+            xsensAggDataTimeNormalized = struct;
+            delsysAggDataTimeNormalized = struct;
             for trialNum = 1:length(trialNames)
                 trialName = trialNames{trialNum};
                 gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
@@ -140,71 +140,39 @@ for i = 1:length(intervention_field_names)
                     muscleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized);
                     for jointNum = 1:length(jointNames)
                         jointName = jointNames{jointNum};
-                        if ~isfield(xsensAggData, jointName)
-                            xsensAggData.(jointName) = [];
+                        if ~isfield(xsensAggDataTimeNormalized, jointName)
+                            xsensAggDataTimeNormalized.(jointName) = [];
                         end
-                        xsensAggData.(jointName) = [xsensAggData.(jointName); xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(jointName)];
+                        xsensAggDataTimeNormalized.(jointName) = [xsensAggDataTimeNormalized.(jointName); xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(jointName)];
                     end
                     for muscleNum = 1:length(muscleNames)
                         muscleName = muscleNames{muscleNum};
-                        if ~isfield(delsysAggData, muscleName)
-                            delsysAggData.(muscleName) = [];
+                        if ~isfield(delsysAggDataTimeNormalized, muscleName)
+                            delsysAggDataTimeNormalized.(muscleName) = [];
                         end
-                        delsysAggData.(muscleName) = [delsysAggData.(muscleName); delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(muscleName)];                    
+                        delsysAggDataTimeNormalized.(muscleName) = [delsysAggDataTimeNormalized.(muscleName); delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized.(muscleName)];                    
                     end                                                            
                 end
             end
-            delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated = delsysAggData;
-            xsensStruct.(intervention_field_name).(speedName).(prePost).Aggregated = xsensAggData;
-            muscleNames = fieldnames(delsysAggData);
+            delsysStruct.(intervention_field_name).(speedName).(prePost).Aggregated = delsysAggDataTimeNormalized;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).Aggregated = xsensAggDataTimeNormalized;
+            muscleNames = fieldnames(delsysAggDataTimeNormalized);
             for muscleNum = 1:length(muscleNames)
                 muscleName = muscleNames{muscleNum};
-                averagedEMG.(muscleName) = mean(delsysAggData.(muscleName),1);
+                averagedEMGTimeNormalized.(muscleName) = mean(delsysAggDataTimeNormalized.(muscleName),1);
             end
-            jointNames = fieldnames(xsensAggData);
+            jointNames = fieldnames(xsensAggDataTimeNormalized);
             for jointNum = 1:length(jointNames)
                 jointName = jointNames{jointNum};
-                averagedJointAngles.(jointName) = mean(xsensAggData.(jointName),1);
+                averagedJointAnglesTimeNormalized.(jointName) = mean(xsensAggDataTimeNormalized.(jointName),1);
             end
-            delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedEMG;
-            xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedJointAngles;
+            delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedEMGTimeNormalized;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged = averagedJointAnglesTimeNormalized;
         end
     end
 end
 
-%% Calculate the number of muscle synergies in each gait cycle of each trial
-% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
-% NEED TO TRY BOTH AND COMPARE
-config = jsondecode(fileread(configFilePath));
-VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
-for i = 1:length(intervention_field_names)
-    intervention_field_name = intervention_field_names{i};
-    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
-    for speedNum = 1:length(speedNames)
-        speedName = speedNames{speedNum};
-        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
-        for prePostNum = 1:length(prePosts)
-            prePost = prePosts{prePostNum};
-            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
-            for trialNum = 1:length(trialNames)
-                trialName = trialNames{trialNum};
-                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
-                for cycleNum = 1:length(gaitCycleNames)
-                    cycleName = gaitCycleNames{cycleNum};
-                    cycleDataFiltered = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered;
-                    cycleDataTimeNormalized = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
-                    nSynergiesFiltered = calculateSynergies(cycleDataFiltered, maxNumSynergies, VAFthresh);
-                    nSynergiesTimeNormalized = calculateSynergies(cycleDataTimeNormalized, maxNumSynergies, VAFthresh);
-                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesFiltered = nSynergiesFiltered;
-                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergiesTimeNormalized = nSynergiesTimeNormalized;
-                end
-            end
-        end
-    end
-end
-
-%% SPM Analysis for EMG & XSENS
+%% Set up muscle & joint names for analyses
 musclesLR = delsysConfig.MUSCLES;
 jointsLR = xsensConfig.JOINTS;
 musclesL = cell(size(musclesLR));
@@ -219,6 +187,45 @@ for i = 1:length(jointsLR)
     jointsL{i} = ['L' jointsLR{i}];
     jointsR{i} = ['R' jointsLR{i}];
 end
+
+%% Calculate the number of muscle synergies in each gait cycle of each trial
+% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
+% NEED TO TRY BOTH AND COMPARE
+disp('Computing the number of muscle synergies');
+config = jsondecode(fileread(configFilePath));
+VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
+maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            xsensAggDataTimeNormalized = struct;
+            delsysAggDataTimeNormalized = struct;
+            for trialNum = 1:length(trialNames)
+                trialName = trialNames{trialNum};
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    emgDataTimeNormalized = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    emgDataFiltered = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).Filtered;
+                    [nSynergies.L.TimeNormalized, VAFs.L.TimeNormalized, ] = calculateSynergies(emgDataTimeNormalized, musclesL, maxNumSynergies, VAFthresh);
+                    [nSynergies.R.TimeNormalized, VAFs.R.TimeNormalized] = calculateSynergies(emgDataTimeNormalized, musclesR, maxNumSynergies, VAFthresh);
+                    [nSynergies.L.Filtered, VAFs.L.Filtered] = calculateSynergies(emgDataFiltered, musclesL, maxNumSynergies, VAFthresh);
+                    [nSynergies.R.Filtered, VAFs.R.Filtered] = calculateSynergies(emgDataFiltered, musclesR, maxNumSynergies, VAFthresh);
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).NumSynergies = nSynergies;
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).VAFs = VAFs;
+                end
+            end        
+        end
+    end
+end
+
+%% SPM Analysis for EMG & XSENS
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -238,6 +245,7 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM
+disp('Calculating magnitude & durations of L vs. R differences from SPM')
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -251,7 +259,11 @@ for i = 1:length(intervention_field_names)
             delsysAverages = delsysStruct.(intervention_field_name).(speedName).(prePost).Averaged;
             xsensAverages = xsensStruct.(intervention_field_name).(speedName).(prePost).Averaged;
             [delsysMags, delsysDurs] = mags_durs_diffsLR(delsysSPM, delsysAverages);
-            [xsensMags, xsensDurs] = mags_durs_diffsLR(xsensSPM, delsysAverages);
+            [xsensMags, xsensDurs] = mags_durs_diffsLR(xsensSPM, xsensAverages);
+            delsysStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Magnitudes = delsysMags;
+            delsysStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Durations = delsysDurs;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Magnitudes = xsensMags;
+            xsensStruct.(intervention_field_name).(speedName).(prePost).LRDiffs.Durations = xsensDurs;
         end
     end
 end
