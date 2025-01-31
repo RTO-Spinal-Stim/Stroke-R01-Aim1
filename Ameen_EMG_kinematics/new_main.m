@@ -6,7 +6,7 @@ subject = 'SS13';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 % Path to save the data to.
-subjectSavePath = strcat('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\Processed Outcomes\', subject, '_Outcomes.mat');
+subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\', subject, '.mat');
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
@@ -194,7 +194,6 @@ end
 disp('Computing the number of muscle synergies');
 config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-maxNumSynergies = config.DELSYS_EMG.MAX_NUM_SYNERGIES;
 for i = 1:length(intervention_field_names)
     intervention_field_name = intervention_field_names{i};
     speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
@@ -266,3 +265,6 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+
+%% Save the structs to the participant's save folder.
+save(subjectSavePath, 'delsysStruct','gaitRiteStruct','xsensStruct','-v6');
