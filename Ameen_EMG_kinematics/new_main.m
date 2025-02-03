@@ -122,9 +122,7 @@ for i = 1:length(intervention_field_names)
                 delsysCyclesData = splitTrialByGaitCycle(delsysTrialStruct.Filtered, delsysLHS, delsysRHS);                 
                 % Put the parsed data into each gait cycle's field in the struct.
                 for gaitCycleNum = 1:length(xsensCyclesData)
-                    gaitCycleName = ['cycle' num2str(gaitCycleNum)];
-                    delsysPlotConfig.title = ['Filtered EMG: ' intervention_field_name ' ' speedName ' ' prePost ' ' trialName ' ' gaitCycleName];
-                    fig = plotOneTrialData(delsysCyclesData{gaitCycleNum}, gcf, delsysPlotConfig);
+                    gaitCycleName = ['cycle' num2str(gaitCycleNum)];                  
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = delsysCyclesData{gaitCycleNum};
                     xsensStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(gaitCycleName).Filtered = xsensCyclesData{gaitCycleNum};
                 end
@@ -331,6 +329,12 @@ for i = 1:length(intervention_field_names)
     end
 end
 
+%% Scatter plot the number of muscle synergies & the step lengths
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\NumSynergies';
+    scatterPlotPerGaitCyclePerIntervention(delsysStruct, 'Num Synergies', baseSavePathEMG, 'NumSynergies');    
+end
+
 %% SPM Analysis for EMG & XSENS
 disp('Running SPM analysis');
 for i = 1:length(intervention_field_names)
@@ -377,3 +381,4 @@ end
 
 %% Save the structs to the participant's save folder.
 save(subjectSavePath, 'delsysStruct','gaitRiteStruct','xsensStruct','-v6');
+disp(['Saved ' subject ' structs to: ' subjectSavePath]);

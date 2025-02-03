@@ -57,7 +57,13 @@
             "STEP_LENGTH": "Step_length",
             "SWING_TIME": "Swing_time",
             "HEEL_OFF": "HeelOff",
-            "TOE_ON": "ToeOn"
+            "TOE_ON": "ToeOn",
+            "STEP_TIME": "Step_time",
+            "STANCE_TIME": "Stance_time",
+            "STRIDE_TIME": "Stride_time",
+            "STRIDE_LENGTH": "Stride_length",
+            "STEP_WIDTH": "StepWidth",
+            "STRIDE_WIDTH": "StrideWidth"
         }
     },    
     "XSENS": {

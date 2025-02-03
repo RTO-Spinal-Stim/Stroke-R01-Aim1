@@ -14,6 +14,12 @@ toe_on_idx = ismember(header_row, colNames.TOE_ON);
 toe_off_idx = ismember(header_row, colNames.TOE_OFF);
 step_len_idx = ismember(header_row, colNames.STEP_LENGTH);
 swing_time_idx = ismember(header_row, colNames.SWING_TIME);
+step_times_idx = ismember(header_row, colNames.STEP_TIME);
+stance_times_idx = ismember(header_row, colNames.STANCE_TIME);
+stride_times_idx = ismember(header_row, colNames.STRIDE_TIME);
+stride_lengths_idx = ismember(header_row, colNames.STRIDE_LENGTH);
+step_width_idx = ismember(header_row, colNames.STEP_WIDTH);
+stride_width_idx = ismember(header_row, colNames.STRIDE_WIDTH);
 
 %% Extract the data
 left_right = data(:, left_right_idx);
@@ -23,6 +29,21 @@ toe_on = data(:, toe_on_idx);
 toe_off = data(:, toe_off_idx);
 step_len = data(:, step_len_idx);
 swing_time = data(:, swing_time_idx);
+stride_len = data(:, stride_lengths_idx);
+stride_time = data(:, stride_times_idx);
+stance_time = data(:, stance_times_idx);
+step_width = data(:, step_width_idx);
+stride_width = data(:, stride_width_idx);
+step_time = data(:, step_times_idx);
+
+processed_data.stepLengths = step_len;
+processed_data.swingTimes = swing_time;
+processed_data.strideLengths = stride_len;
+processed_data.strideTimes = stride_time;
+processed_data.stanceTime = stance_time;
+processed_data.stepWidths = step_width;
+processed_data.strideWidths = stride_width;
+processed_data.stepTimes = step_time;
 
 %% Initialize the processed data
 num_steps = length(left_right);
