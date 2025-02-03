@@ -40,7 +40,7 @@ for i = 1:length(intervention_field_names)
             % Save the plot.
             saveFolderPath = baseSavePath;
             mkdir(saveFolderPath);
-            savePath = fullfile(saveFolderPath, [prePost '_' intervention_field_name '_' speedName]);
+            savePath = fullfile(saveFolderPath, [intervention_field_name '_' prePost '_' speedName]);
             saveas(figAllTrials, [savePath '.fig']);
             saveas(figAllTrials, [savePath '.png']);
             saveas(figAllTrials, [savePath '.svg']);

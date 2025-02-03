@@ -23,17 +23,6 @@ delsysConfig = config.DELSYS_EMG;
 xsensConfig = config.XSENS;
 regexsConfig = config.REGEXS;
 
-%% Delsys Processing
-disp('Preprocessing Delsys');
-subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
-% Process each intervention
-for i = 1:length(intervention_folders)   
-    intervention_folder = intervention_folders{i};        
-    intervention_folder_path = fullfile(subject_delsys_folder, intervention_folder);
-    intervention_field_name = mapped_interventions(intervention_folder);
-    delsysStruct.(intervention_field_name) = loadAndFilterDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, regexsConfig);
-end
-
 %% GaitRite Processing
 disp('Preprocessing Gaitrite');
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
@@ -43,6 +32,17 @@ for i = 1:length(intervention_folders)
     intervention_folder_path = fullfile(subject_gaitrite_folder, intervention_folder);
     intervention_field_name = mapped_interventions(intervention_folder);
     gaitRiteStruct.(intervention_field_name) = processGaitRiteOneIntervention(gaitriteConfig, intervention_folder_path, regexsConfig);
+end
+
+%% Delsys Processing
+disp('Preprocessing Delsys');
+subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
+% Process each intervention
+for i = 1:length(intervention_folders)   
+    intervention_folder = intervention_folders{i};        
+    intervention_folder_path = fullfile(subject_delsys_folder, intervention_folder);
+    intervention_field_name = mapped_interventions(intervention_folder);
+    delsysStruct.(intervention_field_name) = loadAndFilterDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, regexsConfig);
 end
 
 %% XSENS Processing
@@ -55,6 +55,12 @@ for i = 1:length(intervention_folders)
     intervention_field_name = mapped_interventions(intervention_folder);
     xsensStruct.(intervention_field_name) = loadAndFilterXSENSOneIntervention(xsensConfig, intervention_folder_path, regexsConfig);
 end
+
+%% Plot raw and filtered timeseries data
+baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
+plotRawAndFilteredData(delsysStruct, 'Raw and Filtered EMG', baseSavePathEMG, true);
+baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
+plotRawAndFilteredData(xsensStruct, 'Raw and Filtered Joint Angles', baseSavePathXSENS, false);
 
 %% Time Synchronization
 % Get gait event indices, phase durations, etc. in Delsys & XSENS indices
