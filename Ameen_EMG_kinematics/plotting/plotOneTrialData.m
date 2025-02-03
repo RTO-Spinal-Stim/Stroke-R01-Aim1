@@ -11,6 +11,8 @@ function [fig] = plotOneTrialData(allData, fig, config)
 %   title: char
 %   xLabel: char
 %   numCols: scalar double
+%   tooltipLabel: char
+%   color: char, or cell array.
 
 if ~exist('fig','var')
     fig = gcf;
@@ -43,6 +45,16 @@ fields = fieldnames(allData);
 if ~isfield(config, 'numCols')
     config.numCols = 2;
     fieldsToRemove = [fieldsToRemove; {'numCols'}];
+end
+
+if ~isfield(config, 'tooltipLabel')
+    config.tooltipLabel = '';
+    fieldsToRemove = [fieldsToRemove; {'tooltipLabel'}];
+end
+
+if ~isfield(config, 'color')
+    config.color = '';
+    fieldsToRemove = [fieldsToRemove; {'color'}];
 end
 
 numRows = ceil(length(fields)/2);
@@ -83,7 +95,15 @@ for i = 1:length(axHandles)
         fieldsToRemove = [fieldsToRemove; {'xLim'}];
     end
     ylim(ax, 'auto');
-    plot(ax, config.xVector, data);
+    if isempty(config.color)        
+        p = plot(ax, config.xVector, data);
+    else
+        p = plot(ax, config.xVector, data, 'Color', config.color);
+    end
+    label = config.tooltipLabel;
+    if ~isempty(label) && ~isempty(config.xVector)
+        p.DataTipTemplate.DataTipRows(end+1) = [dataTipTextRow('Name', repmat({label}, size(config.xVector)))];
+    end
     if ismember({'xVector'}, fieldsToRemove)
         config = rmfield(config, 'xVector');
         fieldsToRemove(ismember(fieldsToRemove, 'xVector')) = [];

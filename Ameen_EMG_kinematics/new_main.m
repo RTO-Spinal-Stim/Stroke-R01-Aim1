@@ -79,6 +79,12 @@ for i = 1:length(intervention_field_names)
     end
 end
 
+%% Plot each trial's data individually, along with gait event information.
+baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
+plotTrialWithGaitEvents(delsysStruct, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Filtered');
+baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
+plotTrialWithGaitEvents(xsensStruct, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'Filtered');
+
 %% Split Data by Gait Cycle
 % QUESTION: USE L OR R HEEL STRIKES TO DENOTE GAIT CYCLES? MAKE IT SPECIFIC
 % TO L/R SENSOR/MEASURE?
@@ -114,6 +120,12 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+
+%% Plot each gait cycle's filtered data individually
+baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
+plotAllTrials(delsysStruct, 'Filtered EMG', baseSavePathEMG, 'Filtered');
+baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
+plotAllTrials(xsensStruct, 'Filtered Joint Angles', baseSavePathXSENS, 'Filtered');
 
 %% Downsample each gait cycle's data to 101 points and aggregate together, within and across trials.
 n_points = 101;
