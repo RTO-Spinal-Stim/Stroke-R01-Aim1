@@ -275,6 +275,12 @@ for i = 1:length(intervention_field_names)
     end
 end
 
+%% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
+    plotAllTrials(delsysStruct, 'Scaled To Max EMG', baseSavePathEMG, 'ScaledToMax');    
+end
+
 %% Set up muscle & joint names for analyses
 disp('Defining L & R names');
 musclesLR = delsysConfig.MUSCLES;
@@ -293,8 +299,6 @@ for i = 1:length(jointsLR)
 end
 
 %% Calculate the number of muscle synergies in each gait cycle of each trial
-% NOTE: USE THE NON-TIME NORMALIZED EMG DATA FOR THIS? CHEN RECOMMENDED USING THE TIME-NORMALIZED DATA 
-% NEED TO TRY BOTH AND COMPARE
 disp('Computing the number of muscle synergies');
 config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
