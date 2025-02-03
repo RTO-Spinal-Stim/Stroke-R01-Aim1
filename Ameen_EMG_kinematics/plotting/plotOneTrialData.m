@@ -90,8 +90,11 @@ for i = 1:length(axHandles)
         config.xVector = 1:length(allData.(field));
         fieldsToRemove = [fieldsToRemove; {'xVector'}];
     end
-    if ~isfield(config, 'xLim')
+    if ~isfield(config, 'xLim')        
         config.xLim = [min([ax.XLim(1), config.xVector]), max([ax.XLim(2), config.xVector])];
+        if ax.XLim(1) == 0 && min(config.xVector) == 1
+            config.xLim = [1 config.xLim(2)];
+        end
         fieldsToRemove = [fieldsToRemove; {'xLim'}];
     end
     ylim(ax, 'auto');

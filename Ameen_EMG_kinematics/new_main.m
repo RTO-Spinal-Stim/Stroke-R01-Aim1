@@ -10,6 +10,8 @@ subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
+plot = false;
+
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
 config = jsondecode(fileread(configFilePath));
@@ -57,10 +59,12 @@ for i = 1:length(intervention_folders)
 end
 
 %% Plot raw and filtered timeseries data
-baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
-plotRawAndFilteredData(delsysStruct, 'Raw and Filtered EMG', baseSavePathEMG, true);
-baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
-plotRawAndFilteredData(xsensStruct, 'Raw and Filtered Joint Angles', baseSavePathXSENS, false);
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
+    plotRawAndFilteredData(delsysStruct, 'Raw and Filtered EMG', baseSavePathEMG, true);
+    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
+    plotRawAndFilteredData(xsensStruct, 'Raw and Filtered Joint Angles', baseSavePathXSENS, false);
+end
 
 %% Time Synchronization
 % Get gait event indices, phase durations, etc. in Delsys & XSENS indices
@@ -86,10 +90,12 @@ for i = 1:length(intervention_field_names)
 end
 
 %% Plot each trial's data individually, along with gait event information.
-baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
-plotTrialWithGaitEvents(delsysStruct, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Filtered');
-baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
-plotTrialWithGaitEvents(xsensStruct, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'Filtered');
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
+    plotTrialWithGaitEvents(delsysStruct, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Filtered');
+    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
+    plotTrialWithGaitEvents(xsensStruct, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'Filtered');
+end
 
 %% Split Data by Gait Cycle
 % QUESTION: USE L OR R HEEL STRIKES TO DENOTE GAIT CYCLES? MAKE IT SPECIFIC
@@ -127,11 +133,13 @@ for i = 1:length(intervention_field_names)
     end
 end
 
-%% Plot each gait cycle's filtered data individually
-baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
-plotAllTrials(delsysStruct, 'Filtered EMG', baseSavePathEMG, 'Filtered');
-baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
-plotAllTrials(xsensStruct, 'Filtered Joint Angles', baseSavePathXSENS, 'Filtered');
+%% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
+    plotAllTrials(delsysStruct, 'Filtered EMG', baseSavePathEMG, 'Filtered');
+    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
+    plotAllTrials(xsensStruct, 'Filtered Joint Angles', baseSavePathXSENS, 'Filtered');
+end
 
 %% Downsample each gait cycle's data to 101 points and aggregate together, within and across trials.
 n_points = 101;
@@ -191,6 +199,82 @@ for i = 1:length(intervention_field_names)
     end
 end
 
+%% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
+if plot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\TimeNormalized_GaitCycles';
+    plotAllTrials(delsysStruct, 'Time-Normalized EMG', baseSavePathEMG, 'TimeNormalized');
+    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\TimeNormalized_GaitCycles';
+    plotAllTrials(xsensStruct, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'TimeNormalized');
+end
+
+%% Identify the max EMG data value across one whole visit (all trials & gait cycles)
+disp('Identifying the max EMG data value in each visit');
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            maxValue = [];
+            for trialNum = 1:length(trialNames)
+                trialName = trialNames{trialNum};
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    delsysData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;   
+                    fieldNames = fieldnames(delsysData);                
+                    if isempty(maxValue)
+                        maxValue = struct;                        
+                        for fieldNum = 1:length(fieldNames)
+                            fieldName = fieldNames{fieldNum};
+                            maxValue.(fieldName) = -inf;
+                        end
+                    end
+                    for fieldNum = 1:length(fieldNames)
+                        fieldName = fieldNames{fieldNum};
+                        maxValue.(fieldName) = max([maxValue.(fieldName), max(delsysData.(fieldName))]);
+                    end                                       
+                end
+            end
+            delsysStruct.(intervention_field_name).(speedName).(prePost).MaxValue = maxValue;
+        end
+    end
+end
+
+%% Normalize the time-normalized EMG data to the max value across one whole visit (all trials & gait cycles)
+disp('Normalizing the EMG data to the max value in each visit');
+for i = 1:length(intervention_field_names)
+    intervention_field_name = intervention_field_names{i};
+    speedNames = fieldnames(gaitRiteStruct.(intervention_field_name));
+    for speedNum = 1:length(speedNames)
+        speedName = speedNames{speedNum};
+        prePosts = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName));
+        for prePostNum = 1:length(prePosts)
+            prePost = prePosts{prePostNum};
+            trialNames = fieldnames(gaitRiteStruct.(intervention_field_name).(speedName).(prePost).Trials);
+            maxValue = delsysStruct.(intervention_field_name).(speedName).(prePost).MaxValue;
+            for trialNum = 1:length(trialNames)
+                trialName = trialNames{trialNum};
+                gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
+                for cycleNum = 1:length(gaitCycleNames)
+                    cycleName = gaitCycleNames{cycleNum};
+                    delsysData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    scaledDelsysData = struct;
+                    fieldNames = fieldnames(delsysData); 
+                    for fieldNum = 1:length(fieldNames)
+                        fieldName = fieldNames{fieldNum};
+                        scaledDelsysData.(fieldName) = delsysData.(fieldName) ./ maxValue.(fieldName);
+                    end
+                    delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).ScaledToMax = scaledDelsysData;
+                end
+            end
+        end
+    end
+end
+
 %% Set up muscle & joint names for analyses
 disp('Defining L & R names');
 musclesLR = delsysConfig.MUSCLES;
@@ -230,7 +314,7 @@ for i = 1:length(intervention_field_names)
                 gaitCycleNames = fieldnames(delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles);
                 for cycleNum = 1:length(gaitCycleNames)
                     cycleName = gaitCycleNames{cycleNum};
-                    emgData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).TimeNormalized;
+                    emgData = delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).ScaledToMax;
                     [nSynergies.L, VAFs.L, W.L, H.L] = calculateSynergies(emgData, musclesL, VAFthresh);
                     [nSynergies.R, VAFs.R, W.R, H.R] = calculateSynergies(emgData, musclesR, VAFthresh);
                     delsysStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).GaitCycles.(cycleName).NumSynergies = nSynergies;

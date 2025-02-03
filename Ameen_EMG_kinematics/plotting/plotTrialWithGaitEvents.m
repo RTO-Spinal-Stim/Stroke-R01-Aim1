@@ -45,3 +45,4 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+close(figOneTrial);

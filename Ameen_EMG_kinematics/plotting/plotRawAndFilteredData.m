@@ -29,7 +29,9 @@ for i = 1:length(intervention_field_names)
                 clf;
                 trialDataRaw = allDataStruct.(intervention_field_name).(speedName).(prePost).Trials.(trialName).Loaded;
                 % Rectify the EMG data if specified.
+                raw_label = 'Raw';
                 if rectify
+                    raw_label = 'Rectified Raw';
                     trialDataFields = fieldnames(trialDataRaw);
                     for fieldNum = 1:length(trialDataFields)
                         fieldName = trialDataFields{fieldNum};
@@ -42,7 +44,7 @@ for i = 1:length(intervention_field_names)
                 figOneTrial = plotOneTrialData(trialDataRaw, figOneTrial, figOneTrialConfig);
                 figOneTrialConfig.color = 'r';
                 figOneTrial = plotOneTrialData(trialDataFiltered, figOneTrial, figOneTrialConfig);
-                h = legend({'Rectified Raw','Filtered'});
+                h = legend({raw_label,'Filtered'});
                 set(h, 'Position', [0.4825, 0.4903, 0.0562, 0.1391]); % In the middle of the axes.
                 % Save the plot.
                 saveFolderPath = baseSavePath;
@@ -55,3 +57,4 @@ for i = 1:length(intervention_field_names)
         end
     end
 end
+close(figOneTrial);
