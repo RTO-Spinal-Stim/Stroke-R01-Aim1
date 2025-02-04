@@ -27,23 +27,14 @@ heel_on = data(:, heel_on_idx);
 heel_off = data(:, heel_off_idx);
 toe_on = data(:, toe_on_idx);
 toe_off = data(:, toe_off_idx);
-step_len = data(:, step_len_idx);
-swing_time = data(:, swing_time_idx);
-stride_len = data(:, stride_lengths_idx);
-stride_time = data(:, stride_times_idx);
-stance_time = data(:, stance_times_idx);
-step_width = data(:, step_width_idx);
-stride_width = data(:, stride_width_idx);
-step_time = data(:, step_times_idx);
-
-processed_data.stepLengths = step_len;
-processed_data.swingTimes = swing_time;
-processed_data.strideLengths = stride_len;
-processed_data.strideTimes = stride_time;
-processed_data.stanceTime = stance_time;
-processed_data.stepWidths = step_width;
-processed_data.strideWidths = stride_width;
-processed_data.stepTimes = step_time;
+step_len = data(:, step_len_idx) / 100; % m
+swing_times = data(:, swing_time_idx); % sec
+stride_lens = data(:, stride_lengths_idx) / 100; % m
+stride_times = data(:, stride_times_idx); % sec
+stance_times = data(:, stance_times_idx); % sec
+step_widths = data(:, step_width_idx) / 100; % m
+stride_widths = data(:, stride_width_idx) / 100; % m
+step_times = data(:, step_times_idx); % sec
 
 %% Initialize the processed data
 num_steps = length(left_right);
@@ -64,15 +55,41 @@ processed_data.stepLengthSymmetries = stepLenSym;
 
 %% Swing time symmetry
 for i = 3:length(left_right)-1
-    swingTimeSym(i-2) = (2*abs(swing_time(i)-swing_time(i+1)))/(swing_time(i)+swing_time(i+1));
+    swingTimeSym(i-2) = (2*abs(swing_times(i)-swing_times(i+1)))/(swing_times(i)+swing_times(i+1));
 end
 
 processed_data.swingTimeSymmetries = swingTimeSym;
 
-%% Gait events (seconds)
+%% Isolate L & R
 left_events_idx = left_right==1;
 right_events_idx = left_right==0;
+processed_data.stepLengths.L = step_len(left_events_idx);
+processed_data.stepLengths.R = step_len(right_events_idx);
+processed_data.stepLengths.All = step_len;
+processed_data.swingTimes.L = swing_times(left_events_idx);
+processed_data.swingTimes.R = swing_times(right_events_idx);
+processed_data.swingTimes.All = swing_times;
+processed_data.strideLengths.L = stride_lens(left_events_idx);
+processed_data.strideLengths.R = stride_lens(right_events_idx);
+processed_data.strideLengths.All = stride_lens;
+processed_data.stanceTimes.L = stance_times(left_events_idx);
+processed_data.stanceTimes.R = stance_times(right_events_idx);
+processed_data.stanceTimes.All = stance_times;
+processed_data.stepWidths.L = step_widths(left_events_idx);
+processed_data.stepWidths.R = step_widths(right_events_idx);
+processed_data.stepWidths.All = step_widths;
+processed_data.strideWidths.L = stride_widths(left_events_idx);
+processed_data.strideWidths.R = stride_widths(right_events_idx);
+processed_data.strideWidths.All = stride_widths;
+processed_data.stepTimes.L = step_times(left_events_idx);
+processed_data.stepTimes.R = step_times(right_events_idx);
+processed_data.stepTimes.All = step_times;
+processed_data.strideTimes.L = stride_times(left_events_idx);
+processed_data.strideTimes.R = stride_times(right_events_idx);
+processed_data.strideTimes.All = stride_times;
 
+
+%% Gait events (seconds)
 leftHeelStrikesSeconds = heel_on(left_events_idx);
 leftToeOffsSeconds = toe_off(left_events_idx);
 leftHeelOffsSeconds = heel_off(left_events_idx);
