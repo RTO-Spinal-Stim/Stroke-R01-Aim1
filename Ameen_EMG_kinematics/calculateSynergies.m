@@ -1,84 +1,78 @@
-function avgSynergies = calculateSynergies(accumulatedEMG)
-    % Define the number of synergies
-    numSynergies = 6; % Adjust this number as needed
+function [numSynergies, VAFs, W, H] = calculateSynergies(emgData, muscleNames, VAFthresh)
 
-    left = accumulatedEMG.left;
-    right = accumulatedEMG.right;
-    
-    numTrials = size(left.HAM);
-    
-    
-    for m = 1:numTrials(1,1)
-    
-    % Concatenate left and right cycle data for all muscles
-    allCycles = [left.HAM(m,:);left.RF(m,:);left.MG(m,:);left.TA(m,:);left.VL(m,:); ...
-                 right.HAM(m,:);right.RF(m,:);right.MG(m,:);right.TA(m,:);right.VL(m,:)];
+%% PURPOSE: CALCULATE THE MUSCLE SYNERGIES PRESENT IN EMG DATA
+% Inputs:
+% emgData: struct of filtered EMG data. Each field is one muscle. Each
+%   muscle's data is a 1xN vector, which can be one gait cycle, one whole
+%   trial, etc.
+% muscleNames: 1xM array of muscle names. These are the only muscles for 
+%   which the synergy is calculated. Also defines the order of the W & H
+%   matrices.
+% VAFthresh: scalar double integer (0-1). The threshold to determine the
+% number of synergies
+%
+% Outputs:
+% numSynergies: scalar double. The number of synergies found.
+% VAFs: M x 1 vector of doubles. The Variance Accounted For with each
+%   increasing number of synergies
+% W: M x numSynergies matrix of doubles. The weights of each muscle at the
+%   determined number of synergies (0-1)
+% H: numSynergies x N matrix of doubles. The timeseries of synergy activations (0-1)
 
-    % Perform Non-negative Matrix Factorization (NMF) to extract synergies and weights
-    [W, H] = nnmf(allCycles, numSynergies);
-
-    % Output the muscle synergies and their corresponding weights
-    synergies = W;
-    weights = H;
-    
-    % Define muscle names
-    muscleNames = {'LHAM', 'LRF', 'LMG', 'LTA','LVL', 'RHAM', 'RRF', 'RMG', 'RTA', 'RVL'};
-    
-    % Calculate Variance Accounted For (VAF) and plot in a separate figure
-    VAF_values = [];
-        for nSynergies = 1:6 % Example range
-            [W_temp, H_temp] = nnmf(allCycles, nSynergies);
-            reconstruction = W_temp * H_temp;
-            VAF = 1 - sum((allCycles - reconstruction).^2, 'all') / sum(allCycles.^2, 'all');
-            VAF_values = [VAF_values, VAF];
-        end
-    
-    VAF_thresh = 0.9;
-    counter = 1;
-    
-        for i = 1:numel(muscleNames)
-
-            if VAF_values(i) >= VAF_thresh
-               synergiesNeeded(m) = counter;
-               break;
-            else
-                counter = counter + 1;
-            end
-
-        end
-        
-        avgSynergies = mean(synergiesNeeded);
-    
+%% WHEN ONLY LOOKING AT L OR R SIDE INDEPENDENTLY, DATA LENGTH SHOULD ALWAYS BE CONSISTENT.
+%% If the data is inconsistent in length, get the shortest amount of data to prep for resampling.
+min_n_points = inf;
+for i = 1:length(muscleNames)
+    muscle_name = muscleNames{i};
+    if length(emgData.(muscle_name)) < min_n_points
+        min_n_points = length(emgData.(muscle_name));
     end
-
-
-%     
-%     % Plot the VAF values in a separate figure
-%     figure;
-%     plot(1:6, VAF_values, '-o');
-%     title('Variance Accounted For (VAF)');
-%     xlabel('Number of Synergies');
-%     ylabel('VAF');
-%     
-%     % Create a new figure for synergies and activation coefficients
-%     figure;
-%     for i = 1:numSynergies
-%         % Plot weight vectors for each synergy
-%         subplot(numSynergies, 2, 2*i-1);
-%         bar(W(:,i));
-%         set(gca, 'xticklabel', muscleNames);
-%         title(['Synergy ', num2str(i), ' Weights']);
-%         xlabel('Muscles');
-%         ylabel('Weights');
-%         
-%         % Plot activation coefficients for each synergy
-%         subplot(numSynergies, 2, 2*i);
-%         plot(H(i,:));
-%         title(['Synergy ', num2str(i), ' Activation']);
-%         xlabel('Percentage of gait cycle (%)');
-%         ylabel('Activation');
-%     end
-%     
-%     % Adjust layout to prevent subplot overlap
-%     set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96]);
 end
+
+% When there is an asymmetrical number of gait cycles in L vs. R, the fields for the side
+% with fewer gait cycles will be empty in the last gait cycle. In this
+% case, return NaN.
+if min_n_points == 0
+    numSynergies = NaN;
+    VAFs = [];
+    W = [];
+    H = [];
+    return;
+end
+
+% Turn off the warning
+warningName = 'stats:nnmf:LowRank';
+warningStruct = warning('query', warningName);
+warning('off', warningStruct.identifier);
+
+%% Aggregate the data into a matrix.
+aggEMGData = NaN(length(muscleNames), min_n_points);
+for i = 1:length(muscleNames)
+    muscle_name = muscleNames{i};
+    n_points_original = length(emgData.(muscle_name));
+    if n_points_original > min_n_points
+        dataToStore = resample(emgData.(muscle_name), min_n_points, n_points_original);        
+    else
+        dataToStore = emgData.(muscle_name);
+    end
+    aggEMGData(i,:) = dataToStore;
+end
+
+%% Calculate Variance Accounted For (VAF)
+% Perform non-negative matrix factorization (nnmf) to extract synergies and weights
+maxNumSynergies = size(aggEMGData,1);
+VAFs = NaN(maxNumSynergies,1);
+for i = 1:maxNumSynergies
+    [Wtmp, Htmp] = nnmf(aggEMGData, i);
+    reconstruction = Wtmp * Htmp;
+    VAFs(i) = 1 - sum((aggEMGData - reconstruction).^2, 'all') / sum(aggEMGData.^2, 'all');
+end
+
+%% Get the number of synergies
+numSynergies = find(VAFs >= VAFthresh,1,'first');
+
+%% Get the weights and time series from the W & H matrices with the determined number of synergies
+[W, H] = nnmf(aggEMGData, numSynergies);
+
+% Reset the warning back to its original state.
+warning(warningStruct.state, warningStruct.identifier);
