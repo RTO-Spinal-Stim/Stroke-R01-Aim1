@@ -1,2 +1,7 @@
 
 *.mat
+*.asv
+*.png
+*.db
+*.fig
+*.svg
