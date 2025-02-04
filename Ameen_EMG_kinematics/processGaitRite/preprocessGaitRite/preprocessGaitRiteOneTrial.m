@@ -1,4 +1,4 @@
-function [processed_data] = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, data)
+function [tableOut] = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, data)
 
 %% PURPOSE: PREPROCESS ONE PARSED OUT GAITRITE TRIAL
 
@@ -51,14 +51,14 @@ for i = 2:length(left_right)-1
     stepLenSym(i-1) = (2*abs(step_len(i)-step_len(i+1)))/(step_len(i)+step_len(i+1));
 end
 
-processed_data.stepLengthSymmetries = stepLenSym;
+processed_data.stepLengthSymmetries = {stepLenSym};
 
 %% Swing time symmetry
 for i = 3:length(left_right)-1
     swingTimeSym(i-2) = (2*abs(swing_times(i)-swing_times(i+1)))/(swing_times(i)+swing_times(i+1));
 end
 
-processed_data.swingTimeSymmetries = swingTimeSym;
+processed_data.swingTimeSymmetries = {swingTimeSym};
 
 %% Isolate L & R
 left_events_idx = left_right==1;
@@ -147,5 +147,7 @@ processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurat
 
 %% Convert all times from seconds to GaitRite frames.
 processed_data.frames = getHardwareIndicesFromSeconds(processed_data.seconds, Gait_Fs);
+
+tableOut = struct2table(processed_data);
 
 end

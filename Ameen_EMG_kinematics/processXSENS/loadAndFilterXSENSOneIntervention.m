@@ -1,4 +1,4 @@
-function [preprocessed_data] = loadAndFilterXSENSOneIntervention(xsensConfig, intervention_folder_path, regexsConfig)
+function [xsensData] = loadAndFilterXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig)
 
 %% PURPOSE: PROCESS ONE ENTIRE INTERVENTION OF XSENS DATA
 
@@ -11,19 +11,25 @@ xlsx_file_names = {xlsx_files.name};
 xlsx_file_names = sort(xlsx_file_names); % Ensure the trials are in order.
 
 %% Rename the fields and preprocess each file
-preprocessed_data = struct();
+xsensData = table;
+priorNamesNoTrial = cell(length(xlsx_file_names), 1);
+for i = 1:length(priorNamesNoTrial)
+    priorNamesNoTrial{i} = ''; % Initialize as chars
+end
 for i = 1:length(xlsx_file_names)
     xlsx_file_name_with_ext = xlsx_file_names{i};
     periodIndex = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:periodIndex-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
-    [~, ~, pre_post, speed] = parseFileName(regexsConfig, xlsx_file_name);
-    % Initialize the trials part of the structure.
-    try
-        numExistingTrials = length(fieldnames(preprocessed_data.(speed).(pre_post).Trials));
-        trialName = ['trial' num2str(numExistingTrials + 1)];        
-    catch
-        trialName = 'trial1';
-    end
-    [preprocessed_data.(speed).(pre_post).Trials.(trialName).Loaded, preprocessed_data.(speed).(pre_post).Trials.(trialName).Filtered] = loadAndFilterXSENSOneFile(xlsx_file_path, xsensConfig);
+    [subject_name, ~, pre_post, speed] = parseFileName(regexsConfig, xlsx_file_name);
+    nameNoTrial = [subject_name '_' intervention_field_name '_' pre_post '_' speed];
+    priorNamesNoTrial{i} = nameNoTrial;
+    trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
+    nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
+    tmpTable = table;
+    [loadedData, filteredData] = loadAndFilterXSENSOneFile(xlsx_file_path, xsensConfig);
+    tmpTable.Name = convertCharsToStrings(nameWithTrial);
+    tmpTable.XSENS_Loaded = loadedData;
+    tmpTable.XSENS_Filtered = filteredData;
+    xsensData = [xsensData; tmpTable];
 end

@@ -143,7 +143,8 @@ for i = 1:config.numCols:length(axHandles)
 end
 
 %% Figure settings
-sgtitle(config.title);
+displayTitle = strrep(config.title, '_', ' ');
+sgtitle(displayTitle,'Interpreter','none');
 
 %% Remove fields from config to prep for the next plot.
 for i = 1:length(fieldsToRemove)

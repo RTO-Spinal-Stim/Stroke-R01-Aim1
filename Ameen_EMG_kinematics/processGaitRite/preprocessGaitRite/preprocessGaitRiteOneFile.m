@@ -1,4 +1,4 @@
-function [GaitRite, num_data] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
+function [GaitRiteTable, num_data] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
 
 %% PURPOSE: LOAD AND PREPROCESS THE DATA FROM ONE GAITRITE FILE.
 
@@ -17,9 +17,11 @@ trialsColIdx = ismember(header_row, trialsColName);
 unique_trials = unique(num_data(:, trialsColIdx)); % Find the unique trial numbers
 
 % 1. Loop through each unique trial number to separate and preprocess the data
+GaitRiteTable = table;
 GaitRite = cell(length(unique_trials),1);
 for i = 1:length(unique_trials)
     trial_number = unique_trials(i);
     trialData = num_data(num_data(:,trialsColIdx) == trial_number, :);
-    GaitRite{i} = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, trialData);
+    tableOut = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, trialData);
+    GaitRiteTable = [GaitRiteTable; tableOut];
 end

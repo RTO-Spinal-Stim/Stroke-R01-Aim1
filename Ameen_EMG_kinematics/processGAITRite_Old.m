@@ -1,4 +1,4 @@
-function processedGait = processGAITRite(inputStruct,GAIT_Fs, EMG_Fs, X_Fs)
+function processedGait = processGAITRite_Old(inputStruct,GAIT_Fs, EMG_Fs, X_Fs)
 
 %% PURPOSE: PROCESS THE GAIT RITE:
 % 1. Isolate the individual trials (by unique Gait_Id)
