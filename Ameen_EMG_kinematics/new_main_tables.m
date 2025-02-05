@@ -156,8 +156,19 @@ spmTableDelsys = SPManalysisAll(cycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM
 visitTable = addToTable(visitTable, spmTableXSENS);
 visitTable = addToTable(visitTable, spmTableDelsys);
 
-%% Calculate the magnitude and duration of L vs. R differences obtained from SPM
+%% Average the data within one visit.
+disp('Averaging the data within one visit');
+avgTableXSENS = avgStructAll(cycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', 2);
+avgTableDelsys = avgStructAll(cycleTable, 'Delsys_TimeNormalized', 'Delsys_Averaged', 2);
+visitTable = addToTable(visitTable, avgTableXSENS);
+visitTable = addToTable(visitTable, avgTableDelsys);
+
+%% Calculate the magnitude and duration of L vs. R differences obtained from SPM in one visit.
 disp('Calculating magnitude & durations of L vs. R differences from SPM');
+magDurTableXSENS = magsDursDiffsLR_All(visitTable, 'XSENS_SPM', 'XSENS_Averaged', 'XSENS_MagsDiffs');
+magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Deksys_MagsDiffs');
+visitTable = addToTable(visitTable, magDurTableXSENS);
+visitTable = addToTable(visitTable, magDurTableDelsys);
 
 %% Save the structs to the participant's save folder.
 save(subjectSavePath, 'delsysStruct','gaitRiteStruct','xsensStruct','-v6');

@@ -4,6 +4,8 @@ function [tableOut] = addToTable(existingTable, newTable)
 % FIRST, ATTEMPTS VERTICAL CONCATENATION.
 % IF THAT FAILS, ATTEMPTS AN OUTER JOIN.
 
+
+
 try
     tableOut = [existingTable; newTable];
 catch
