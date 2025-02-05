@@ -1,0 +1,42 @@
+{
+    "NUM_PULSES_PER_INTENSITY": 5,
+    "SAMPLE_RATE": 2000,
+    "LOWPASS_FILTER": {
+        "ORDER": 5,
+        "LOWPASS_CUTOFF": 450
+    },
+    "BANDPASS_FILTER": {
+        "LOW_CUTOFF": 20,
+        "HIGH_CUTOFF": 500,
+        "ORDER": 5
+    },
+    "SUBJ_PATH_SUFFIX": "TEPS",
+    "INTERVENTION_FOLDERS": [
+        "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
+    ],
+    "MAPPED_INTERVENTION_FIELDS": [
+        "RMT30", "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"
+    ],
+    "AIM1_FOLDER": "Y:\\Spinal Stim_Stroke R01\\AIM 1",
+    "TEPS_LOG_COLUMN_NAMES": {
+        "PRE_POST_COLUMN": "Pre/Post",
+        "TEP_FILENAME": "TEP_Filename",
+        "SUBJECT_NAME": "Subject",
+        "PARETIC_SIDE": "PareticSide",
+        "TIMEPOINT": "Date",
+        "SESSION_CODE": "SessionCode",
+        "PULSES_TO_DELETE": "Pulses to remove"
+    },
+    "MUSCLES": [
+        "RRF", 
+        "LRF", 
+        "RHAM", 
+        "LHAM", 
+        "RVL", 
+        "LVL", 
+        "RTA", 
+        "LTA", 
+        "RMG", 
+        "LMG"
+    ]
+}

@@ -32,7 +32,7 @@ for SUBJ_i = 1:length(SUBJ_list)
         
         for INTER_i = 1: length(INTER_list)
             INTER = INTER_list(INTER_i);
-            final_muscles_list_fieldNames = fieldnames(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER).(TP));
+            final_muscles_list_fieldNames = fieldnames(ALL_SUBJ_STRUCT.(SUBJ).(INTER).(TP));
             
             % List to keep track of maxes
             max_p2p_LIST = zeros(1, 10);
@@ -48,7 +48,7 @@ for SUBJ_i = 1:length(SUBJ_list)
                     continue;
                 end
                 
-                P2P_AUC_table = ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER).(TP).(muscle_channel);
+                P2P_AUC_table = ALL_SUBJ_STRUCT.(SUBJ).(INTER).(TP).(muscle_channel);
                 P2P_AUC_table_MEAN = groupsummary(P2P_AUC_table, {'SUBJ','INTER', 'TP', 'Var4','intensity_value'}, 'mean', {'p2p', 'AUC_lat_100', 'AUC_lat_pickedEnd', ...
                     'AUC_smoothed', 'latency', 'latency_fromOnset_idx', 'End','sitmIDX_picked','endIDX_picked' });
                 
@@ -63,11 +63,11 @@ for SUBJ_i = 1:length(SUBJ_list)
                 Max_AUC_lat_pickedEnd = max(P2P_AUC_table_MEAN.mean_AUC_lat_pickedEnd);
                 Max_AUC_smoothed      = max(P2P_AUC_table_MEAN.mean_AUC_smoothed);
                 
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).MaxP2P                = MaxP2P;
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).MaxInt                = MaxInt;
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_lat_100       = Max_AUC_lat_100;
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_lat_pickedEnd = Max_AUC_lat_pickedEnd;
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_smoothed      = Max_AUC_smoothed;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).MaxP2P                = MaxP2P;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).MaxInt                = MaxInt;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_lat_100       = Max_AUC_lat_100;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_lat_pickedEnd = Max_AUC_lat_pickedEnd;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).Max_AUC_smoothed      = Max_AUC_smoothed;
                 
                 max_p2p_LIST(mus_i)               = MaxP2P;
                 max_AUC_lat_100_LIST(mus_i)       = Max_AUC_lat_100;
@@ -85,8 +85,8 @@ for SUBJ_i = 1:length(SUBJ_list)
                 P2P_AUC_table_MEAN.norm_MaxInt               = normalize_to_max_y(P2P_AUC_table_MEAN.intensity_value);
                 
                 
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).MeanTable_P2P_AUC = P2P_AUC_table_MEAN;
-                max_structs.("SS"+SUBJ).(INTER).(TP).(muscle_channel).AllPulsesTable_P2P_AUC = P2P_AUC_table;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).MeanTable_P2P_AUC = P2P_AUC_table_MEAN;
+                max_structs.(SUBJ).(INTER).(TP).(muscle_channel).AllPulsesTable_P2P_AUC = P2P_AUC_table;
                 
                 
                 % Plot the recruitment curve

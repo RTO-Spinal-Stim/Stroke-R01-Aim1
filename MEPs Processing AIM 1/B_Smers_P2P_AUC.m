@@ -84,8 +84,8 @@ for SUBJ_i = 1:length(SUBJ_list)
             disp( "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat" + " was already processed. Skipping.");
             
             % Check if pre or post is missing:
-            TP_LIST_DONE = fieldnames(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER));
-            TP_list=setdiff(TP_list, fieldnames(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER))); % if length is 0, then the foor loop below will not run
+            TP_LIST_DONE = fieldnames(ALL_SUBJ_STRUCT.(SUBJ).(INTER));
+            TP_list=setdiff(TP_list, fieldnames(ALL_SUBJ_STRUCT.(SUBJ).(INTER))); % if length is 0, then the foor loop below will not run
             % this is done is only PRE was processed - could process post
             % later without having to re-process pre
             
@@ -101,7 +101,7 @@ for SUBJ_i = 1:length(SUBJ_list)
             TP = TP_list(TP_i);
             
         
-            final_muscles_list_fieldNames = fieldnames(subj_Struct.("SS"+SUBJ).(INTER).(TP).(plotMethod));
+            final_muscles_list_fieldNames = fieldnames(subj_Struct.(SUBJ).(INTER).(TP).(plotMethod));
             
             for mus_i =1: length(final_muscles_list_fieldNames)
                 
@@ -109,13 +109,13 @@ for SUBJ_i = 1:length(SUBJ_list)
                 muscle_channel = final_muscles_list_fieldNames{mus_i}; 
                 
                 
-                if isfield(ALL_SUBJ_STRUCT, "SS"+SUBJ) && ...
-                   isfield(ALL_SUBJ_STRUCT.("SS"+SUBJ), INTER) && ...
-                   isfield(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER), TP) && ...
-                   isfield(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER).(TP), muscle_channel)
+                if isfield(ALL_SUBJ_STRUCT, SUBJ) && ...
+                   isfield(ALL_SUBJ_STRUCT.(SUBJ), INTER) && ...
+                   isfield(ALL_SUBJ_STRUCT.(SUBJ).(INTER), TP) && ...
+                   isfield(ALL_SUBJ_STRUCT.(SUBJ).(INTER).(TP), muscle_channel)
                    
                    % If there is a table (or info saved)
-                   if istable(ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER).(TP).(muscle_channel))
+                   if istable(ALL_SUBJ_STRUCT.(SUBJ).(INTER).(TP).(muscle_channel))
                        % of there is info saved, moved on to next muscle:
                        continue; 
                    end
@@ -132,7 +132,7 @@ for SUBJ_i = 1:length(SUBJ_list)
                 figureHandle = figure;
                
                
-                trials_table = subj_Struct.("SS"+SUBJ).(INTER).(TP).(plotMethod).(muscle_channel); 
+                trials_table = subj_Struct.(SUBJ).(INTER).(TP).(plotMethod).(muscle_channel); 
                 
                 % Iterate through each pulse - trials_table(1,:)
                 total_pulses=size(trials_table,1);
@@ -237,7 +237,7 @@ for SUBJ_i = 1:length(SUBJ_list)
                        % If there is a response - get AUC:
                        rect_sig = abs(signal);
                        
-                       %subj_Struct.("SS"+SUBJ).(INTER).(TP).(rectifiedMethod).(muscle_channel)(pulseNum,:); 
+                       %subj_Struct.(SUBJ).(INTER).(TP).(rectifiedMethod).(muscle_channel)(pulseNum,:); 
                        
                        AUC_lat_100 = getAUC(rect_sig, latency, End, 2000);
                        
@@ -311,7 +311,7 @@ for SUBJ_i = 1:length(SUBJ_list)
                 
                 % Save in a struct 
                 % Subj - Inter - TP - MUSCLE - TABLE WITH FEATURES PER PULSE
-                ALL_SUBJ_STRUCT.("SS"+SUBJ).(INTER).(TP).(muscle_channel)=singleMuscle_table;
+                ALL_SUBJ_STRUCT.(SUBJ).(INTER).(TP).(muscle_channel)=singleMuscle_table;
                 
                 newEntry = table(INITIALS, string(datestr(now, 'ddmmmyyyy')), string(INTER), string(TP), string(muscle_channel),...
                              'VariableNames', {'Intials', 'Date', 'Intervention', 'Timepoint', 'Muscle'});
@@ -327,7 +327,7 @@ for SUBJ_i = 1:length(SUBJ_list)
         
     end
     
-    ALL_SUBJ_STRUCT.("SS"+SUBJ).("plotMethod")=plotMethod;
+    ALL_SUBJ_STRUCT.(SUBJ).("plotMethod")=plotMethod;
     SAVEPATH = fullfile(curr_subj_save_path, "B_" +SUBJ+"_" + INTER  +"_TEPs_PulsesFeatsStruct.mat");
     save(SAVEPATH, "ALL_SUBJ_STRUCT")
 end
