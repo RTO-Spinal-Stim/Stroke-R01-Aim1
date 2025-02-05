@@ -10,7 +10,7 @@ subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
-plot = false;
+plot = true;
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
@@ -171,5 +171,5 @@ visitTable = addToTable(visitTable, magDurTableXSENS);
 visitTable = addToTable(visitTable, magDurTableDelsys);
 
 %% Save the structs to the participant's save folder.
-save(subjectSavePath, 'delsysStruct','gaitRiteStruct','xsensStruct','-v6');
+save(subjectSavePath, 'trialTable', 'visitTable','cycleTable','-v6');
 disp(['Saved ' subject ' structs to: ' subjectSavePath]);
