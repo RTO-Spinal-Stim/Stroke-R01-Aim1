@@ -29,6 +29,7 @@ regexsConfig = config.REGEXS;
 prePostTable = table;
 trialTable = table;
 cycleTable = table;
+visitTable = table;
 
 %% GaitRite Processing
 disp('Preprocessing Gaitrite');
@@ -72,33 +73,48 @@ if plot
 end
 
 %% Split by gait cycle
+disp('Splitting XSENS & Delsys by gait cycle');
+xsensCyclesTable = splitTrialsByGaitCycle(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
+delsysCyclesTable = splitTrialsByGaitCycle(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
+cycleTable = addToTable(cycleTable, xsensCyclesTable);
+cycleTable = addToTable(cycleTable, delsysCyclesTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
 if plot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
-    plotAllTrials(delsysStruct, 'Filtered EMG', baseSavePathEMG, 'Filtered');
+    plotAllTrials(delsysCyclesTable, 'Filtered EMG', baseSavePathEMG, 'Delsys_Filtered');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
-    plotAllTrials(xsensStruct, 'Filtered Joint Angles', baseSavePathXSENS, 'Filtered');
+    plotAllTrials(xsensCyclesTable, 'Filtered Joint Angles', baseSavePathXSENS, 'XSENS_Filtered');
 end
 
-%% Downsample each gait cycle's data to 101 points and aggregate together, within and across trials.
+%% Downsample each gait cycle's data to 101 points.
+n_points = 101;
+disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
+xsensDownsampledTable = downsampleAllData(cycleTable, 'XSENS_Filtered', 'XSENS_TimeNormalized', n_points);
+delsysDownsampledTable = downsampleAllData(cycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
+cycleTable = addToTable(cycleTable, xsensDownsampledTable);
+cycleTable = addToTable(cycleTable, delsysDownsampledTable);
 
 %% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
 if plot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\TimeNormalized_GaitCycles';
-    plotAllTrials(delsysStruct, 'Time-Normalized EMG', baseSavePathEMG, 'TimeNormalized');
+    plotAllTrials(cycleTable, 'Time-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\TimeNormalized_GaitCycles';
-    plotAllTrials(xsensStruct, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'TimeNormalized');
+    plotAllTrials(cycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
 %% Identify the max EMG data value across one whole visit (all trials & gait cycles)
+maxEMGTable = maxEMGValuePerVisit(cycleTable, 'Delsys_TimeNormalized', 'Max_EMG_Value');
+visitTable = addToTable(visitTable, maxEMGTable);
 
 %% Normalize the time-normalized EMG data to the max value across one whole visit (all trials & gait cycles)
+normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized');
+cycleTable = addToTable(cycleTable, normalizedEMGTable);
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
 if plot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
-    plotAllTrials(delsysStruct, 'Scaled To Max EMG', baseSavePathEMG, 'ScaledToMax');    
+    plotAllTrials(cycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
 end
 
 %% Set up muscle & joint names for analyses
