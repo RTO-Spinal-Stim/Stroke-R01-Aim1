@@ -16,12 +16,13 @@ for i = 1:height(dataTable)
     tmpTable = table;
     name = dataTable.Name(i);
     dataToNormalize = dataTable.(dataColName)(i);
-    nameParts = strsplit(name, '_');
-    visitName = '';
-    for j = 1:length(nameParts)-2
-        visitName = [visitName '_' nameParts{j}];
-    end
-    visitName = visitName(2:end);
+    % nameParts = strsplit(name, '_');
+    visitName = getNamesPrefixes(char(name), 2);
+    % visitName = '';
+    % for j = 1:length(nameParts)-2
+    %     visitName = [visitName '_' nameParts{j}];
+    % end
+    % visitName = visitName(2:end);
     visitRowInVisitTable = ismember(visitTable.Name, visitName);
     visitData = visitTable.(visitColName)(visitRowInVisitTable);
     normalizedStruct = struct;

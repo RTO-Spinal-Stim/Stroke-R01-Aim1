@@ -11,20 +11,7 @@ function [maxEMGTable] = maxEMGValuePerVisit(dataTable, emgColName, maxEMGColNam
 maxEMGTable = table;
 
 %% Get the unique visit names.
-visitNames = {};
-for i = 1:height(dataTable)
-    name = dataTable.Name(i);
-    nameParts = strsplit(name, '_');
-    visitName = '';
-    for j = 1:length(nameParts)-2
-        visitName = [visitName '_' nameParts{j}];
-    end
-    visitName = visitName(2:end);
-    if ~ismember(visitName, visitNames)
-        visitNames = [visitNames; {visitName}];
-    end
-end
-
+visitNames = getNamesPrefixes(dataTable.Name, 2);
 for visitNum = 1:length(visitNames)
     visitName = visitNames{visitNum};
     maxEMGStruct = struct;

@@ -138,15 +138,23 @@ end
 disp('Computing the number of muscle synergies');
 config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
+synergiesTableL = calculateSynergiesAll(cycleTable, 'Delsys_Normalized_TimeNormalized', musclesL, VAFthresh, 'L');
+synergiesTableR = calculateSynergiesAll(cycleTable, 'Delsys_Normalized_TimeNormalized', musclesR, VAFthresh, 'R');
+cycleTable = addToTable(cycleTable, synergiesTableL);
+cycleTable = addToTable(cycleTable, synergiesTableR);
 
 %% Scatter plot the number of muscle synergies & the step lengths
-if plot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\NumSynergies';
-    scatterPlotPerGaitCyclePerIntervention(delsysStruct, 'Num Synergies', baseSavePathEMG, 'NumSynergies');    
-end
+% if plot
+%     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\NumSynergies';
+%     scatterPlotPerGaitCyclePerIntervention(delsysStruct, 'Num Synergies', baseSavePathEMG, 'NumSynergies');    
+% end
 
 %% SPM Analysis for EMG & XSENS
 disp('Running SPM analysis');
+spmTableXSENS = SPManalysisAll(cycleTable, 'XSENS_TimeNormalized', 'XSENS_SPM', jointsL, jointsR);
+spmTableDelsys = SPManalysisAll(cycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM', musclesL, musclesR);
+visitTable = addToTable(visitTable, spmTableXSENS);
+visitTable = addToTable(visitTable, spmTableDelsys);
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM
 disp('Calculating magnitude & durations of L vs. R differences from SPM');
