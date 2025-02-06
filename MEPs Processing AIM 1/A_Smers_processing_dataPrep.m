@@ -111,10 +111,10 @@ for INTER_i = 1: length(INTER_list)
 
         disp([num2str(subj), ' ', timepoint, ' - ', session_code])
 
-        % CHECK IF FILES EXITS AND IF IT DOES SKIP:
+        % CHECK IF FILES EXISTS AND IF IT DOES SKIP:
         processed_files = dir(fullfile(curr_subj_save_path,"TEPsProcessed", '*.mat'));
         if sum(contains({processed_files.name}, "A_" +SUBJ  +"_pre_processedTEPs_"))
-            disp("*************A_" + SUBJ + "_" + inter_valid_names(session_code) + " already processed");
+            disp("*************A_" + SUBJ + "_" + mapped_interventions(session_code) + " already processed");
             return
         end
 
@@ -157,7 +157,7 @@ for INTER_i = 1: length(INTER_list)
 
         %% Creating the structs of filtered data
         EMG_raw_struct = struct_raw_EMG_trials(channels, data, datastart, dataend, delete_in);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Raw = EMG_raw_struct;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Raw = EMG_raw_struct;
 
         % CHECK PULSES (RANDOM MUSCLE)
         total_pulses=size(EMG_raw_struct.RHAM,1);
@@ -172,17 +172,17 @@ for INTER_i = 1: length(INTER_list)
 
         % LOWPASS
         struct_low_filt_EMG_trials = EMG_filt(EMG_raw_struct, f,e);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).LowPass = struct_low_filt_EMG_trials;        
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).LowPass = struct_low_filt_EMG_trials;        
 
         % BANDPASS
         struct_band_filt_EMG_trials = EMG_filt(EMG_raw_struct, b,a);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).BandPass = struct_band_filt_EMG_trials;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).BandPass = struct_band_filt_EMG_trials;
 
         % ###############
         %1. Shifting signal to last reference (just the bandpass):
         [struct_EMG_trials_shift_fromBand, struct_EMG_trials_shiftIDX] = align_signals(struct_band_filt_EMG_trials);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Aligned_fromBand = struct_EMG_trials_shift_fromBand;
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).AlignedShiftIdx_fromBand = struct_EMG_trials_shiftIDX;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Aligned_fromBand = struct_EMG_trials_shift_fromBand;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).AlignedShiftIdx_fromBand = struct_EMG_trials_shiftIDX;
         % if index is negative - have to shift forward
         % #####
         %2. RECTIFY SIGNAL - Using bandpass to recrified signal
@@ -193,24 +193,24 @@ for INTER_i = 1: length(INTER_list)
             muscles_trials = struct_EMG_trials_shift_fromBand.(muscle);
             rect_struct.(muscle) = abs(muscles_trials);
         end
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Rectified_afterAligBandOnly = rect_struct;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Rectified_afterAligBandOnly = rect_struct;
 
         %.4 Stim ONSET
         struct_stimONSET_INDEX_EMG_trials = getStimOnsetMax(struct_band_filt_EMG_trials);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).StimOnsetPeaks = struct_stimONSET_INDEX_EMG_trials;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).StimOnsetPeaks = struct_stimONSET_INDEX_EMG_trials;
 
         % SMOOTH INTERMEDIATE STEP BEFORE ALGIN
         % ###############
         %1. Smoothing signal - Using bandpass to recrified signal
         windowDuration = 3e-3; % Window duration (seconds)
         struct_filtSMOOTH_EMG_trials = Smoothing_wind_Filt(struct_band_filt_EMG_trials, windowDuration, samprate);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Smoothed = struct_filtSMOOTH_EMG_trials;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Smoothed = struct_filtSMOOTH_EMG_trials;
 
         % ###############
         %2. Shifting signal to last reference:
         [struct_EMG_trials_shift_fromSmooth, struct_EMG_trials_shiftIDX] = align_signals(struct_filtSMOOTH_EMG_trials);
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Aligned_fromSmooth = struct_EMG_trials_shift_fromSmooth;
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).AlignedShiftIdx_fromSmooth = struct_EMG_trials_shiftIDX;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Aligned_fromSmooth = struct_EMG_trials_shift_fromSmooth;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).AlignedShiftIdx_fromSmooth = struct_EMG_trials_shiftIDX;
 
 
         % #####
@@ -222,7 +222,7 @@ for INTER_i = 1: length(INTER_list)
             muscles_trials = struct_EMG_trials_shift_fromSmooth.(muscle);
             rect_struct.(muscle) = abs(muscles_trials);
         end
-        subj_Struct.(SUBJ).(inter_valid_names(session_code)).(timepoint).Rectified_afterAligSmooth = rect_struct;
+        subj_Struct.(SUBJ).(mapped_interventions(session_code)).(timepoint).Rectified_afterAligSmooth = rect_struct;
 
     end
 
