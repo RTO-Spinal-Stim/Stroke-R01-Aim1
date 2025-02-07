@@ -23,11 +23,11 @@ existingTableVarNames = newTable.Properties.VariableNames;
 matchingCols = intersect(existingTableVarNames, newTableVarNames);
 numMatches = length(matchingCols);
 
-if numMatches == 1
-    tableOut = outerjoin(existingTable, newTable, 'Keys', matchingCols{1}, ...
-        'MergeKeys', true);
-    return;
-end
+% if numMatches == 1
+tableOut = outerjoin(existingTable, newTable, 'Keys', 'Name', ...
+    'MergeKeys', true);
+return;
+% end
 
 % Case 3: Multiple but not all columns match
 if numMatches > 1

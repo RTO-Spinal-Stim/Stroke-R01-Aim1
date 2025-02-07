@@ -10,7 +10,7 @@ subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
-plot = true;
+plot = false;
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');

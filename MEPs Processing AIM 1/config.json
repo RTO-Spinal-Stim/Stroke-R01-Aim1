@@ -19,13 +19,13 @@
     ],
     "AIM1_FOLDER": "Y:\\Spinal Stim_Stroke R01\\AIM 1",
     "TEPS_LOG_COLUMN_NAMES": {
-        "PRE_POST_COLUMN": "Pre/Post",
+        "PRE_POST_COLUMN": "Pre_Post",
         "TEP_FILENAME": "TEP_Filename",
         "SUBJECT_NAME": "Subject",
         "PARETIC_SIDE": "PareticSide",
         "TIMEPOINT": "Date",
         "SESSION_CODE": "SessionCode",
-        "PULSES_TO_DELETE": "Pulses to remove"
+        "PULSES_TO_DELETE": "PulsesToRemove"
     },
     "MUSCLES": [
         "RRF", 

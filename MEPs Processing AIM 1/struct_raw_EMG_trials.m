@@ -1,4 +1,7 @@
 function struct_raw_EMG_trials = struct_raw_EMG_trials(channels, data, datastart, dataend, delete_in)
+
+%% PURPOSE: SHAPE THE RAW EMG DATA INTO A STRUCTURE.
+
 % f and e are the filter defined outside function
 struct_raw_EMG_trials = struct();
 

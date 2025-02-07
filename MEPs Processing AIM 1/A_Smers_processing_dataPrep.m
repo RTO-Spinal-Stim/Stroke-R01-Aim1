@@ -24,8 +24,7 @@ pulses_perIntensity = config.NUM_PULSES_PER_INTENSITY;
 % Lowpass filter config
 lowpassFilterConfig = config.LOWPASS_FILTER;
 low = lowpassFilterConfig.LOWPASS_CUTOFF; % [Inanici, 2018]
-% Don't do highpass filter, it adds low-freq distortion
-% high = 20; % [Inanici, 2018]
+% Don't do highpass filter, it adds low-freq distortion [Inanici, 2018]
 samprate = config.SAMPLE_RATE;
 lowpassOrder = lowpassFilterConfig.ORDER;
 [f,e] = butter(lowpassOrder,low/(samprate/2),'low');

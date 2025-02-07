@@ -21,13 +21,7 @@ intervention_folders = config.INTERVENTION_FOLDERS;
 INTER_list = intervention_folders;
 intervention_field_names = config.MAPPED_INTERVENTION_FIELDS;
 mapped_interventions = containers.Map(intervention_folders, intervention_field_names);
-
-
-% SUBJ_list = { '02', '03', '04', '05' }; %, '01','02', '03', '04', '05', '06', '08', '09', '10'];
-% TP_list = { 'PRE', 'POST' }; 
-% INTER_list = { '30_RMT', '30_TOL', '50_RMT', '50_TOL', 'SHAM1','SHAM2' }; 
-
-inter_valid_names = containers.Map(intervention_folders, intervention_field_names);
+% inter_valid_names = containers.Map(intervention_folders, intervention_field_names);
 
 aim1_folder = config.AIM1_FOLDER; 
 subj_path = fullfile(aim1_folder, 'Subject Data');
