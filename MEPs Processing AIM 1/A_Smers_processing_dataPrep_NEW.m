@@ -9,48 +9,11 @@
 % points, 22 ms)
 % Saved to participant
 
-subj_path_suffix = config.SUBJ_PATH_SUFFIX;
-TEPcolNames = config.TEPS_LOG_COLUMN_NAMES;
-prePostColNameHeader = TEPcolNames.PRE_POST_COLUMN;
-tepFileNameHeader = TEPcolNames.TEP_FILENAME;
-subjectNameHeader = TEPcolNames.SUBJECT_NAME;
-pareticSideHeader = TEPcolNames.PARETIC_SIDE;
-sessionCodeHeader = TEPcolNames.SESSION_CODE;
-pulsesToDeleteHeader = TEPcolNames.PULSES_TO_DELETE;
-timepointHeader = TEPcolNames.TIMEPOINT;
-final_muscles_list = convertCharsToStrings(config.MUSCLES);
-pulses_perIntensity = config.NUM_PULSES_PER_INTENSITY;
-
-samprate = config.SAMPLE_RATE;
-% Don't do highpass filter, it adds low-freq distortion [Inanici, 2018]
-
-% Lowpass filter config
-lowpassFilterConfig = config.LOWPASS_FILTER;
-low = lowpassFilterConfig.LOWPASS_CUTOFF; % [Inanici, 2018]
-lowpassOrder = lowpassFilterConfig.ORDER;
-[f,e] = butter(lowpassOrder,low/(samprate/2),'low');
-
-% Bandpass filter config
-bandpassFilterConfig = config.BANDPASS_FILTER;
-%A. Bandpass filter design (20-500 Hz)
-low_cutoff = bandpassFilterConfig.LOW_CUTOFF;  % Lower cutoff frequency (Hz)
-high_cutoff = bandpassFilterConfig.HIGH_CUTOFF; % Upper cutoff frequency (Hz)
-bandpassOrder = bandpassFilterConfig.ORDER;
-[b, a] = butter(bandpassOrder, [low_cutoff, high_cutoff]/(samprate/2), 'bandpass');
-
 
 %% Read in master TEPs file. Removes extra rows
 % Obtains the bad pulses for each MEP trial.
 teps_log_filename = fullfile(subj_path, 'TEPs_log.xlsx');
-% [~,~,teps_log] = xlsread(teps_log_filename,'Sheet1');
-teps_log = readtable(teps_log_filename,'Sheet','Sheet1');
-isEmpty = @(x) isempty(x); % Anonymous function
-nanSubjIdx = cellfun(isEmpty, teps_log.Subject);
-firstNaNSubjIdx = find(nanSubjIdx,1,'first');
-teps_log = teps_log(1:firstNaNSubjIdx-1,:);
-
-curr_subj_path = fullfile(subj_path_prefix, subject, subj_path_suffix);
-curr_subj_save_path = fullfile(subj_save_path_prefix, subject, subj_path_suffix);
+tepsLog = readTEPsLog(teps_log_filename);
 
 % Create folder to save mats if do not exist
 % Define the new folder path
@@ -59,7 +22,7 @@ mkdir(folderPath);
 
 %% Process the TEPs log for one subject.
 correctChannelsJSONPath = 'A_channels.json';
-tepsResultTableOneSubject = processTEPsOneSubject(teps_log, subject, TEPcolNames, correctChannelsJSONPath);
+tepsResultTableOneSubject = processTEPsOneSubject(tepsLog, subject, config, correctChannelsJSONPath);
 
 %% Process each .mat file.
 for i = 1:height(tepsLogOneSubject)

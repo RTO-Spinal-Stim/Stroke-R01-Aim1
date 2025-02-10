@@ -11,19 +11,24 @@ function [tepsTable] = processTEPsOneSubject(tepsLogAll, subject, config, correc
 % Outputs:
 % tepsTable: Table of processed TEPs results.
 
+%% Config
+TEPcolNamesConfig = config.TEPS_LOG_COLUMN_NAMES;
+subjectNameHeader = TEPcolNamesConfig.SUBJECT_NAME;
+
 %% Get the numeric part of the subject name
 numericRegex = '\d+';
 subjectNum = regexp(subject, numericRegex, 'match');
 subjectNum = subjectNum{1};
 
 %% Filter TEPS log for one subject.
-tepColNamesConfig = config.TEPS_LOG_COLUMN_NAMES;
-subjectNameHeader = tepColNamesConfig.SUBJECT_NAME;
 tepsLog = filterTEPsLogForOneSubject(tepsLogAll, subjectNameHeader, subjectNum);
-channels_struct_from_json = jsondecode(fileread(correctChannelsJSONPath));
+correctedChannelsStruct = jsondecode(fileread(correctChannelsJSONPath));
+correctedChannelsStructSubject = struct;
+if isfield(correctedChannelsStruct, subject)
+    correctedChannelsStructSubject = correctedChannelsStruct.(subject);
+end
 tepsTable = table;
 for i = 1:height(tepsLog)
-
-
-
+    row = processTEPsOneTrial(config, tepsLog(i,:), correctedChannelsStructSubject);  
+    tepsTable = [tepsTable; row];
 end
