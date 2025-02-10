@@ -1,4 +1,4 @@
-function [tepsTable] = processTEPsOneSubject(tepsLogAll, subject, config, currSubjFolder, correctChannelsJSONPath)
+function [tepsResultTableOneSubject] = processTEPsOneSubject(tepsLogAll, subject, config, currSubjFolder, correctChannelsJSONPath)
 
 %% PURPOSE: PROCESS TEPs FOR ONE SUBJECT. PART A IN NICOLE'S PIPELINE FOR STROKE SPINAL STIM.
 % Inputs:
@@ -30,7 +30,7 @@ correctedChannelsStructSubject = struct;
 if isfield(correctedChannelsStruct, subject)
     correctedChannelsStructSubject = correctedChannelsStruct.(subject);
 end
-tepsTable = table;
+tepsResultTableOneSubject = table;
 for i = 1:height(tepsLog)    
     fileName = tepsLog.(fileNameHeader)(i);
     fileName = fileName{1};
@@ -38,5 +38,9 @@ for i = 1:height(tepsLog)
     sessionCode = sessionCode{1};
     trialFilePath = fullfile(currSubjFolder, sessionCode, fileName);
     row = processTEPsOneTrial(config, tepsLog(i,:), trialFilePath, correctedChannelsStructSubject);  
-    tepsTable = [tepsTable; row];
+    tepsResultTableOneSubject = [tepsResultTableOneSubject; row];
 end
+
+curr_subj_save_path = fullfile(config.SAVE_FOLDER, subject);
+subjectSavePathPartA = fullfile(curr_subj_save_path, config.SAVE_FILENAMES.A);
+save(subjectSavePathPartA, 'tepsResultTableOneSubject');

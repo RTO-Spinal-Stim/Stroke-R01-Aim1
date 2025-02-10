@@ -6,7 +6,8 @@ subject = 'SS13';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 % Path to save the data to.
-subjectSavePath = strcat('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\', subject, '.mat');
+subjectSaveFolder = fullfile('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\', subject);
+saveFileName = 'Overground_EMG_Kinematics.mat';
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
@@ -171,5 +172,6 @@ visitTable = addToTable(visitTable, magDurTableXSENS);
 visitTable = addToTable(visitTable, magDurTableDelsys);
 
 %% Save the structs to the participant's save folder.
+subjectSavePath = fullfile(subjectSaveFolder, saveFileName);
 save(subjectSavePath, 'trialTable', 'visitTable','cycleTable','-v6');
 disp(['Saved ' subject ' structs to: ' subjectSavePath]);
