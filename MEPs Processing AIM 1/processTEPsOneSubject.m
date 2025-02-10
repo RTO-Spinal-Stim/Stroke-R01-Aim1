@@ -1,10 +1,11 @@
-function [tepsTable] = processTEPsOneSubject(tepsLogAll, subject, config, correctChannelsJSONPath)
+function [tepsTable] = processTEPsOneSubject(tepsLogAll, subject, config, currSubjFolder, correctChannelsJSONPath)
 
 %% PURPOSE: PROCESS TEPs FOR ONE SUBJECT. PART A IN NICOLE'S PIPELINE FOR STROKE SPINAL STIM.
 % Inputs:
 % tepsLog: TEPs log table
 % subject: Subject name
 % tepColNamesConfig: Struct of column names for TEPs log
+% currSubjFolder: The folder path for the current subject's TEPs data.
 % correctChannelsJSONPath: Path to the JSON file for correcting the EMG
 % channels
 % 
@@ -14,6 +15,8 @@ function [tepsTable] = processTEPsOneSubject(tepsLogAll, subject, config, correc
 %% Config
 TEPcolNamesConfig = config.TEPS_LOG_COLUMN_NAMES;
 subjectNameHeader = TEPcolNamesConfig.SUBJECT_NAME;
+fileNameHeader = TEPcolNamesConfig.TEP_FILENAME;
+sessionCodeHeader = TEPcolNamesConfig.SESSION_CODE;
 
 %% Get the numeric part of the subject name
 numericRegex = '\d+';
@@ -28,7 +31,12 @@ if isfield(correctedChannelsStruct, subject)
     correctedChannelsStructSubject = correctedChannelsStruct.(subject);
 end
 tepsTable = table;
-for i = 1:height(tepsLog)
-    row = processTEPsOneTrial(config, tepsLog(i,:), correctedChannelsStructSubject);  
+for i = 1:height(tepsLog)    
+    fileName = tepsLog.(fileNameHeader)(i);
+    fileName = fileName{1};
+    sessionCode = tepsLog.(sessionCodeHeader)(i);
+    sessionCode = sessionCode{1};
+    trialFilePath = fullfile(currSubjFolder, sessionCode, fileName);
+    row = processTEPsOneTrial(config, tepsLog(i,:), trialFilePath, correctedChannelsStructSubject);  
     tepsTable = [tepsTable; row];
 end

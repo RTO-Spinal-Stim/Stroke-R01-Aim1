@@ -10,7 +10,8 @@
         "HIGH_CUTOFF": 500,
         "ORDER": 5
     },
-    "SUBJ_PATH_SUFFIX": "TEPS",
+    "WINDOW_DURATION": 0.003,
+    "SUBJ_PATH_SUFFIX": "TEPs",
     "INTERVENTION_FOLDERS": [
         "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
     ],

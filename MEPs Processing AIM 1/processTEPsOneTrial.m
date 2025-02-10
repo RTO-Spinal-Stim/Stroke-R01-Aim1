@@ -1,16 +1,15 @@
-function [processedRow] = processTEPsOneTrial(config, rowIn, correctedChannelsStruct)
+function [processedRow, logInfo] = processTEPsOneTrial(config, rowIn, trialFilePath, correctedChannelsStruct)
 
 %% PURPOSE: PROCESS ONE INDIVIDUAL TRIAL OF TEPs 
 % PART A OF NICOLE'S PIPELINE.
 % Inputs:
 % config: The configuration struct loaded from JSON
 % rowIn: A table with one row of data from the TEPs log.
+% trialFilePath: Char path to the file for this trial.
 % correctedChannelsStruct: Loaded from JSON, identifies which channels need
 % to be corrected.
 
 processedRow = table;
-
-windowDuration = 3e-3; % Window duration (seconds)
 
 %% Config
 TEPcolNamesConfig = config.TEPS_LOG_COLUMN_NAMES;
@@ -25,6 +24,7 @@ final_muscles_list = convertCharsToStrings(config.MUSCLES);
 number_of_muscles = length(final_muscles_list);
 pulses_perIntensity = config.NUM_PULSES_PER_INTENSITY;
 sampleRate = config.SAMPLE_RATE;
+windowDuration = config.WINDOW_DURATION; % Window duration (seconds)
 
 %% Filter
 % Don't do highpass filter, it adds low-freq distortion [Inanici, 2018]
@@ -32,7 +32,7 @@ sampleRate = config.SAMPLE_RATE;
 lowpassFilterConfig = config.LOWPASS_FILTER;
 low = lowpassFilterConfig.LOWPASS_CUTOFF; % [Inanici, 2018]
 lowpassOrder = lowpassFilterConfig.ORDER;
-[f,e] = butter(lowpassOrder,low/(samprate/2),'low');
+[f,e] = butter(lowpassOrder,low/(sampleRate/2),'low');
 
 % Bandpass filter config
 bandpassFilterConfig = config.BANDPASS_FILTER;
@@ -40,7 +40,7 @@ bandpassFilterConfig = config.BANDPASS_FILTER;
 low_cutoff = bandpassFilterConfig.LOW_CUTOFF;  % Lower cutoff frequency (Hz)
 high_cutoff = bandpassFilterConfig.HIGH_CUTOFF; % Upper cutoff frequency (Hz)
 bandpassOrder = bandpassFilterConfig.ORDER;
-[b, a] = butter(bandpassOrder, [low_cutoff, high_cutoff]/(samprate/2), 'bandpass');
+[b, a] = butter(bandpassOrder, [low_cutoff, high_cutoff]/(sampleRate/2), 'bandpass');
 
 % Get subject - print all details
 subject = rowIn.(subjectNameHeader){1};
@@ -53,13 +53,23 @@ pulsesToDelete = rowIn.(pulsesToDeleteHeader){1};
 disp([num2str(subject), ' ', timepoint, ' - ', session_code]);
 
 %% Load the file.
-% Variables loaded:
-% titles
-% data
-% datastart
-% dataend
-intervention_path = fullfile(curr_subj_path, session_code);
-load(fullfile(intervention_path, fileName));
+% Variables in file:
+% blocktimes
+% com: Comments metadata
+% comtext: The text of the comments
+% data: All muscles' data as a 1xN vector, where N = # samples * # muscles
+% dataend: M x N double indexing into data vector, where M = # muscles, N = # pulses
+% datastart M x N double indexing into data vector, where M = # muscles, N = # pulses
+% firstsampleoffset: Always all zeros?
+% rangemax: 
+% rangemin
+% samplerate: M x N double of sample rates, where M = # muscles, N = # pulses. Should always be the same number.
+% tickrate: 1xN vector of sample rates (?), where N = # pulses
+% titles: The names of the muscles. MxN char array, where M = # channels 
+% (# muscles + 1 for trigger), and N = length of longest channel name
+% unittext: units, 2x2 array (1: mV, 2: V)
+% unittextmap: MxN double indexing the units of each channel (using values from unittext)
+load(trialFilePath, 'titles','data', 'datastart', 'dataend', 'com', 'comtext');
 
 % Identify the bad pulses.
 delete_in = getBadPulses(pulsesToDelete);
@@ -74,13 +84,16 @@ datastart(emptyrow_title_in,:) = [];
 
 % Get the order of channels presented in the mat file
 channels = cell(number_of_muscles,1);
-for channel_num = 1:number_of_muscles
-    channels{channel_num} = strtrim(titles(channel_num,:)); % gives order of channels in the data
+for channel_num = 1:size(titles,1)
+    currTitle = strtrim(titles(channel_num,:));
+    if ismember(currTitle, final_muscles_list)
+        channels{channel_num} = currTitle; % gives order of channels in the data
+    end
 end
 
-%% Correcting the channels namings that were mislabeled:
-if ismember(INTER, fieldnames(correctedChannelsStruct.(subject)))
-    channels = correctedChannelsStruct.(INTER);
+%% Correcting the channels namings that were mislabeled
+if isfield(session_code, fieldnames(correctedChannelsStruct))
+    channels = correctedChannelsStruct.(intervention);
 end
 
 %% Creating the structs of filtered data
@@ -89,13 +102,15 @@ processedRow.Raw_EMG = EMG_raw_struct;
 
 %% Check the pulses
 total_pulses=size(EMG_raw_struct.(final_muscles_list{1}),1); % Arbitrary muscle
+logInfo = '';
 if mod(total_pulses,pulses_perIntensity) ~= 0
-    disp(strcat(currentRowSubject , " ", session_code  , " ",timepoint));
+    disp([subject, '_', session_code, '_',timepoint]);
     disp(['... (ERR) != ' num2str(pulses_perIntensity)  ' pulses per intensities detected. Please check pulses #s to remove']);
     % ADD TO ERROR LIST:
-    disp(delete_in);
-    wrongPulses{end + 1} = strcat(currentRowSubject , " ", session_code  , " ",timepoint, " tot pulses " , num2str(total_pulses));
+    disp(['Pulses to remove: ' delete_in]);
+    logInfo = [subject, '_', session_code, '_', timepoint, ' Total Pulses: ' num2str(total_pulses)];
 end
+processedRow.LogInfo = {logInfo};
 
 %% Lowpass filter
 processedRow.Lowpass_EMG = EMG_filt(EMG_raw_struct, f, e);
