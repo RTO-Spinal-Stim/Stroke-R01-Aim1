@@ -1,4 +1,4 @@
-function [processedRow, logInfo] = processTEPsOneTrial(config, rowIn, trialFilePath, correctedChannelsStruct)
+function [processedRow, logInfo] = processTEPsOneFile(config, rowIn, trialFilePath, correctedChannelsStruct)
 
 %% PURPOSE: PROCESS ONE INDIVIDUAL TRIAL OF TEPs 
 % PART A OF NICOLE'S PIPELINE.

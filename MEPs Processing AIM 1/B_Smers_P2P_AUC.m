@@ -65,19 +65,11 @@ for mus_i = 1:length(final_muscles_list_fieldNames)
 
         elseif ~isnan(latency)
             numNan = 0;
-
-
             latency_fromOnset_idx = latency -STIM_ARTIFACT_PEAK;
 
             % If there is a response - get AUC:
             rect_sig = abs(signal);
-
-            %subj_Struct.(SUBJ).(INTER).(TP).(rectifiedMethod).(muscle_channel)(pulseNum,:);
-
             AUC_lat_100 = getAUC(rect_sig, latency, End, 2000);
-
-
-            %AUC_lat_pickedEnd = getAUC(rect_sig, latency, endIDX_picked, 2000);
 
             % Smooth AUC
             cutoffFreq = 20;  % Low-pass filter cutoff frequency
@@ -139,9 +131,6 @@ for mus_i = 1:length(final_muscles_list_fieldNames)
             singleMuscle_table = [singleMuscle_table; new_row];
 
         end
-
-
-
     end
 
     % Save in a struct

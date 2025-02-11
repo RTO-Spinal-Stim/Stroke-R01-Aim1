@@ -32,12 +32,10 @@ if isfield(correctedChannelsStruct, subject)
 end
 tepsResultTableOneSubject = table;
 for i = 1:height(tepsLog)    
-    fileName = tepsLog.(fileNameHeader)(i);
-    fileName = fileName{1};
-    sessionCode = tepsLog.(sessionCodeHeader)(i);
-    sessionCode = sessionCode{1};
+    fileName = tepsLog.(fileNameHeader){i};
+    sessionCode = tepsLog.(sessionCodeHeader){i};
     trialFilePath = fullfile(currSubjFolder, sessionCode, fileName);
-    row = processTEPsOneTrial(config, tepsLog(i,:), trialFilePath, correctedChannelsStructSubject);  
+    row = processTEPsOneFile(config, tepsLog(i,:), trialFilePath, correctedChannelsStructSubject);  
     tepsResultTableOneSubject = [tepsResultTableOneSubject; row];
 end
 

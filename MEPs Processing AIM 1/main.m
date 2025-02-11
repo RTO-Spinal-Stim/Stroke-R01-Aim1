@@ -31,15 +31,31 @@ correctChannelsJSONPath = 'A_channels.json';
 %% Read in master TEPs file. Removes extra rows
 % Obtains the bad pulses for each MEP trial.
 teps_log_filename = fullfile(subj_path, 'TEPs_log.xlsx');
-tepsLog = readTEPsLog(teps_log_filename);
+tepsLog = readExcelFileOneSheet(teps_log_filename, 'Subject');
 
 %% Part A
 % Process the TEPs log and filter the data for one subject.
 disp('Pre-processing TEPs data');
 tepsResultTableOneSubject = processTEPsOneSubject(tepsLog, subject, config, curr_subj_path, correctChannelsJSONPath);
-disp('Finished pre-processing TEPs data');
 
 %% Part B
-tepsResultTableOneSubject = plotTEPsManualCheckOneSubject(config, tepsResultTableOneSubject);
-% B_Smers_P2P_AUC;
+disp('Manually plotting & checking the TEPs')
+manualCheckTableOneSubject = plotTEPsManualCheckOneSubject(config, tepsResultTableOneSubject);
+tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, manualCheckTableOneSubject);
+
+disp('Automatically finding peaks');
+peaksAutoTableOneSubject = peaksAutoTEPsOneSubject(config, tepsResultTableOneSubject);
+tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, peaksAutoTableOneSubject);
+
+disp('Getting AUC from rectified signal');
+aucTableOneSubjectRectified = getAUCOneSubject(config, tepsResultTableOneSubject, 'Rectified');
+tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, aucTableOneSubjectRectified);
+
+disp('Getting AUC from smoothed & rectified signal');
+aucTableOneSubjectSmoothedRectified = getAUCOneSubject(config, tepsResultTableOneSubject, 'Smoothed_Rectified');
+tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, aucTableOneSubjectSmoothedRectified);
+
+disp('Write the results to an Excel table');
+
+%% Part C
 % C_Smers_RecruitmentCurves;

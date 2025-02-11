@@ -5,7 +5,7 @@ function [resultTable] = plotTEPsManualCheckOneFile(config, tableIn)
 % tableIn: Table with one row corresponding to one file's TEPs data.
 % 
 % Outputs:
-% resultTable:
+% resultTable: Each column is a struct with muscle names as field names.
 
 plotMethod = config.PLOT_METHOD;
 rectifiedMethod = config.RECTIFIED_METHOD;
@@ -16,10 +16,12 @@ total_pulses = size(fileData.(final_muscles_list_fieldNames{1}),1);
 
 % interval_mA = config.INTERVAL_MA;
 pulses_perIntensity = config.NUM_PULSES_PER_INTENSITY;
-
+fig = figure;
+musclesStruct = struct;
 for mus_i = 1:length(final_muscles_list_fieldNames)
     muscle_channel = final_muscles_list_fieldNames{mus_i};
-    fig = figure('Name', muscle_channel);
+    clf;
+    set(fig, 'Name', muscle_channel);
 
     % Defining pulse per muscle iteration variables:
     numNan = 0; % Counting the trials that return nan - after 20 mA - just stop and move on
@@ -32,7 +34,17 @@ for mus_i = 1:length(final_muscles_list_fieldNames)
         % disp(['... (ERR) != ' num2str(pulses_perIntensity)  ' pulses per intensities detected. Please check pulses #s to remove']);
     end
 
-    plotTEPsManualCheckOneMuscle(fileData.(muscle_channel), muscle_channel, fig);
+    muscleStruct = plotTEPsManualCheckOneMuscle(fileData.(muscle_channel), muscle_channel, fig);    
 
+    % Store the data to a struct.
+    muscleStructFieldnames = fieldnames(muscleStruct);
+    for i = 1:length(muscleStructFieldnames)
+        fieldName = muscleStructFieldnames{i};
+        musclesStruct.(fieldName).(muscle_channel) = muscleStruct.(fieldName);
+    end    
 end
+close(fig);
+
+% Convert the struct to a table.
+resultTable = struct2table(musclesStruct);
     

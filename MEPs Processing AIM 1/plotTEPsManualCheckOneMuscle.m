@@ -1,10 +1,13 @@
-function [fig] = plotTEPsManualCheckOneMuscle(oneMuscleTEPsData, muscleName, fig)
+function [userData] = plotTEPsManualCheckOneMuscle(oneMuscleTEPsData, muscleName, fig)
 
 %% PURPOSE: MANUALLY DETERMINE TEPs BY PLOTTING.
 % Inputs:
 % oneMuscleTEPsData: M x N double, where M = # pulses, N = number of samples per pulse
 % muscleName: The name of the current muscle being plotted.
 % fig: Figure handle (optional). Creates a new figure if no handle provided.
+%
+% Outputs:
+% userData: Struct from the figure's UserData property (created in pick_Peaks_inPlot_callback)
 
 if ~exist('fig','var')
     fig = figure('Name',muscleName);
@@ -48,6 +51,8 @@ skipButton = uicontrol('Style', 'pushbutton', 'String', 'Skip',...
 
 % Pause execution and wait for user action
 uiwait(gcf);
+
+userData = fig.UserData;
 end
 
 function [cmap] = getColorMap(numColors)

@@ -1,22 +1,42 @@
 function [minIDX, maxIDX, min_mV, max_mV, p2p, latency, End, flagged, stim_onset_max] = peaksAuto(signal, foundLat, minIDX_picked, maxIDX_picked, stim_onset_max_REFERENCE)
-if isnan(foundLat) & isnan(minIDX_picked) & isnan(maxIDX_picked)
+
+%% PURPOSE: ATTEMPT TO AUTOMATICALLY DETERMINE THE PEAKS IN THE TEPs SIGNAL.
+% Inputs:
+% signal: 
+% foundLat: 
+% minIDX_picked:
+% maxIDX_picked: 
+% stim_onset_max_REFERENCE
+%
+% Outputs:
+% minIDX: 
+% maxIDX: 
+% min_mV: 
+% max_mV: 
+% p2p: 
+% latency:
+% End: 
+% flagged:
+% stim_onset_max: 
+
+if isnan(foundLat) && isnan(minIDX_picked) && isnan(maxIDX_picked)
     minIDX= NaN;
-    maxIDX= NaN; 
-    min_mV= NaN; 
-    max_mV= NaN; 
-    p2p= NaN; 
+    maxIDX= NaN;
+    min_mV= NaN;
+    max_mV= NaN;
+    p2p= NaN;
     latency= NaN;
     End = NaN;
     stim_onset_max=NaN;
     return
 end
 
-if isnan(foundLat) 
+if isnan(foundLat)
     minIDX= NaN;
-    maxIDX= NaN; 
-    min_mV= NaN; 
-    max_mV= NaN; 
-    p2p= NaN; 
+    maxIDX= NaN;
+    min_mV= NaN;
+    max_mV= NaN;
+    p2p= NaN;
     latency= NaN;
     End = NaN;
     stim_onset_max=NaN;
@@ -24,9 +44,9 @@ if isnan(foundLat)
 end
 End = foundLat+100;
 
-% sometimes latency might be past the end of the signal - so 
+% sometimes latency might be past the end of the signal - so
 if End > length(signal)
-    End = length(signal); 
+    End = length(signal);
 end
 
 %%
@@ -36,29 +56,29 @@ end
 % extrema_indices = find(diff(sign(diff(signal(foundLat:End)))) == -2) + 1;
 % % Correct so it is in the time signal index scale
 % extrema_indices = extrema_indices + foundLat;
-% 
+%
 % % Find the largest peak as the MEP start (from the "extrema" found above)
 % [~, max_peak_index] = max(signal(extrema_indices));
 % maxIdx = extrema_indices(max_peak_index);
-% 
+%
 % % Find the corresponding minimum and maximum values
 % maxPeak = signal(maxIdx);
-% 
+%
 % % MIN
 % min_extrema_indices = find(diff(sign(diff(-1*signal(foundLat:End)))) == -2) + 1;
 % % Correct so it is in the time signal index scale
 % min_extrema_indices = min_extrema_indices + foundLat;
-% 
+%
 % [~, min_peak_index] = min(signal(min_extrema_indices));
 % minIdx = min_extrema_indices(min_peak_index);
 % minPeak = signal(minIdx);
 %% Find the peak of stim artifact
 
-% Max Peak 
-% room to find - within 25 
-within_lookup = 25; 
-MAX_LOOKUP= 55; 
-                
+% Max Peak
+% room to find - within 25
+within_lookup = 25;
+MAX_LOOKUP= 55;
+
 if stim_onset_max_REFERENCE <= 25
     within_lookup = stim_onset_max_REFERENCE-1;
 end
@@ -66,7 +86,7 @@ end
 % End look up should be MAX_LOOKUP
 end_lookup = stim_onset_max_REFERENCE+25;
 if stim_onset_max_REFERENCE+25 > MAX_LOOKUP
-   end_lookup = MAX_LOOKUP;
+    end_lookup = MAX_LOOKUP;
 end
 
 
@@ -88,7 +108,7 @@ extrema_indices = find(diff(sign(diff(signal(foundLat:End)))) == -2) ;
 extrema_indices = extrema_indices + foundLat;
 
 % Check that the possible indices are within 30 indices of the "found"
-revised_max_idxs = extrema_indices(extrema_indices <= maxIDX_picked+25 & extrema_indices >= maxIDX_picked-25); 
+revised_max_idxs = extrema_indices(extrema_indices <= maxIDX_picked+25 & extrema_indices >= maxIDX_picked-25);
 
 % Find the largest peak as the MEP start (from the "extrema" found above)
 % WITH NO REVISION [~, max_peak_index] = max(signal(extrema_indices));
@@ -104,14 +124,14 @@ min_extrema_indices = find(diff(sign(diff(-1*signal(foundLat:End)))) == -2) ;
 min_extrema_indices = min_extrema_indices + foundLat;
 
 % Check that the possible indices are within 30 indices of the "found"
-revised_min_idxs = min_extrema_indices(min_extrema_indices <= minIDX_picked+25 & min_extrema_indices >= minIDX_picked-25); 
+revised_min_idxs = min_extrema_indices(min_extrema_indices <= minIDX_picked+25 & min_extrema_indices >= minIDX_picked-25);
 
 [~, min_peak_index] = min(signal(revised_min_idxs));
 minIdx = revised_min_idxs(min_peak_index);
 minPeak = signal(minIdx);
 
 %%
-% Find Latency and End 
+% Find Latency and End
 
 
 
@@ -145,48 +165,44 @@ if isempty(maxIdx) || isempty(minIdx) || isempty(latency) % no min or max found:
     latency = NaN;
     End = NaN;
 elseif minIdx < latency || maxIdx < latency
-   latency = NaN;
-   End = NaN;
-end 
-if End > 185 % exceeds the end of the signal. 
-   latency = NaN;
-   End = NaN;
-end             
+    latency = NaN;
+    End = NaN;
+end
+if End > 185 % exceeds the end of the signal.
+    latency = NaN;
+    End = NaN;
+end
 
 %%
 
 
-p2p = abs(maxPeak - minPeak); % if one of them is NaN - then 
+p2p = abs(maxPeak - minPeak); % if one of them is NaN - then
 
-% There has to be a peak and a latency for us to call this a mep. 
-    if p2p >= 0.03 
-        minIDX = minIdx;
-        maxIDX = maxIdx;
-        min_mV = minPeak;
-        max_mV = maxPeak;
-        
-        if isempty(latency)
-            % found a peak to peak - but not a latency
-            latency = foundLat;
-            End = foundLat+100;
-            flagged = 1;
-        else
-            flagged = NaN;
-            % AND THE LATENCY AND END IS THE FOUND LATENCY FROM ABOVE
-        end
-        
+% There has to be a peak and a latency for us to call this a mep.
+if p2p >= 0.03
+    minIDX = minIdx;
+    maxIDX = maxIdx;
+    min_mV = minPeak;
+    max_mV = maxPeak;
+
+    if isempty(latency)
+        % found a peak to peak - but not a latency
+        latency = foundLat;
+        End = foundLat+100;
+        flagged = 1;
     else
-      
-        p2p = NaN;
-        minIDX = NaN;
-        maxIDX = NaN;
-        min_mV = NaN;
-        max_mV = NaN;
-        latency = NaN;
-        End = NaN;
         flagged = NaN;
+        % AND THE LATENCY AND END IS THE FOUND LATENCY FROM ABOVE
     end
-    
- 
 
+else
+
+    p2p = NaN;
+    minIDX = NaN;
+    maxIDX = NaN;
+    min_mV = NaN;
+    max_mV = NaN;
+    latency = NaN;
+    End = NaN;
+    flagged = NaN;
 end
