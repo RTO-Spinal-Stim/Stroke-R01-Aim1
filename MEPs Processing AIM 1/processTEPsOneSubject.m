@@ -36,8 +36,12 @@ for i = 1:height(tepsLog)
     sessionCode = tepsLog.(sessionCodeHeader){i};
     trialFilePath = fullfile(currSubjFolder, sessionCode, fileName);
     row = processTEPsOneFile(config, tepsLog(i,:), trialFilePath, correctedChannelsStructSubject);  
-    tepsResultTableOneSubject = [tepsResultTableOneSubject; row];
+    tepsResultTableOneSubject = [tepsResultTableOneSubject; row];    
 end
+
+% Move the Name to the first column
+% tepsResultTableOneSubject.Name = tepsLog.(fileNameHeader);
+% tepsResultTableOneSubject = [tepsResultTableOneSubject(:,2:end), tepsResultTableOneSubject(:,1)];
 
 curr_subj_save_path = fullfile(config.SAVE_FOLDER, subject);
 subjectSavePathPartA = fullfile(curr_subj_save_path, config.SAVE_FILENAMES.A);

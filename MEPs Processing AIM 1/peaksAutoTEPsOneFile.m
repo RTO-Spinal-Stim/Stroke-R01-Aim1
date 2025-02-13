@@ -1,4 +1,4 @@
-function [resultTable] = peaksAutoTEPsOneFile(config, tableIn, columnName)
+function [resultTable] = peaksAutoTEPsOneFile(config, tableIn, columnName, fig)
 
 %% PURPOSE: FIND PEAKS AUTOMATICALLY IN TEPs FOR ONE FILE.
 % Inputs:
@@ -11,9 +11,28 @@ function [resultTable] = peaksAutoTEPsOneFile(config, tableIn, columnName)
 
 resultTable = table;
 
-muscleNames = fieldnames(tableIn.(columnName));
-musclesStruct = struct;
+musclesDataIn = tableIn.(columnName);
+muscleNames = fieldnames(musclesDataIn);
+peaksConfig = config.PEAKS;
 for i = 1:length(muscleNames)
-    muscleName = muscleNames{i};
-    musclesStruct.(muscleName) = peaksAutoTEPsOneMuscle(tableIn.(columnName)(muscleName));
+    muscleName = muscleNames{i};    
+    clf;
+    hold on;
+    set(fig,'Name',muscleName);
+    muscleTable = peaksAutoTEPsOneMuscle(musclesDataIn.(muscleName), muscleName, peaksConfig.MIN_PEAK_PROMINENCE, peaksConfig.MIN_PEAK_HEIGHT, peaksConfig.MIN_PEAK_WIDTH);
+    varNames = muscleTable.Properties.VariableNames;
+    for varNum = 1:length(varNames)
+        varName = varNames{varNum};
+        if ~ismember(varName, resultTable.Properties.VariableNames)
+            resultTable.(varName) = struct;
+        end
+        resultTable.(varName).(muscleName) = muscleTable.(varName);
+    end
+    title([tableIn.Name{1} ' ' muscleName],'Interpreter','none');
+    ylabel('mV');
+    ylim([-5, 5]);
+    savePath = fullfile(config.PLOT_TROUBLESHOOT_FOLDER, [muscleName '_' tableIn.Name{1}]);
+    fig.WindowState = 'maximized';
+    saveas(fig, [savePath '.fig']);
+    saveas(fig, [savePath '.png']);    
 end

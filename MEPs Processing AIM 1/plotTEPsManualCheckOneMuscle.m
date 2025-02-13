@@ -19,10 +19,7 @@ numTotalPulses = size(oneMuscleTEPsData,1);
 colors = getColorMap(numTotalPulses);
 for pulseNum = numTotalPulses:-1:1
     signal = oneMuscleTEPsData(pulseNum,:);
-
     currentColor = colors(pulseNum,:);
-
-    % Plot signal
     plot(signal, 'Color', currentColor);    
 end
 

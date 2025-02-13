@@ -26,6 +26,10 @@ pulses_perIntensity = config.NUM_PULSES_PER_INTENSITY;
 sampleRate = config.SAMPLE_RATE;
 windowDuration = config.WINDOW_DURATION; % Window duration (seconds)
 
+mapped_interventions = containers.Map(config.INTERVENTION_FOLDERS, config.MAPPED_INTERVENTION_FIELDS);
+
+processedRow.Name{1} = ['SS' rowIn.(subjectNameHeader){1} '_' mapped_interventions(rowIn.(sessionCodeHeader){1}) '_' rowIn.(prePostColNameHeader){1}];
+
 %% Filter
 % Don't do highpass filter, it adds low-freq distortion [Inanici, 2018]
 % Lowpass filter config
@@ -96,14 +100,14 @@ if isfield(session_code, fieldnames(correctedChannelsStruct))
     channels = correctedChannelsStruct.(intervention);
 end
 
-%% Creating the structs of filtered data
+%% Creating the structs of raw data
 EMG_raw_struct = struct_raw_EMG_trials(channels, data, datastart, dataend, delete_in);
 processedRow.Raw_EMG = EMG_raw_struct;
 
 %% Check the pulses
 total_pulses=size(EMG_raw_struct.(final_muscles_list{1}),1); % Arbitrary muscle
 logInfo = '';
-if mod(total_pulses,pulses_perIntensity) ~= 0
+if mod(total_pulses, pulses_perIntensity) ~= 0
     disp([subject, '_', session_code, '_',timepoint]);
     disp(['... (ERR) != ' num2str(pulses_perIntensity)  ' pulses per intensities detected. Please check pulses #s to remove']);
     % ADD TO ERROR LIST:

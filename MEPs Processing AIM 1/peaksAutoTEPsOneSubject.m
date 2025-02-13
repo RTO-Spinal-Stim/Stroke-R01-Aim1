@@ -10,7 +10,9 @@ function [resultTable] = peaksAutoTEPsOneSubject(config, tableIn, columnName)
 % resultTable: The output
 
 resultTable = table;
+fig = figure;
 for i = 1:height(tableIn)
-    fileTable = peaksAutoTEPsOneFile(config, tableIn(i,:), columnName);
+    fileTable = peaksAutoTEPsOneFile(config, tableIn(i,:), columnName, fig);
     resultTable = [resultTable; fileTable];
 end
+close(fig);

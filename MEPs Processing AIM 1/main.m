@@ -2,7 +2,7 @@
 %% Updated by MT 02/05/25
 clc;
 clearvars;
-subject = 'SS13';
+subject = 'SS10';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\MEPs Processing AIM 1';
@@ -39,12 +39,14 @@ disp('Pre-processing TEPs data');
 tepsResultTableOneSubject = processTEPsOneSubject(tepsLog, subject, config, curr_subj_path, correctChannelsJSONPath);
 
 %% Part B
-disp('Manually plotting & checking the TEPs')
-manualCheckTableOneSubject = plotTEPsManualCheckOneSubject(config, tepsResultTableOneSubject);
-tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, manualCheckTableOneSubject);
+% disp('Manually plotting & checking the TEPs')
+% manualCheckTableOneSubject = plotTEPsManualCheckOneSubject(config, tepsResultTableOneSubject);
+% tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, manualCheckTableOneSubject);
 
+% NOTE: Currently, this function only finds the muscle activation & stim onsets
+% automatically.
 disp('Automatically finding peaks');
-peaksAutoTableOneSubject = peaksAutoTEPsOneSubject(config, tepsResultTableOneSubject);
+peaksAutoTableOneSubject = peaksAutoTEPsOneSubject(config, tepsResultTableOneSubject, 'Smoothed');
 tepsResultTableOneSubject = addToTable(tepsResultTableOneSubject, peaksAutoTableOneSubject);
 
 disp('Getting AUC from rectified signal');

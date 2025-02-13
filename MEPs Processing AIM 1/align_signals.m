@@ -1,5 +1,14 @@
 function [struct_EMG_trials_shift, struct_EMG_trials_shiftIDX] = align_signals(EMG_Struct)
 
+%% PURPOSE: SHIFT THE SIGNALS IN TIME...
+% Inputs: 
+% EMG_Struct: Struct where each field is one muscle's MxN EMG data, where M
+% = # pulses, N = length of each pulse.
+%
+% Outputs:
+% struct_EMG_trials_shift: Struct where each field is the shifted EMG data.
+% struct_EMG_trials_shiftIDX: Struct of indices shifted by.
+
 struct_EMG_trials_shift = struct();
 musc_fieldnames = fieldnames(EMG_Struct);
 for channel_num = 1:numel(musc_fieldnames)
