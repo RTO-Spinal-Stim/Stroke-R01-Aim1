@@ -1,4 +1,4 @@
-missingFiles = identifyMissingDataPaths(jsondecode(fileread('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\config.json')));
+missingFiles = identifyMissingDataPaths(jsondecode(fileread('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Troubleshooting\missingFilesConfig.json')));
 missingFilesTable = table;
 subjects = cell(size(missingFiles));
 dataTypes = cell(size(missingFiles));
