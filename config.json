@@ -48,13 +48,14 @@
     "EXTENSIONS": {
         "Gaitrite": [".xlsx"],
         "XSENS": [".mvn", ".xlsx"],
-        "TEPs": [".mat"],
-        "Delsys": [".mat"]
+        "TEPs": [".adicht", ".mat"],
+        "Delsys": [".adicht", ".mat"]
+    },    
+    "DATATYPE_INSERT": {
+        "XSENS": "XSENS",
+        "Delsys": "EMG"
     },
     "REPEAT_PREFIX": {
         "XSENS": "-00"
-    },
-    "XSENS_INSERT": {
-        "XSENS": "XSENS"
     }
 }

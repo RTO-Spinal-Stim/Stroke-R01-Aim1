@@ -54,7 +54,7 @@ singleFileTypes = config.SINGLE_FILE_TYPES;
 numFiles = config.NUM_REPEAT_FILES;
 speeds = config.SPEEDS_LIST;
 repeat_prefixes = config.REPEAT_PREFIX;
-xsens_insert = config.XSENS_INSERT;
+dataType_insert = config.DATATYPE_INSERT;
 
 % Process each row of the combinations table
 for idx = 1:height(combinations)
@@ -67,8 +67,8 @@ for idx = 1:height(combinations)
         repeat_prefix = '';
     end
 
-    if isfield(xsens_insert, row.DataType{1})
-        baseTemplateStr = ['%s_' row.DataType{1} '_%s_%s'];
+    if isfield(dataType_insert, row.DataType{1})
+        baseTemplateStr = ['%s_' dataType_insert.(row.DataType{1}) '_%s_%s'];
     else
         baseTemplateStr = '%s_%s_%s';
     end
@@ -103,7 +103,7 @@ for idx = 1:height(combinations)
                 end
             else
                 % Check for single file
-                filename = [row.BaseFilename{1}, ext];
+                filename = [baseFilename, ext];
                 fullPath = fullfile(row.BasePath{1}, filename);
         
                 if ~isfile(fullPath)
