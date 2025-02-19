@@ -73,15 +73,20 @@ for idx = 1:height(combinations)
         baseTemplateStr = '%s_%s_%s';
     end
 
-    for speedNum = 1:length(speeds)
-        speed = speeds{speedNum};
+    if hasSpeed
+        numSpeeds = length(speeds);
+    else
+        numSpeeds = 1;
+    end
+
+    for speedNum = 1:numSpeeds
 
         if hasSpeed
             baseFilename = sprintf([baseTemplateStr '_%s'], ...
                 row.Subject{1}, ...
                 row.Intervention{1}, ...
                 row.PrePost{1}, ...
-                speed);
+                speeds{speedNum});
         else
             baseFilename = sprintf(baseTemplateStr, ...
                 row.Subject{1}, ...

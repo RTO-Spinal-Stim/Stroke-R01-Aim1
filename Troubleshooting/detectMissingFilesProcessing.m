@@ -18,4 +18,4 @@ missingFilesTable.Interventions = interventions;
 missingFilesTable.FileNames = fileNames;
 missingFilesTable.Paths = missingFiles;
 missingFilesTable.Reason = cell(size(missingFiles));
-writetable(missingFilesTable, 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\missingFiles.xlsx');
+writetable(missingFilesTable, 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\missingFilesNew.xlsx');

@@ -35,7 +35,7 @@
         }
     },
     "SAVE_FOLDER": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim",
-    "PLOT_TROUBLESHOOT_FOLDER": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Plots\\MEPs",
+    "PLOT_TROUBLESHOOT_FOLDER": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Plots\\MEPsDerivs",
     "AIM1_FOLDER": "Y:\\Spinal Stim_Stroke R01\\AIM 1",
     "TEPS_LOG_COLUMN_NAMES": {
         "PRE_POST_COLUMN": "Pre_Post",

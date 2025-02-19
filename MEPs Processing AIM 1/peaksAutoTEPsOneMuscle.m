@@ -23,12 +23,26 @@ resultTable = table;
 %% Plot the data
 numTotalPulses = size(muscleData,1);
 colors = getColorMap(numTotalPulses);
-for pulseNum = numTotalPulses:-1:1
-    signal = muscleData(pulseNum,:);
-    currentColor = colors(pulseNum,:);
-    plot(signal, 'Color', currentColor);    
-end
-return;
+% ax1 = subplot(3,1,1);
+% hold on;
+% ax2 = subplot(3,1,2);
+% hold on;
+% ax3 = subplot(3,1,3);
+% hold on;
+% for pulseNum = numTotalPulses:-1:1
+%     signal = muscleData(pulseNum,:);
+%     currentColor = colors(pulseNum,:);
+%     plot(ax1, signal, 'Color', currentColor);    
+%     signalDeriv = [NaN, diff(signal)];
+%     plot(ax2, signalDeriv, 'Color', currentColor);
+%     signalDeriv2 = [NaN, diff(signalDeriv)];
+%     plot(ax3, signalDeriv2, 'Color', currentColor);
+% end
+% ylabel(ax1, 'EMG Signal');
+% ylabel(ax2, 'First Derivative');
+% ylabel(ax3, 'Second Derivative');
+% ylim(ax1, [-5, 5]);
+% return;
 
 %% Find which pulse has the largest absolute value
 [minValsPerPulse, minIdxPerPulse] = min(muscleData, [], 2);
@@ -45,18 +59,90 @@ end
 % Pull out the data for the largest pulse.
 largestPulseData = muscleData(largestPulseIdx,:);
 
-%% Find the peaks of muscle activation for the largest pulse.
+%% 2/14 trying new algorithm
 fig = figure('Name',muscleName);
+plot(largestPulseData);
+peaksIdx = diff([NaN, sign([NaN, diff(largestPulseData)])])~=0; % The logical idx of all the peaks
+peaksIdxNum = find(peaksIdx);
+peaksIdxNum = peaksIdxNum(3:end)-1; % Numeric indices of the peaks
+% REMOVE THE PEAKS WHERE THE SIGNAL DOESN'T CROSS ZERO BETWEEN THEM.
+crossZeroUnsortedPeaks = [];
+addPrev = true;
+for i = 1:length(peaksIdxNum)
+    prevPeakVal = NaN;
+    prevPeakIdx = NaN;
+    nextPeakVal = NaN;
+    nextPeakIdx = NaN;
+    currPeakVal = largestPulseData(peaksIdxNum(i));
+    currPeakIdx = peaksIdxNum(i);    
+
+    if i >= 2
+        prevPeakVal = largestPulseData(peaksIdxNum(i-1));
+        prevPeakIdx = peaksIdxNum(i-1);
+    end
+    if isnan(prevPeakIdx)
+        prevPeakVal = -1*currPeakVal; % Ensure a zero crossing
+    end
+    
+    if i < length(peaksIdxNum)
+        nextPeakVal = largestPulseData(peaksIdxNum(i+1));
+        nextPeakIdx = peaksIdxNum(i+1);
+    end    
+    if isnan(nextPeakIdx)
+        nextPeakVal = -1*currPeakVal; % Ensure a zero crossing
+    end
+
+    if min([currPeakVal, nextPeakVal]) < 0 && max([currPeakVal, nextPeakVal]) > 0 ...
+            && min([prevPeakVal, currPeakVal]) < 0 && max([prevPeakVal, currPeakVal]) > 0        
+        newToAdd = [prevPeakIdx; currPeakIdx; nextPeakIdx];
+        if ~addPrev
+            newToAdd = newToAdd(2:end);
+        end
+        newToAdd(isnan(newToAdd) | ismember(newToAdd, crossZeroUnsortedPeaks)) = [];
+        crossZeroUnsortedPeaks = [crossZeroUnsortedPeaks; newToAdd];
+        addPrev = true;
+    else
+        addPrev = false;
+    end
+end
+peaksVals = largestPulseData(crossZeroUnsortedPeaks); % The values of the peaks
+peakValDiffs = [NaN, diff(peaksVals)]; % The y diff between neighboring peaks
+[~,k] = sort(abs(peakValDiffs),'descend');
+sortedPeaksByMagIdxNum = crossZeroUnsortedPeaks(k(2:end)); % The sorted indices of the end of the ranges of largest y diffs
+largestNeighbors = sortedPeaksByMagIdxNum(1);
+for i = 2:length(sortedPeaksByMagIdxNum)-1
+    prevIdx = sortedPeaksByMagIdxNum(i-1);
+    nextIdx = sortedPeaksByMagIdxNum(i);
+    if any(sortedPeaksByMagIdxNum(i+1:end) > min([prevIdx, nextIdx]) & sortedPeaksByMagIdxNum(i+1:end) < max([prevIdx, nextIdx]))
+        break;
+    end
+    largestNeighbors = [largestNeighbors; nextIdx];
+end
+hold on;
+scatter(largestNeighbors, largestPulseData(largestNeighbors), 'r*');
+firstMuscleActivationPeak = min(largestNeighbors);
+close(fig);
+return;
+
+
+
+
+
+
+
+
+%% Find the peaks of muscle activation for the largest pulse.
 minPeakHeight = 0.3;
 minPeakProm = minPeakHeight;
 minPeakWidth = 5;
 [peakVals, peakIdx] = findpeaks(largestPulseData,'MinPeakProminence',minPeakProm,'MinPeakHeight',minPeakHeight,'MinPeakWidth',minPeakWidth);
 [valleyVals, valleyIdx] = findpeaks(-1*largestPulseData,'MinPeakProminence',minPeakProm,'MinPeakHeight',minPeakHeight,'MinPeakWidth',minPeakWidth);
 valleyVals = -1*valleyVals;
-plot(largestPulseData);
-hold on;
-scatter(peakIdx, peakVals,'k','filled');
-scatter(valleyIdx, valleyVals, 'k','filled');
+% fig = figure('Name',muscleName);
+% plot(largestPulseData);
+% hold on;
+% scatter(peakIdx, peakVals,'k','filled');
+% scatter(valleyIdx, valleyVals, 'k','filled');
 
 
 %% Get the onset of muscle activation by:

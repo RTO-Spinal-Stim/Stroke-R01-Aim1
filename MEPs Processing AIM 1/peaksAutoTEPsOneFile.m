@@ -28,9 +28,7 @@ for i = 1:length(muscleNames)
         end
         resultTable.(varName).(muscleName) = muscleTable.(varName);
     end
-    title([tableIn.Name{1} ' ' muscleName],'Interpreter','none');
-    ylabel('mV');
-    ylim([-5, 5]);
+    sgtitle([tableIn.Name{1} ' ' muscleName],'Interpreter','none');    
     savePath = fullfile(config.PLOT_TROUBLESHOOT_FOLDER, [muscleName '_' tableIn.Name{1}]);
     fig.WindowState = 'maximized';
     saveas(fig, [savePath '.fig']);

@@ -17,11 +17,22 @@ hold(ax,'on');
 
 numTotalPulses = size(oneMuscleTEPsData,1);
 colors = getColorMap(numTotalPulses);
+ax1 = subplot(3,1,1);
+ax2 = subplot(3,1,2);
+ax3 = subplot(3,1,3);
 for pulseNum = numTotalPulses:-1:1
     signal = oneMuscleTEPsData(pulseNum,:);
-    currentColor = colors(pulseNum,:);
-    plot(signal, 'Color', currentColor);    
+    currentColor = colors(pulseNum,:);    
+    plot(ax1, signal, 'Color', currentColor);    
+    signalDeriv = [NaN, diff(signal)];
+    plot(ax2, signalDeriv, 'Color', currentColor);
+    signalDeriv2 = [NaN, diff(signalDeriv)];
+    plot(ax3, signalDeriv2, 'Color', currentColor);
 end
+
+ylabel(ax1, 'EMG Signal');
+ylabel(ax2, 'First Derivative');
+ylabel(ax3, 'Second Derivative');
 
 % Get figure position to calculate button placement
 figPos = get(fig, 'Position');

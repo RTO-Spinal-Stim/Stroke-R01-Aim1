@@ -2,7 +2,7 @@
 %% Updated by MT 02/05/25
 clc;
 clearvars;
-subject = 'SS10';
+subject = 'SS13';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\MEPs Processing AIM 1';
