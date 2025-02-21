@@ -2,7 +2,7 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 clc;
 clearvars;
-subject = 'SS13';
+subject = 'SS21';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 % Path to save the data to.
@@ -11,7 +11,7 @@ saveFileName = 'Overground_EMG_Kinematics.mat';
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
-plot = false;
+doPlot = true;
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
@@ -51,7 +51,7 @@ xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, int
 trialTable = addToTable(trialTable, xsensTable);
 
 %% Plot raw and filtered timeseries data
-if plot
+if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
     plotRawAndFilteredData(trialTable, 'Raw and Filtered EMG', baseSavePathEMG, struct('Raw','Delsys_Loaded', 'Filtered', 'Delsys_Filtered'), true);
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
@@ -66,7 +66,7 @@ trialTable = addToTable(trialTable, syncedTableDelsys);
 trialTable = addToTable(trialTable, syncedTableXSENS);
 
 %% Plot each trial's data individually, along with gait event information.
-if plot
+if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
     plotTrialWithGaitEvents(trialTable, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Delsys_Filtered', 'Delsys_Frames');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
@@ -81,7 +81,7 @@ cycleTable = addToTable(cycleTable, xsensCyclesTable);
 cycleTable = addToTable(cycleTable, delsysCyclesTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
-if plot
+if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
     plotAllTrials(delsysCyclesTable, 'Filtered EMG', baseSavePathEMG, 'Delsys_Filtered');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
@@ -97,7 +97,7 @@ cycleTable = addToTable(cycleTable, xsensDownsampledTable);
 cycleTable = addToTable(cycleTable, delsysDownsampledTable);
 
 %% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
-if plot
+if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\TimeNormalized_GaitCycles';
     plotAllTrials(cycleTable, 'Time-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\TimeNormalized_GaitCycles';
@@ -113,7 +113,7 @@ normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormal
 cycleTable = addToTable(cycleTable, normalizedEMGTable);
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
-if plot
+if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
     plotAllTrials(cycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
 end
@@ -144,8 +144,8 @@ synergiesTableR = calculateSynergiesAll(cycleTable, 'Delsys_Normalized_TimeNorma
 cycleTable = addToTable(cycleTable, synergiesTableL);
 cycleTable = addToTable(cycleTable, synergiesTableR);
 
-%% Scatter plot the number of muscle synergies & the step lengths
-% if plot
+%% Scatterplot the number of muscle synergies & the step lengths
+% if doPlot
 %     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\NumSynergies';
 %     scatterPlotPerGaitCyclePerIntervention(delsysStruct, 'Num Synergies', baseSavePathEMG, 'NumSynergies');    
 % end

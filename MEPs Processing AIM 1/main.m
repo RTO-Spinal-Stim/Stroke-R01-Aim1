@@ -8,7 +8,7 @@ subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subje
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\MEPs Processing AIM 1';
 addpath(genpath(codeFolderPath));
 
-plot = true;
+doPlot = true;
 
 %% Get the configuration.
 configFilePath = fullfile(codeFolderPath,'config.json');

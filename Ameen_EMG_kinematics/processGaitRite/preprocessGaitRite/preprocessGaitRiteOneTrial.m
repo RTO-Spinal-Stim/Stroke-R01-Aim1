@@ -28,23 +28,23 @@ heel_off = data(:, heel_off_idx);
 toe_on = data(:, toe_on_idx);
 toe_off = data(:, toe_off_idx);
 step_len = data(:, step_len_idx) / 100; % m
-swing_times = data(:, swing_time_idx); % sec
+swing_durations = data(:, swing_time_idx); % sec
 stride_lens = data(:, stride_lengths_idx) / 100; % m
-stride_times = data(:, stride_times_idx); % sec
-stance_times = data(:, stance_times_idx); % sec
+stride_durations = data(:, stride_times_idx); % sec
+stance_durations = data(:, stance_times_idx); % sec
 step_widths = data(:, step_width_idx) / 100; % m
 stride_widths = data(:, stride_width_idx) / 100; % m
-step_times = data(:, step_times_idx); % sec
+step_durations = data(:, step_times_idx); % sec
 
 %% Initialize the processed data
-num_steps = length(left_right);
-leftStanceStartStopSeconds = zeros(num_steps - 2, 2);
-rightStanceStartStopSeconds = zeros(num_steps - 2, 2);
-leftSwingStartStopSeconds = zeros(num_steps - 2, 2);
-rightSwingStartStopSeconds = zeros(num_steps - 2, 2);
+num_heel_strikes = length(left_right);
+leftStanceStartStopSeconds = zeros(num_heel_strikes - 2, 2);
+rightStanceStartStopSeconds = zeros(num_heel_strikes - 2, 2);
+leftSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
+rightSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 
-stepLenSym = NaN(num_steps - 2, 1);
-swingTimeSym = NaN(num_steps - 3, 1);
+stepLenSym = NaN(num_heel_strikes - 2, 1);
+swingTimeSym = NaN(num_heel_strikes - 3, 1);
 
 %% Step length symmetry
 for i = 2:length(left_right)-1
@@ -55,7 +55,7 @@ processed_data.stepLengthSymmetries = {stepLenSym};
 
 %% Swing time symmetry
 for i = 3:length(left_right)-1
-    swingTimeSym(i-2) = (2*abs(swing_times(i)-swing_times(i+1)))/(swing_times(i)+swing_times(i+1));
+    swingTimeSym(i-2) = (2*abs(swing_durations(i)-swing_durations(i+1)))/(swing_durations(i)+swing_durations(i+1));
 end
 
 processed_data.swingTimeSymmetries = {swingTimeSym};
@@ -66,27 +66,47 @@ right_events_idx = left_right==0;
 processed_data.stepLengths.L = step_len(left_events_idx);
 processed_data.stepLengths.R = step_len(right_events_idx);
 processed_data.stepLengths.All = step_len;
-processed_data.swingTimes.L = swing_times(left_events_idx);
-processed_data.swingTimes.R = swing_times(right_events_idx);
-processed_data.swingTimes.All = swing_times;
+processed_data.swingDurations.L = swing_durations(left_events_idx);
+processed_data.swingDurations.R = swing_durations(right_events_idx);
+processed_data.swingDurations.All = swing_durations;
 processed_data.strideLengths.L = stride_lens(left_events_idx);
 processed_data.strideLengths.R = stride_lens(right_events_idx);
 processed_data.strideLengths.All = stride_lens;
-processed_data.stanceTimes.L = stance_times(left_events_idx);
-processed_data.stanceTimes.R = stance_times(right_events_idx);
-processed_data.stanceTimes.All = stance_times;
+processed_data.stanceDurations.L = stance_durations(left_events_idx);
+processed_data.stanceDurations.R = stance_durations(right_events_idx);
+processed_data.stanceDurations.All = stance_durations;
 processed_data.stepWidths.L = step_widths(left_events_idx);
 processed_data.stepWidths.R = step_widths(right_events_idx);
 processed_data.stepWidths.All = step_widths;
 processed_data.strideWidths.L = stride_widths(left_events_idx);
 processed_data.strideWidths.R = stride_widths(right_events_idx);
 processed_data.strideWidths.All = stride_widths;
-processed_data.stepTimes.L = step_times(left_events_idx);
-processed_data.stepTimes.R = step_times(right_events_idx);
-processed_data.stepTimes.All = step_times;
-processed_data.strideTimes.L = stride_times(left_events_idx);
-processed_data.strideTimes.R = stride_times(right_events_idx);
-processed_data.strideTimes.All = stride_times;
+processed_data.stepDurations.L = step_durations(left_events_idx);
+processed_data.stepDurations.R = step_durations(right_events_idx);
+processed_data.stepDurations.All = step_durations;
+processed_data.strideDurations.L = stride_durations(left_events_idx);
+processed_data.strideDurations.R = stride_durations(right_events_idx);
+processed_data.strideDurations.All = stride_durations;
+processed_data.NumFootfallsL = sum(left_events_idx);
+processed_data.NumFootfallsR = sum(right_events_idx);
+processed_data.NumFootfallsTotal = num_heel_strikes;
+% A "step" is the interval between subsequent L & R footfalls
+if left_events_idx(1) == 1
+    numStepsL = sum(left_events_idx) - 1;
+    numStepsR = sum(right_events_idx);
+elseif right_events_idx(1) == 1
+    numStepsL = sum(left_events_idx);
+    numStepsR = sum(right_events_idx) - 1;
+end
+processed_data.NumStepsL = numStepsL;
+processed_data.NumStepsR = numStepsR;
+processed_data.NumStepsTotal = numStepsL + numStepsR;
+% A "gait cycle" is the interval between subsequent ipsilateral footfalls (e.g. L to L)
+numGaitCyclesL = sum(left_events_idx) - 1;
+numGaitCyclesR = sum(right_events_idx) - 1;
+processed_data.NumGaitCyclesL = numGaitCyclesL;
+processed_data.NumGaitCyclesR = numGaitCyclesR;
+processed_data.NumGaitCyclesTotal = numGaitCyclesL + numGaitCyclesR;
 
 
 %% Gait events (seconds)
@@ -135,15 +155,17 @@ processed_data.seconds.gaitPhases.leftSwingStartStop = leftSwingStartStopSeconds
 processed_data.seconds.gaitPhases.rightSwingStartStop = rightSwingStartStopSeconds;
 
 %% Gait phase durations (seconds)
-leftStanceDurationsSeconds = leftStanceStartStopSeconds(:,2)-leftStanceStartStopSeconds(:,1);
-rightStanceDurationsSeconds = rightStanceStartStopSeconds(:,2)-rightStanceStartStopSeconds(:,1);
-leftSwingDurationsSeconds = leftSwingStartStopSeconds(:,2)-leftSwingStartStopSeconds(:,1);
-rightSwingDurationsSeconds = rightSwingStartStopSeconds(:,2)-rightSwingStartStopSeconds(:,1);
-
-processed_data.seconds.gaitPhasesDurations.leftStanceDurations = leftStanceDurationsSeconds;
-processed_data.seconds.gaitPhasesDurations.rightStanceDurations = rightStanceDurationsSeconds;
-processed_data.seconds.gaitPhasesDurations.leftSwingDurations = leftSwingDurationsSeconds;
-processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurationsSeconds;
+% 2/20 MT commented out because this is already computed above.
+% QUESTION: Should it continue to be included here so I can get durations in frame numbers?
+% leftStanceDurationsSeconds = leftStanceStartStopSeconds(:,2)-leftStanceStartStopSeconds(:,1);
+% rightStanceDurationsSeconds = rightStanceStartStopSeconds(:,2)-rightStanceStartStopSeconds(:,1);
+% leftSwingDurationsSeconds = leftSwingStartStopSeconds(:,2)-leftSwingStartStopSeconds(:,1);
+% rightSwingDurationsSeconds = rightSwingStartStopSeconds(:,2)-rightSwingStartStopSeconds(:,1);
+% 
+% processed_data.seconds.gaitPhasesDurations.leftStanceDurations = leftStanceDurationsSeconds;
+% processed_data.seconds.gaitPhasesDurations.rightStanceDurations = rightStanceDurationsSeconds;
+% processed_data.seconds.gaitPhasesDurations.leftSwingDurations = leftSwingDurationsSeconds;
+% processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurationsSeconds;
 
 %% Convert all times from seconds to GaitRite frames.
 processed_data.frames = getHardwareIndicesFromSeconds(processed_data.seconds, Gait_Fs);
