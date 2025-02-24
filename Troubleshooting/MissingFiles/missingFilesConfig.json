@@ -10,9 +10,12 @@
         "SS08", 
         "SS09", 
         "SS10", 
+        "SS13",
         "SS18", 
         "SS20", 
-        "SS21"
+        "SS21",
+        "SS23",
+        "SS24"
     ],
     "DATA_TYPES_LIST": [
         "Delsys",
