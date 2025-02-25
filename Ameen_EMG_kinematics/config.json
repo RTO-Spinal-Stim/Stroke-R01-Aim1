@@ -9,6 +9,7 @@
         "PRE_POST": "PRE|POST",
         "SPEED": "FV|SSV"
     },
+    "NUM_POINTS": 101,
     "INTERVENTION_FOLDERS": [
         "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"
     ],

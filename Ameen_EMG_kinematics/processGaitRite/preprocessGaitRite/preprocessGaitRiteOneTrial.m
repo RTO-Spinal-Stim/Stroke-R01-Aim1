@@ -43,53 +43,56 @@ rightStanceStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 leftSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 rightSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 
-stepLenSym = NaN(num_heel_strikes - 2, 1);
-swingTimeSym = NaN(num_heel_strikes - 3, 1);
+% stepLenSym = NaN(num_heel_strikes - 2, 1);
+% swingTimeSym = NaN(num_heel_strikes - 3, 1);
 
 %% Step length symmetry
-for i = 2:length(left_right)-1
-    stepLenSym(i-1) = (2*abs(step_len(i)-step_len(i+1)))/(step_len(i)+step_len(i+1));
-end
-
-processed_data.stepLengthSymmetries = {stepLenSym};
+% for i = 2:length(left_right)-1
+%     stepLenSym(i-1) = (2*abs(step_len(i)-step_len(i+1)))/(step_len(i)+step_len(i+1));
+% end
+% 
+% processed_data.stepLengthSymmetries = {stepLenSym};
 
 %% Swing time symmetry
-for i = 3:length(left_right)-1
-    swingTimeSym(i-2) = (2*abs(swing_durations(i)-swing_durations(i+1)))/(swing_durations(i)+swing_durations(i+1));
-end
-
-processed_data.swingTimeSymmetries = {swingTimeSym};
+% for i = 3:length(left_right)-1
+%     swingTimeSym(i-2) = (2*abs(swing_durations(i)-swing_durations(i+1)))/(swing_durations(i)+swing_durations(i+1));
+% end
+% 
+% processed_data.swingTimeSymmetries = {swingTimeSym};
 
 %% Isolate L & R
 left_events_idx = left_right==1;
 right_events_idx = left_right==0;
-processed_data.stepLengths.L = step_len(left_events_idx);
-processed_data.stepLengths.R = step_len(right_events_idx);
-processed_data.stepLengths.All = step_len;
-processed_data.swingDurations.L = swing_durations(left_events_idx);
-processed_data.swingDurations.R = swing_durations(right_events_idx);
-processed_data.swingDurations.All = swing_durations;
-processed_data.strideLengths.L = stride_lens(left_events_idx);
-processed_data.strideLengths.R = stride_lens(right_events_idx);
-processed_data.strideLengths.All = stride_lens;
-processed_data.stanceDurations.L = stance_durations(left_events_idx);
-processed_data.stanceDurations.R = stance_durations(right_events_idx);
-processed_data.stanceDurations.All = stance_durations;
-processed_data.stepWidths.L = step_widths(left_events_idx);
-processed_data.stepWidths.R = step_widths(right_events_idx);
-processed_data.stepWidths.All = step_widths;
-processed_data.strideWidths.L = stride_widths(left_events_idx);
-processed_data.strideWidths.R = stride_widths(right_events_idx);
-processed_data.strideWidths.All = stride_widths;
-processed_data.stepDurations.L = step_durations(left_events_idx);
-processed_data.stepDurations.R = step_durations(right_events_idx);
-processed_data.stepDurations.All = step_durations;
-processed_data.strideDurations.L = stride_durations(left_events_idx);
-processed_data.strideDurations.R = stride_durations(right_events_idx);
-processed_data.strideDurations.All = stride_durations;
+processed_data.leftIdx = {left_events_idx}; 
+processed_data.rightIdx = {right_events_idx};
+processed_data.leftRightIdxAll = {logical(left_right)}; % 1 = L, 0 = R
+processed_data.stepLengthsL = {step_len(left_events_idx)};
+processed_data.stepLengthsR = {step_len(right_events_idx)};
+processed_data.stepLengthsAll = {step_len};
+processed_data.swingDurationsL = {swing_durations(left_events_idx)};
+processed_data.swingDurationsR = {swing_durations(right_events_idx)};
+processed_data.swingDurationsAll = {swing_durations};
+processed_data.strideLengthsL = {stride_lens(left_events_idx)};
+processed_data.strideLengthsR = {stride_lens(right_events_idx)};
+processed_data.strideLengthsAll = {stride_lens};
+processed_data.stanceDurationsL = {stance_durations(left_events_idx)};
+processed_data.stanceDurationsR = {stance_durations(right_events_idx)};
+processed_data.stanceDurationsAll = {stance_durations};
+processed_data.stepWidthsL = {step_widths(left_events_idx)};
+processed_data.stepWidthsR = {step_widths(right_events_idx)};
+processed_data.stepWidthsAll = {step_widths};
+processed_data.strideWidthsL = {stride_widths(left_events_idx)};
+processed_data.strideWidthsR = {stride_widths(right_events_idx)};
+processed_data.strideWidthsAll = {stride_widths};
+processed_data.stepDurationsL = {step_durations(left_events_idx)};
+processed_data.stepDurationsR = {step_durations(right_events_idx)};
+processed_data.stepDurationsAll = {step_durations};
+processed_data.strideDurationsL = {stride_durations(left_events_idx)};
+processed_data.strideDurationsR = {stride_durations(right_events_idx)};
+processed_data.strideDurationsAll = {stride_durations};
 processed_data.NumFootfallsL = sum(left_events_idx);
 processed_data.NumFootfallsR = sum(right_events_idx);
-processed_data.NumFootfallsTotal = num_heel_strikes;
+processed_data.NumFootfallsAll = num_heel_strikes;
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
     numStepsL = sum(left_events_idx) - 1;
@@ -100,13 +103,13 @@ elseif right_events_idx(1) == 1
 end
 processed_data.NumStepsL = numStepsL;
 processed_data.NumStepsR = numStepsR;
-processed_data.NumStepsTotal = numStepsL + numStepsR;
+processed_data.NumStepsAll = numStepsL + numStepsR;
 % A "gait cycle" is the interval between subsequent ipsilateral footfalls (e.g. L to L)
 numGaitCyclesL = sum(left_events_idx) - 1;
 numGaitCyclesR = sum(right_events_idx) - 1;
 processed_data.NumGaitCyclesL = numGaitCyclesL;
 processed_data.NumGaitCyclesR = numGaitCyclesR;
-processed_data.NumGaitCyclesTotal = numGaitCyclesL + numGaitCyclesR;
+processed_data.NumGaitCyclesAll = numGaitCyclesL + numGaitCyclesR;
 
 
 %% Gait events (seconds)

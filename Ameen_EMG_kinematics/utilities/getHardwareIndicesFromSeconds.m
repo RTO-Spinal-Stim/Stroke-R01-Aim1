@@ -1,6 +1,6 @@
 function [indicesStruct] = getHardwareIndicesFromSeconds(secondsStruct, fs)
 
-%% PURPOSE: CONVERT A STRUCT OF GAIT EVENTS, GAIT PHASE ONSET & TERMINATION, AND GAIT PHASE DURATIONS FROM SECONDS TO 
+%% PURPOSE: CONVERT A STRUCT OF GAIT EVENTS, GAIT PHASE ONSET & TERMINATION, AND GAIT PHASE DURATIONS FROM SECONDS TO SAMPLES
 % secondsStruct fields: gaitEvents, gaitPhases, gaitPhasesDurations
 
 indicesStruct = struct;

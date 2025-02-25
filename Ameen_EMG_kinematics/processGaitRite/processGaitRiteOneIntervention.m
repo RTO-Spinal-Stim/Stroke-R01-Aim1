@@ -38,8 +38,8 @@ for i = 1:length(xlsx_file_names)
         cellName = [tableColName '_' trialName];
 
         % Get the average symmetry values
-        tmpTable.AvgStepLenSym(j) = mean(tmpTable.stepLengthSymmetries{j});
-        tmpTable.AvgSwingTimeSym(j) = mean(tmpTable.swingTimeSymmetries{j});
+        % tmpTable.AvgStepLenSym(j) = mean(tmpTable.stepLengthSymmetries{j});
+        % tmpTable.AvgSwingTimeSym(j) = mean(tmpTable.swingTimeSymmetries{j});
 
         % Add the name.
         tmpTable.Name(j) = convertCharsToStrings(cellName);        

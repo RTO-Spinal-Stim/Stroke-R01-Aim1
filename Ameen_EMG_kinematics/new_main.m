@@ -2,7 +2,7 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 clc;
 clearvars;
-subject = 'SS21';
+subject = 'SS13';
 % Folder to load the data from.
 subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
 % Path to save the data to.
@@ -11,7 +11,7 @@ saveFileName = 'Overground_EMG_Kinematics.mat';
 codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
 addpath(genpath(codeFolderPath));
 
-doPlot = true;
+doPlot = false;
 
 %% Get configuration
 configFilePath = fullfile(codeFolderPath,'config.json');
@@ -89,7 +89,7 @@ if doPlot
 end
 
 %% Downsample each gait cycle's data to 101 points.
-n_points = 101;
+n_points = config.NUM_POINTS;
 disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
 xsensDownsampledTable = downsampleAllData(cycleTable, 'XSENS_Filtered', 'XSENS_TimeNormalized', n_points);
 delsysDownsampledTable = downsampleAllData(cycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
@@ -170,6 +170,50 @@ magDurTableXSENS = magsDursDiffsLR_All(visitTable, 'XSENS_SPM', 'XSENS_Averaged'
 magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Deksys_MagsDiffs');
 visitTable = addToTable(visitTable, magDurTableXSENS);
 visitTable = addToTable(visitTable, magDurTableDelsys);
+
+%% Calculate area under the curve (AUC)
+disp('Calculating area under the curve (AUC)');
+aucTableXSENS = calculateAUCAll(cycleTable, 'XSENS_TimeNormalized', 'AUC_JointAngles');
+aucTableDelsys = calculateAUCAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'AUC_EMG');
+cycleTable = addToTable(cycleTable, aucTableXSENS);
+cycleTable = addToTable(cycleTable, aucTableDelsys);
+
+%% Calculate root mean square (RMS)
+disp('Calculating RMS');
+rmsTableXSENS = calculateRMSAll(cycleTable, 'XSENS_TimeNormalized', 'RMS_JointAngles');
+rmsTableDelsys = calculateRMSAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'RMS_EMG');
+cycleTable = addToTable(cycleTable, rmsTableXSENS);
+cycleTable = addToTable(cycleTable, rmsTableDelsys);
+
+%% Calculate root mean squared error (RMSE)
+disp('Calculating RMSE');
+rmseTableXSENS = calculateLRRMSEAll(cycleTable, 'XSENS_TimeNormalized', 'RMSE_JointAngles');
+rmseTableDelsys = calculateLRRMSEAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'RMSE_EMG');
+cycleTable = addToTable(cycleTable, rmseTableXSENS);
+cycleTable = addToTable(cycleTable, rmseTableDelsys);
+
+%% Calculate cross-correlations
+disp('Calculating cross correlations');
+xcorrTableXSENS = calculateLRCrossCorrAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles_CrossCorr');
+xcorrTableDelsys = calculateLRCrossCorrAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG_CrossCorr');
+cycleTable = addToTable(cycleTable, xcorrTableXSENS);
+cycleTable = addToTable(cycleTable, xcorrTableDelsys);
+
+%% Calculate range of motion (ROM)
+disp('Calculating range of motion');
+romTableXSENS = calculateRangeAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles');
+cycleTable = addToTable(cycleTable, romTableXSENS);
+
+%% Calculate symmetries
+disp('Calculating symmetry indices');
+grColumnsIn = {'stepLengthsAll', 'swingDurationsAll', 'stepWidthsAll'};
+grColumnsOut = {'stepLengthSym', 'swingDurationSym', 'stepWidthSym'};
+startIdx = [2, 3, 2];
+endIdx = repmat(-1,1,length(grColumnsIn));
+formulaNum = 3;
+spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'leftRightIdxAll', startIdx, endIdx, formulaNum);
+trialTable = addToTable(trialTable, spatiotemporalSymTable);
+stepLengthsSymTable = calculateSymmetryAll(cycleTable, 'StepLengthsL','StepLengthsR');
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, saveFileName);
