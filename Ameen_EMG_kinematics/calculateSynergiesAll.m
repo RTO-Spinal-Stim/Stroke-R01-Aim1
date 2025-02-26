@@ -1,4 +1,4 @@
-function [synergiesTable] = calculateSynergiesAll(dataTable, dataColName, fieldNames, VAFthresh, fieldNameSuffix)
+function [synergiesTable] = calculateSynergiesAll(dataTable, dataColName, fieldNames, VAFthresh, fieldNamePrefix)
 
 %% PURPOSE: CALCULATE THE NUMBER OF MUSCLE SYNERGIES FOR ALL TRIALS/GAIT CYCLES
 % Inputs:
@@ -7,20 +7,20 @@ function [synergiesTable] = calculateSynergiesAll(dataTable, dataColName, fieldN
 % fieldNames: The names of the fields from the dataColName to calculate the
 % muscle synergies from
 % VAFthresh: The threshold for Variance Accounted For (VAF)
-% fieldNameSuffix: Char to put on the end of the table field names, i.e. to
+% fieldNamePrefix: Char to put at the beginning of the table field names, i.e. to
 % indicate L vs. R, or both together, etc.
 %
 % Outputs:
 % synergiesTable: Each row is one gait cycle.
 
 % Initialize the suffix
-if ~exist('fieldNameSuffix','var')
-    fieldNameSuffix = '';
+if ~exist('fieldNamePrefix','var')
+    fieldNamePrefix = '';
 end
 
 % Make sure the suffix starts with '_' if it's not empty
-if ~isempty(fieldNameSuffix) && ~isequal(fieldNameSuffix(1), '_')
-    fieldNameSuffix = ['_' fieldNameSuffix];
+if ~isempty(fieldNamePrefix) && ~isequal(fieldNamePrefix(end), '_')
+    fieldNamePrefix = [fieldNamePrefix '_'];
 end
 
 synergiesTable = table;
@@ -29,9 +29,9 @@ for i = 1:height(dataTable)
     tmpTable = table;
     [nSynergies, VAFs, W, H] = calculateSynergies(currData, fieldNames, VAFthresh);
     tmpTable.Name = dataTable.Name(i);
-    tmpTable.(['NumSynergies' fieldNameSuffix]) = nSynergies;
-    tmpTable.(['VAFs' fieldNameSuffix]) = {VAFs};
-    tmpTable.(['W' fieldNameSuffix]) = {W};
-    tmpTable.(['H' fieldNameSuffix]) = {H};
+    tmpTable.([fieldNamePrefix 'NumSynergies']) = nSynergies;
+    tmpTable.([fieldNamePrefix 'VAFs']) = {VAFs};
+    tmpTable.([fieldNamePrefix 'W']) = {W};
+    tmpTable.([fieldNamePrefix 'H']) = {H};
     synergiesTable = [synergiesTable; tmpTable];
 end

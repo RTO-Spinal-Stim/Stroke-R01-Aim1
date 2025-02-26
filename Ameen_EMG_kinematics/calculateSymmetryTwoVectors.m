@@ -19,6 +19,14 @@ function [symmValues] = calculateSymmetryTwoVectors(v1, v2, formulaNum)
 %
 % For additional details, see here: "Y:\LabMembers\MTillman\Scientific Notebook\25.02.19 Range of Symmetry Values.pdf"
 
+if iscell(v1)
+    v1 = v1{1};
+end
+
+if iscell(v2)
+    v2 = v2{1};
+end
+
 if length(v1) ~= length(v2)
     error('The two data vectors are not the same length!');
 end

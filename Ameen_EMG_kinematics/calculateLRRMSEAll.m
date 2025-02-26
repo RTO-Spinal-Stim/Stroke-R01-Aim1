@@ -1,13 +1,15 @@
-function [rmseTable] = calculateLRRMSEAll(tableIn, colNameIn, colNamePrefix)
+function [rmseTable] = calculateLRRMSEAll(tableIn, colNameIn, colNameSuffix)
 
 %% PURPOSE: COMPUTE RMSE BETWEEN L & R FIELDS OF A STRUCT. 
 % NOTE: The RMSE is computed between the i'th gait cycle of one side and
-% the i+1'th gait cycle (corresponding to the other side). Therefore, there
-% are always N-1 RMSE values for N gait cycles.
+% the i+1'th gait cycle (corresponding to the other side). Currently, the
+% table of input data already matches alternating gait cycles into each row.
+%
 % Inputs:
 % tableIn: The input data table
 % colNameIn: The column name of the input data. This should be a struct
-% colNamePrefix: The prefix of the column name to store the computed data
+% which gait events are L vs. R
+% colNameSuffix: The suffix of the column name to store the computed data
 %
 % Outputs:
 % rmseTable: The table with the computed RMSE data
@@ -37,11 +39,16 @@ for i = 1:height(tableIn)
         fieldName = structFieldsNoSides{fieldNum};
         fieldNameL = ['L' fieldName];
         fieldNameR = ['R' fieldName];
+        % There is one more L or R gait cycle vs. the other side.
+        if isempty(data.(fieldNameL)) || isempty(data.(fieldNameR))
+            tmpTable = table;
+            break;
+        end
         difference = data.(fieldNameL) - data.(fieldNameR);
         squared_diff = difference.^2;
         mean_squared_diff = mean(squared_diff);
         rmseValue = sqrt(mean_squared_diff);
-        fieldNameStore = [colNamePrefix '_' fieldName];
+        fieldNameStore = [fieldName '_' colNameSuffix];
         tmpTable.(fieldNameStore) = rmseValue;
     end
 

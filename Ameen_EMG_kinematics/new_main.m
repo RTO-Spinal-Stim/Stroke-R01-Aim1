@@ -29,7 +29,7 @@ regexsConfig = config.REGEXS;
 %% Initialize tables
 prePostTable = table;
 trialTable = table;
-cycleTable = table;
+matchedCycleTable = table;
 visitTable = table;
 
 %% GaitRite Processing
@@ -75,10 +75,10 @@ end
 
 %% Split by gait cycle
 disp('Splitting XSENS & Delsys by gait cycle');
-xsensCyclesTable = splitTrialsByGaitCycle(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
-delsysCyclesTable = splitTrialsByGaitCycle(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
-cycleTable = addToTable(cycleTable, xsensCyclesTable);
-cycleTable = addToTable(cycleTable, delsysCyclesTable);
+xsensCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
+delsysCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
+matchedCycleTable = addToTable(matchedCycleTable, xsensCyclesTable);
+matchedCycleTable = addToTable(matchedCycleTable, delsysCyclesTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
 if doPlot
@@ -91,31 +91,31 @@ end
 %% Downsample each gait cycle's data to 101 points.
 n_points = config.NUM_POINTS;
 disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
-xsensDownsampledTable = downsampleAllData(cycleTable, 'XSENS_Filtered', 'XSENS_TimeNormalized', n_points);
-delsysDownsampledTable = downsampleAllData(cycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
-cycleTable = addToTable(cycleTable, xsensDownsampledTable);
-cycleTable = addToTable(cycleTable, delsysDownsampledTable);
+xsensDownsampledTable = downsampleAllData(matchedCycleTable, 'XSENS_Filtered', 'XSENS_TimeNormalized', n_points);
+delsysDownsampledTable = downsampleAllData(matchedCycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
+matchedCycleTable = addToTable(matchedCycleTable, xsensDownsampledTable);
+matchedCycleTable = addToTable(matchedCycleTable, delsysDownsampledTable);
 
 %% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
 if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\TimeNormalized_GaitCycles';
-    plotAllTrials(cycleTable, 'Time-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized');
+    plotAllTrials(matchedCycleTable, 'Time-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized');
     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\TimeNormalized_GaitCycles';
-    plotAllTrials(cycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
 %% Identify the max EMG data value across one whole visit (all trials & gait cycles)
-maxEMGTable = maxEMGValuePerVisit(cycleTable, 'Delsys_TimeNormalized', 'Max_EMG_Value');
+maxEMGTable = maxEMGValuePerVisit(matchedCycleTable, 'Delsys_TimeNormalized', 'Max_EMG_Value');
 visitTable = addToTable(visitTable, maxEMGTable);
 
 %% Normalize the time-normalized EMG data to the max value across one whole visit (all trials & gait cycles)
-normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized');
-cycleTable = addToTable(cycleTable, normalizedEMGTable);
+normalizedEMGTable = normalizeAllDataToVisitValue(matchedCycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized');
+matchedCycleTable = addToTable(matchedCycleTable, normalizedEMGTable);
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
 if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
-    plotAllTrials(cycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
+    plotAllTrials(matchedCycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
 end
 
 %% Set up muscle & joint names for analyses
@@ -139,10 +139,10 @@ end
 disp('Computing the number of muscle synergies');
 config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
-synergiesTableL = calculateSynergiesAll(cycleTable, 'Delsys_Normalized_TimeNormalized', musclesL, VAFthresh, 'L');
-synergiesTableR = calculateSynergiesAll(cycleTable, 'Delsys_Normalized_TimeNormalized', musclesR, VAFthresh, 'R');
-cycleTable = addToTable(cycleTable, synergiesTableL);
-cycleTable = addToTable(cycleTable, synergiesTableR);
+synergiesTableL = calculateSynergiesAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', musclesL, VAFthresh, 'L');
+synergiesTableR = calculateSynergiesAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', musclesR, VAFthresh, 'R');
+matchedCycleTable = addToTable(matchedCycleTable, synergiesTableL);
+matchedCycleTable = addToTable(matchedCycleTable, synergiesTableR);
 
 %% Scatterplot the number of muscle synergies & the step lengths
 % if doPlot
@@ -152,57 +152,57 @@ cycleTable = addToTable(cycleTable, synergiesTableR);
 
 %% SPM Analysis for EMG & XSENS
 disp('Running SPM analysis');
-spmTableXSENS = SPManalysisAll(cycleTable, 'XSENS_TimeNormalized', 'XSENS_SPM', jointsL, jointsR);
-spmTableDelsys = SPManalysisAll(cycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM', musclesL, musclesR);
+spmTableXSENS = SPManalysisAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_SPM', jointsL, jointsR);
+spmTableDelsys = SPManalysisAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM', musclesL, musclesR);
 visitTable = addToTable(visitTable, spmTableXSENS);
 visitTable = addToTable(visitTable, spmTableDelsys);
 
 %% Average the data within one visit.
 disp('Averaging the data within one visit');
-avgTableXSENS = avgStructAll(cycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', 2);
-avgTableDelsys = avgStructAll(cycleTable, 'Delsys_TimeNormalized', 'Delsys_Averaged', 2);
+avgTableXSENS = avgStructAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', 2);
+avgTableDelsys = avgStructAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_Averaged', 2);
 visitTable = addToTable(visitTable, avgTableXSENS);
 visitTable = addToTable(visitTable, avgTableDelsys);
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM in one visit.
 disp('Calculating magnitude & durations of L vs. R differences from SPM');
 magDurTableXSENS = magsDursDiffsLR_All(visitTable, 'XSENS_SPM', 'XSENS_Averaged', 'XSENS_MagsDiffs');
-magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Deksys_MagsDiffs');
+magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Delsys_MagsDiffs');
 visitTable = addToTable(visitTable, magDurTableXSENS);
 visitTable = addToTable(visitTable, magDurTableDelsys);
 
 %% Calculate area under the curve (AUC)
 disp('Calculating area under the curve (AUC)');
-aucTableXSENS = calculateAUCAll(cycleTable, 'XSENS_TimeNormalized', 'AUC_JointAngles');
-aucTableDelsys = calculateAUCAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'AUC_EMG');
-cycleTable = addToTable(cycleTable, aucTableXSENS);
-cycleTable = addToTable(cycleTable, aucTableDelsys);
+aucTableXSENS = calculateAUCAll(matchedCycleTable, 'XSENS_TimeNormalized', 'AUC_JointAngles');
+aucTableDelsys = calculateAUCAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'AUC_EMG');
+matchedCycleTable = addToTable(matchedCycleTable, aucTableXSENS);
+matchedCycleTable = addToTable(matchedCycleTable, aucTableDelsys);
 
 %% Calculate root mean square (RMS)
 disp('Calculating RMS');
-rmsTableXSENS = calculateRMSAll(cycleTable, 'XSENS_TimeNormalized', 'RMS_JointAngles');
-rmsTableDelsys = calculateRMSAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'RMS_EMG');
-cycleTable = addToTable(cycleTable, rmsTableXSENS);
-cycleTable = addToTable(cycleTable, rmsTableDelsys);
+rmsTableXSENS = calculateRMSAll(matchedCycleTable, 'XSENS_TimeNormalized', 'RMS_JointAngles');
+rmsTableDelsys = calculateRMSAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'RMS_EMG');
+matchedCycleTable = addToTable(matchedCycleTable, rmsTableXSENS);
+matchedCycleTable = addToTable(matchedCycleTable, rmsTableDelsys);
 
 %% Calculate root mean squared error (RMSE)
 disp('Calculating RMSE');
-rmseTableXSENS = calculateLRRMSEAll(cycleTable, 'XSENS_TimeNormalized', 'RMSE_JointAngles');
-rmseTableDelsys = calculateLRRMSEAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'RMSE_EMG');
-cycleTable = addToTable(cycleTable, rmseTableXSENS);
-cycleTable = addToTable(cycleTable, rmseTableDelsys);
+rmseTableXSENS = calculateLRRMSEAll(matchedCycleTable, 'XSENS_TimeNormalized', 'RMSE_JointAngles');
+rmseTableDelsys = calculateLRRMSEAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'RMSE_EMG');
+matchedCycleTable = addToTable(matchedCycleTable, rmseTableXSENS);
+matchedCycleTable = addToTable(matchedCycleTable, rmseTableDelsys);
 
 %% Calculate cross-correlations
 disp('Calculating cross correlations');
-xcorrTableXSENS = calculateLRCrossCorrAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles_CrossCorr');
-xcorrTableDelsys = calculateLRCrossCorrAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG_CrossCorr');
-cycleTable = addToTable(cycleTable, xcorrTableXSENS);
-cycleTable = addToTable(cycleTable, xcorrTableDelsys);
+xcorrTableXSENS = calculateLRCrossCorrAll(matchedCycleTable, 'XSENS_TimeNormalized', 'JointAngles_CrossCorr');
+xcorrTableDelsys = calculateLRCrossCorrAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG_CrossCorr');
+matchedCycleTable = addToTable(matchedCycleTable, xcorrTableXSENS);
+matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 
 %% Calculate range of motion (ROM)
 disp('Calculating range of motion');
-romTableXSENS = calculateRangeAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles');
-cycleTable = addToTable(cycleTable, romTableXSENS);
+romTableXSENS = calculateRangeAll(matchedCycleTable, 'XSENS_TimeNormalized', 'JointAngles');
+matchedCycleTable = addToTable(matchedCycleTable, romTableXSENS);
 
 %% Calculate symmetries
 disp('Calculating symmetry indices');
@@ -213,9 +213,11 @@ endIdx = repmat(-1,1,length(grColumnsIn));
 formulaNum = 3;
 spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'leftRightIdxAll', startIdx, endIdx, formulaNum);
 trialTable = addToTable(trialTable, spatiotemporalSymTable);
-stepLengthsSymTable = calculateSymmetryAll(cycleTable, 'StepLengthsL','StepLengthsR');
+[colNamesL, colNamesR] = getLRColNames(matchedCycleTable);
+stepLengthsSymTable = calculateSymmetryAll(matchedCycleTable, colNamesL, colNamesR, '_Sym');
+matchedCycleTable = addToTable(matchedCycleTable, stepLengthsSymTable); 
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, saveFileName);
-save(subjectSavePath, 'trialTable', 'visitTable','cycleTable','-v6');
+save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable','-v6');
 disp(['Saved ' subject ' structs to: ' subjectSavePath]);

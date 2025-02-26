@@ -13,7 +13,7 @@ function [result] = SPM_Analysis(spm_input, side1Fields, side2Fields, alphaValue
 % respectively. 
 % 
 % NOTE: It is required that side1Fields and side2Fields are named like {'LHAM'} and
-% {'RHAM'} (i.e. prefixed by 'L' and 'R'), so that the SPM result will be stored in the field 'HAM'.
+% {'RHAM'} (i.e. prefixed by 'L' and 'R' but otherwise matching), so that the SPM result will be stored in the field 'HAM'.
 
 % Check that the field name groupings for SPM are the same length
 if length(side1Fields) ~= length(side2Fields)
@@ -57,9 +57,8 @@ for fieldNum = 1:numFields
         for endpointNum = 1:size(result.(field),1)
             result.(field)(endpointNum,:) = [ceil(result.(field)(endpointNum,1)), floor(result.(field)(endpointNum,2))];
         end
-
-        % Change range from 0 - (N-1) to 1-N
-        result.(field) = result.(field) + 1;
+        
+        result.(field) = result.(field) + 1; % Change range from 0 - (N-1) to 1-N
         assert(result.(field)(end,end) <= length(data1)); % Double check that this doesn't give an out of bound index at the upper end.
     end
 end

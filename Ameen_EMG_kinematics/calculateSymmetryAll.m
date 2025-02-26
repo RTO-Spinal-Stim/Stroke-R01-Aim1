@@ -1,9 +1,11 @@
-function [symmetryTable] = calculateSymmetryAll(tableIn, colNameIn, formulaNum)
+function [symmetryTable] = calculateSymmetryAll(tableIn, colNamesL, colNamesR, colNameSuffix, formulaNum)
 
 %% PURPOSE: CALCULATE THE SYMMETRY VALUES BETWEEN THE TWO COLUMNS.
 % Inputs:
 % tableIn: The table with the input data
-% colNameIn: The data column name
+% colNamesL: The data column names for the left side (start with 'L')
+% colNamesR: The data column names for the right side (start with 'R')
+% colNameSuffix: The suffix to append to the column names
 % formulaNum: The number of the formula to use
 %
 % Outputs:
@@ -16,33 +18,32 @@ if ~exist('formulaNum','var')
     formulaNum = 3;
 end
 
+assert(length(colNamesL) == length(colNamesR));
+
 symmetryTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;
     tmpTable.Name = tableIn.Name(i);
 
-    data = tableIn.(colNameIn)(i);
-
-    if ~isstruct(data)
-        error(['Not a struct! ' colNameIn ' ' char(tableIn.Name{i})]);
-    end
-
-    % Get all of the field names, removing the L & R prefixes
-    structFieldsLR = fieldnames(data);
-    structFieldsNoSides = {};
-    for fieldNum = 1:length(structFieldsLR)
-        fieldName = structFieldsLR{fieldNum}(2:end);
-        if ~ismember(fieldName, structFieldsNoSides)
-            structFieldsNoSides = [structFieldsNoSides; {fieldName}];
+    for fieldNum = 1:length(colNamesL)
+        colNameL = colNamesL{fieldNum};
+        colNameR = colNamesR{fieldNum};
+        fieldNameNoSide = colNameL(3:end);
+        v1 = tableIn.(colNameL)(i);
+        v2 = tableIn.(colNameR)(i);
+        if iscell(v1)
+            v1 = v1{1};
         end
+        if iscell(v2)
+            v2 = v2{1};
+        end
+        if isempty(v1) || isempty(v2)
+            tmpOut = NaN;
+        else
+            tmpOut = calculateSymmetryTwoVectors(v1, v2, formulaNum);
+        end
+        tmpTable.([fieldNameNoSide colNameSuffix]) = {tmpOut};
     end
 
-    for fieldNum = 1:length(structFieldsLR)
-        fieldName = structFieldsLR{fieldNum};
-        fieldNameL = ['L' fieldName];
-        fieldNameR = ['R' fieldName];
-        tmpTable.(fieldName) = calculateSymmetryTwoVectors(data.(fieldNameL), data.(fieldNameR), formulaNum);
-    end
-    
     symmetryTable = [symmetryTable; tmpTable];
 end
