@@ -13,8 +13,8 @@
         "INTERVENTIONS": [
             "\\d+_RMT",
             "\\d+_TOL",
-            "SHAM[12]"            
-        ],
+            "SHAM[12]"           
+        ],        
         "PRE_POST": "PRE|POST",
         "SPEED": "FV|SSV"
     },

@@ -1,6 +1,13 @@
 function [loaded_data, filtered_data] = loadAndFilterDelsysEMGOneFile(emgFilePath, delsysEMGConfig)
 
 %% PURPOSE: PREPROCESS THE DELSYS EMG DATA. PROBABLY DOES NOT WORK FOR MEPs
+% Inputs:
+% emgFilePath: The full path to the EMG file
+% delsysEMGConfig: The config struct for Delsys EMG
+%
+% Outputs:
+% loaded_data: The loaded EMG data
+% filtered_data: The filtered EMG data
 
 %% Configuration
 % validCombinations = config.VALID_COMBINATIONS;

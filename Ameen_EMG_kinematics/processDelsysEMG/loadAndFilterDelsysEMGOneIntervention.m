@@ -1,6 +1,15 @@
 function [delsysData] = loadAndFilterDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig)
 
 %% PURPOSE: LOAD AND FILTER ONE ENTIRE INTERVENTION OF DELSYS EMG DURING WALKING TRIALS
+% Inputs:
+% delsysConfig: Config struct for Delsys
+% intervention_folder_path: The full path to the intervention folder
+% intervention_field_name: The field name of the intervention
+% regexsConfig: The config struct for the regexs
+%
+% Outputs:
+% delsysData: The processed Delsys data table
+%
 % NOTE: Assumes that subject name, intervention name, pre/post, and speed (ssv/fv) are all present in the file name
 
 file_extension = delsysConfig.FILE_EXTENSION;
@@ -23,16 +32,19 @@ for i = 1:length(mat_file_names)
     periodIndex = strfind(mat_file_name_with_ext, '.');
     mat_file_name = mat_file_name_with_ext(1:periodIndex-1);
     mat_file_path = fullfile(intervention_folder_path, mat_file_name_with_ext);    
-    [subject_name, ~, pre_post, speed] = parseFileName(regexsConfig, mat_file_name);
-    nameNoTrial = [subject_name '_' intervention_field_name '_' pre_post '_' speed];
+    parsedName = parseFileName(regexsConfig, mat_file_name);
+    subject_id = parsedName{1};
+    pre_post = parsedName{3};
+    speed = parsedName{4};
+    nameNoTrial = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
     priorNamesNoTrial{i} = nameNoTrial;
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];    
     [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);    
 
     %% Hard-coded fix for EMG muscle mappings for specific subjects & interventions
-    if isfield(subjects_interventions_to_fix, subject_name) && ...
-        any(strcmp(intervention_field_name, subjects_interventions_to_fix.(subject_name)))
+    if isfield(subjects_interventions_to_fix, subject_id) && ...
+        any(strcmp(intervention_field_name, subjects_interventions_to_fix.(subject_id)))
         loadedData = fixMuscleMappings(loadedData);
         filteredData = fixMuscleMappings(filteredData);
     end

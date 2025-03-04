@@ -3,10 +3,11 @@ function [GaitRiteTable, num_data] = preprocessGaitRiteOneFile(gaitRitePath, gai
 %% PURPOSE: LOAD AND PREPROCESS THE DATA FROM ONE GAITRITE FILE.
 
 % Configuration
-header_row_num = gaitRiteConfig.HEADER_ROW_NUM;
+% header_row_num = gaitRiteConfig.HEADER_ROW_NUM;
 trialsColName = strtrim(gaitRiteConfig.COLUMN_NAMES.GAIT_ID);
 
 [num_data, txt_data, cell_data] = xlsread(gaitRitePath);
+header_row_num = find(contains(txt_data(:,1), 'ID'),1,'first');
 header_row = txt_data(header_row_num,:);
 for i = 1:length(header_row)
     header_row{i} = strtrim(header_row{i});
