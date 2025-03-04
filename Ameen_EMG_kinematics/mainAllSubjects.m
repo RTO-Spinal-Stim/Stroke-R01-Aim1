@@ -18,7 +18,7 @@ for i = 1:length(dirNames)
 end
 
 % Remove unwanted subjects
-subjectsToRemove = {'SS27'}; % 8, 9, 10 are the ones with muscle renamings needed.
+subjectsToRemove = {'SS20', 'SS21', 'SS27'}; % 8, 9, 10 are the ones with muscle renamings needed.
 subjects(ismember(subjects, subjectsToRemove)) = [];
 
 % Subjects to redo
