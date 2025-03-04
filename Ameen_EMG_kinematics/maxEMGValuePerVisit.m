@@ -16,25 +16,25 @@ disp('Getting the max EMG value per muscle per visit');
 visitNames = getNamesPrefixes(dataTable.Name, 2);
 for visitNum = 1:length(visitNames)
     visitName = visitNames{visitNum};
-    maxEMGStruct = struct;
     tmpTable = table;
+    % Initialize the max EMG struct.
+    maxEMGStruct = struct;
+    fieldNames = fieldnames(dataTable.(emgColName)(1));
+    for fieldNum = 1:length(fieldNames)
+        fieldName = fieldNames{fieldNum};
+        maxEMGStruct.(fieldName) = NaN;
+    end
+    % Iterate over each trial
     for i = 1:height(dataTable)
         if ~contains(dataTable.Name(i), visitName)
-            continue;
+            continue; % Ensure that only the current visit is being processed
         end
         emgData = dataTable.(emgColName)(i);
-        fieldNames = fieldnames(emgData);
-        % Initialize the max EMG struct.
-        if isempty(fieldnames(maxEMGStruct))
-            maxEMGStruct = struct;     
-            for fieldNum = 1:length(fieldNames)
-                fieldName = fieldNames{fieldNum};
-                maxEMGStruct.(fieldName) = -inf;
-            end
-        end
+        % For each muscle, check if the max value in this trial is larger
+        % than any prior trial.
         for fieldNum = 1:length(fieldNames)
             fieldName = fieldNames{fieldNum};
-            maxEMGStruct.(fieldName) = max([maxEMGStruct.(fieldName), max(emgData.(fieldName))]);
+            maxEMGStruct.(fieldName) = max([ maxEMGStruct.(fieldName),max(emgData.(fieldName)) ], [], 2, 'omitnan');            
         end
     end
     tmpTable.Name = convertCharsToStrings(visitName);

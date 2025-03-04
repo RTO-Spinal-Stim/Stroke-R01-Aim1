@@ -35,11 +35,18 @@ if ~exist('formulaNum','var')
     formulaNum = 2;
 end
 
+% Get the specified symmetry formula
 formula = symmetryFormulae(formulaNum);
 
-symmValues = NaN(size(v1));
+symmValues = NaN(size(v1)); % Initialize the symmetry values vector
+
 for i = 1:length(v1)
     item1 = v1(i);
     item2 = v2(i);
+    % Handle NaN
+    if isnan(item1) || isnan(item2)
+        symmValues(i) = NaN;
+        continue;
+    end
     symmValues(i) = formula(item1, item2);
 end

@@ -25,7 +25,7 @@ for i = 1:height(tableIn)
             fieldName = fieldNameOrig(2:end);
         end
         storeFieldName = [firstLetter '_' fieldName '_' columnNameSuffix];
-        if isempty(currData.(fieldNameOrig))
+        if isempty(currData.(fieldNameOrig)) || all(isnan(currData.(fieldNameOrig)))
             tmpTable.(storeFieldName) = NaN;
         else
             tmpTable.(storeFieldName) = trapz(currData.(fieldNameOrig));

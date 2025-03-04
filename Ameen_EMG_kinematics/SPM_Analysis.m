@@ -37,6 +37,12 @@ for fieldNum = 1:numFields
     data1 = spm_input.(field1);
     data2 = spm_input.(field2);
 
+    % Check for NaN in data1 or data2
+    if any(all(isnan(data1),2)) || any(all(isnan(data2),2))
+        result.(field) = [NaN, NaN];
+        continue;
+    end
+
     % Do the SPM analysis.
     spm = spm1d.stats.ttest2(data1, data2);
     spmi = spm.inference(alphaValue, 'two_tailed', true, 'interp', true);

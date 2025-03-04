@@ -25,7 +25,7 @@ for i = 1:height(tableIn)
             fieldName = fieldNameOrig(2:end);
         end
         colName = [firstLetter '_' fieldName '_' colNameSuffix];
-        if isempty(currData.(fieldNameOrig))
+        if isempty(currData.(fieldNameOrig)) || all(isnan(currData.(fieldNameOrig)))
             tmpTable.(colName) = NaN;
         else
             tmpTable.(colName) = rms(currData.(fieldNameOrig));

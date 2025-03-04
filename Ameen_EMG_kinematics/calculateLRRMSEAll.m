@@ -41,16 +41,16 @@ for i = 1:height(tableIn)
         fieldName = structFieldsNoSides{fieldNum};
         fieldNameL = ['L' fieldName];
         fieldNameR = ['R' fieldName];
+        fieldNameStore = [fieldName '_' colNameSuffix];
         % There is one more L or R gait cycle vs. the other side.
         if isempty(data.(fieldNameL)) || isempty(data.(fieldNameR))
-            tmpTable = table;
-            break;
+            tmpTable.(fieldNameStore) = NaN;
+            continue;
         end
         difference = data.(fieldNameL) - data.(fieldNameR);
         squared_diff = difference.^2;
         mean_squared_diff = mean(squared_diff);
-        rmseValue = sqrt(mean_squared_diff);
-        fieldNameStore = [fieldName '_' colNameSuffix];
+        rmseValue = sqrt(mean_squared_diff);        
         tmpTable.(fieldNameStore) = rmseValue;
     end
 

@@ -18,20 +18,19 @@ for i = 1:height(dataTable)
     tmpTable = table;
     name = dataTable.Name(i);
     dataToNormalize = dataTable.(dataColName)(i);
-    % nameParts = strsplit(name, '_');
     visitName = getNamesPrefixes(char(name), 2);
-    % visitName = '';
-    % for j = 1:length(nameParts)-2
-    %     visitName = [visitName '_' nameParts{j}];
-    % end
-    % visitName = visitName(2:end);
     visitRowInVisitTable = ismember(visitTable.Name, visitName);
+    assert(sum(visitRowInVisitTable)==1);
     visitData = visitTable.(visitColName)(visitRowInVisitTable);
     normalizedStruct = struct;
     fieldNames = fieldnames(dataToNormalize);
     for fieldNum = 1:length(fieldNames)
         fieldName = fieldNames{fieldNum};
-        normalizedStruct.(fieldName) = dataToNormalize.(fieldName) / visitData.(fieldName);
+        try
+            normalizedStruct.(fieldName) = dataToNormalize.(fieldName) ./ visitData.(fieldName);
+        catch
+            disp('a');
+        end
     end
     tmpTable.Name = dataTable.Name(i);
     tmpTable.(normalizedDataColName) = normalizedStruct;

@@ -40,14 +40,15 @@ for i = 1:height(tableIn)
         fieldName = structFieldsNoSides{fieldNum};
         fieldNameL = ['L' fieldName];
         fieldNameR = ['R' fieldName];
-        % There is one more L or R gait cycle vs. the other side.
-        if isempty(data.(fieldNameL)) || isempty(data.(fieldNameR))
-            tmpTable = table;
-            break;
-        end
-        [C, lags] = xcorr(data.(fieldNameL), data.(fieldNameR),'normalized');
         fieldNameStoreMag = [fieldName '_Mag_' colNameSuffix];
         fieldNameStoreLag = [fieldName '_Lag_' colNameSuffix];
+        % There is one more L or R gait cycle vs. the other side.
+        if isempty(data.(fieldNameL)) || isempty(data.(fieldNameR))
+            tmpTable.(fieldNameStoreMag) = NaN;
+            tmpTable.(fieldNameStoreLag) = NaN;
+            continue;
+        end
+        [C, lags] = xcorr(data.(fieldNameL), data.(fieldNameR),'normalized');        
         [maxC, maxCidx] = max(C);
         tmpTable.(fieldNameStoreMag) = maxC;
         tmpTable.(fieldNameStoreLag) = lags(maxCidx);

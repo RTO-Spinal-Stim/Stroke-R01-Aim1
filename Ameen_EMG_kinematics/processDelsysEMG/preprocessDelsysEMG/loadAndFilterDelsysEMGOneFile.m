@@ -22,6 +22,7 @@ loaded_data = struct();
 
 for i = 1:length(muscle_names)
 
+    muscleName = muscle_names{i};
     startData = from_file_data.datastart(i);
     endData = from_file_data.dataend(i);
 
@@ -29,7 +30,12 @@ for i = 1:length(muscle_names)
         continue;
     end
 
-    loaded_data.(muscle_names{i}) = from_file_data.data(startData:endData);
+    loaded_data.(muscleName) = from_file_data.data(startData:endData);
+
+    % If all of the data are the same value, convert them to NaN
+    if all(diff(loaded_data.(muscleName))==0)
+        loaded_data.(muscleName) = NaN(size(loaded_data.(muscleName)));
+    end
 
 end
 

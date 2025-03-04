@@ -1,7 +1,15 @@
 function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig, EMG_Fs)
 
 %% PURPOSE: PARSE CONFIGURATION AND FILTER THE RAW EMG DATA
-% config.json format:
+% Inputs:
+% raw_emg_one_muscle: Vector of doubles for one muscle's EMG data
+% filterEMGConfig: Config struct for the EMG filter
+% EMG_Fs: Sampling rate for the EMG
+%
+% Outputs:
+% filtered_emg: The filtered EMG data
+%
+% example config JSON format:
 % {
 %   "EMG_SAMPLING_FREQUENCY": 2000,
 %   "FILTER_EMG": {
@@ -15,6 +23,12 @@ function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig
 %       "SAMPLING_FREQUENCY": 2000
 %   }
 % }
+
+% If the input data is NaN, return NaN
+if all(isnan(raw_emg_one_muscle))
+    filtered_emg = NaN(size(raw_emg_one_muscle));
+    return;
+end
 
 % Parameters for bandpass filter
 fpass = filterEMGConfig.BANDPASS_CUTOFF;

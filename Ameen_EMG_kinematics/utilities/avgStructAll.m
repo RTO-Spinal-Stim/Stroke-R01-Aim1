@@ -22,7 +22,7 @@ for i = 1:length(visitNames)
     fieldNames = fieldnames(aggStruct);
     for fieldNum = 1:length(fieldNames)
         fieldName = fieldNames{fieldNum};
-        avgStruct.(fieldName) = mean(aggStruct.(fieldName),1);
+        avgStruct.(fieldName) = mean(aggStruct.(fieldName),1,'omitnan');
     end
     tmpTable = table;
     tmpTable.Name = convertCharsToStrings(visitName);

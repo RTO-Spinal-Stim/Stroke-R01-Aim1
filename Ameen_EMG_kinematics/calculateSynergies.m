@@ -19,6 +19,12 @@ function [numSynergies, VAFs, W, H] = calculateSynergies(emgData, muscleNames, V
 %   determined number of synergies (0-1)
 % H: numSynergies x N matrix of doubles. The timeseries of synergy activations (0-1)
 
+%% Initialize the return values
+numSynergies = NaN;
+VAFs = [];
+W = [];
+H = [];
+
 %% WHEN ONLY LOOKING AT L OR R SIDE INDEPENDENTLY, DATA LENGTH SHOULD ALWAYS BE CONSISTENT.
 %% If the data is inconsistent in length, get the shortest amount of data to prep for resampling.
 min_n_points = inf;
@@ -33,17 +39,8 @@ end
 % with fewer gait cycles will be empty in the last gait cycle. In this
 % case, return NaN.
 if min_n_points == 0
-    numSynergies = NaN;
-    VAFs = [];
-    W = [];
-    H = [];
     return;
 end
-
-% Turn off the warning
-warningName = 'stats:nnmf:LowRank';
-warningStruct = warning('query', warningName);
-warning('off', warningStruct.identifier);
 
 %% Aggregate the data into a matrix.
 aggEMGData = NaN(length(muscleNames), min_n_points);
@@ -58,6 +55,18 @@ for i = 1:length(muscleNames)
     aggEMGData(i,:) = dataToStore;
 end
 
+%% Check for NaN
+nanIdx = isnan(aggEMGData);
+anyMusclesNaN = any(all(nanIdx,2));
+if anyMusclesNaN
+    return;
+end
+
+%% Turn off the warning about nnmf low rank
+warningName = 'stats:nnmf:LowRank';
+warningStruct = warning('query', warningName);
+warning('off', warningStruct.identifier);
+
 %% Calculate Variance Accounted For (VAF)
 % Perform non-negative matrix factorization (nnmf) to extract synergies and weights
 maxNumSynergies = size(aggEMGData,1);
@@ -68,11 +77,11 @@ for i = 1:maxNumSynergies
     VAFs(i) = 1 - sum((aggEMGData - reconstruction).^2, 'all') / sum(aggEMGData.^2, 'all');
 end
 
+%% Reset the warning back to its original state.
+warning(warningStruct.state, warningStruct.identifier);
+
 %% Get the number of synergies
 numSynergies = find(VAFs >= VAFthresh,1,'first');
 
 %% Get the weights and time series from the W & H matrices with the determined number of synergies
 [W, H] = nnmf(aggEMGData, numSynergies);
-
-% Reset the warning back to its original state.
-warning(warningStruct.state, warningStruct.identifier);

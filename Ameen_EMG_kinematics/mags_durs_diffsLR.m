@@ -8,6 +8,10 @@ function [magnitudes, durations] = mags_durs_diffsLR(spm_result, averages)
 % 1 x N timeseries data, where N probably equals 100/101 points (% of gait
 % cycle/timeseries).
 %
+% Outputs:
+% magnitudes: The magnitudes of each bout of L vs. R differences
+% durations: The durations of each bout of L vs. R differences
+%
 % NOTE: This relies on the field names of averages being the same as the
 % field names of spm_result, just with 'L' or 'R' prepended.
 %
@@ -24,8 +28,16 @@ for i = 1:length(spm_fields)
     magnitudes.(spm_field) = zeros(size(endpoints,1),1);
     durations.(spm_field) = zeros(size(endpoints,1),1);    
 
-    if all(endpoints(1,:) == 0) && size(endpoints,1) == 1
-        continue; % No differences found.
+    % No differences found.
+    if isequal(endpoints, [0, 0])
+        continue;
+    end
+
+    % The SPM result is NaN
+    if all(isnan(endpoints),'all')
+        magnitudes.(spm_field) = NaN;
+        durations.(spm_field) = NaN;
+        continue;
     end
 
     fieldL = ['L' spm_field];
