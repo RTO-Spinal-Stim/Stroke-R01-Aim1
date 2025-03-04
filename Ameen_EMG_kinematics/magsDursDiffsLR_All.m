@@ -10,6 +10,8 @@ function [magsDiffsTable] = magsDursDiffsLR_All(dataTable, spmColName, averagedC
 % Outputs:
 % magsDiffsTable: Each row is one visit.
 
+disp('Calculating magnitude & durations of L vs. R differences from SPM');
+
 magsDiffsTable = table;
 for i = 1:height(dataTable)
     tmpTable = table;

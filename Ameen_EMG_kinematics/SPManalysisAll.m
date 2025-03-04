@@ -11,6 +11,8 @@ function [spmTable] = SPManalysisAll(dataTable, dataColName, spmColName, group1N
 % Outputs:
 % spmTable: Each row is one gait cycle/trial.
 
+disp('Running SPM analysis');
+
 if ~exist('alphaValue','var')
     alphaValue = 0.05;
 end

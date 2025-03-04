@@ -1,4 +1,13 @@
 {
+    "PATHS": {
+        "ROOT_LOAD": "Y:\\Spinal Stim_Stroke R01\\AIM 1\\Subject Data",
+        "ROOT_SAVE": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim",
+        "SAVE_FILE_NAME": "Overground_EMG_Kinematics.mat",
+        "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Ameen_EMG_kinematics"
+    },
+    "SUBJECT_LIST_EXCLUSION": [
+        "SS21"
+    ],
     "REGEXS": {
         "SUBJECT_ID": "SS\\d{2}",
         "INTERVENTIONS": [
@@ -27,7 +36,7 @@
             "TA",
             "VL"
         ],
-        "VALID_COMBINATIONS": {
+        "SUBJECTS_INTERVENTIONS_TO_FIX": {
             "SS08": "RMT30",
             "SS09": "SHAM2",
             "SS10": [

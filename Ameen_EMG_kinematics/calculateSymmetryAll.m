@@ -14,8 +14,10 @@ function [symmetryTable] = calculateSymmetryAll(tableIn, colNamesL, colNamesR, c
 % NOTE: The fields of the struct must begin with 'L' or 'R',
 % and the number of 'L' and 'R' fields should be matching.
 
+disp('Calculating symmetry indices');
+
 if ~exist('formulaNum','var')
-    formulaNum = 3;
+    formulaNum = 2;
 end
 
 assert(length(colNamesL) == length(colNamesR));

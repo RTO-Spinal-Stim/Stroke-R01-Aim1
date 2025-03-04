@@ -9,6 +9,8 @@ function [rmsTable] = calculateRMSAll(tableIn, colNameIn, colNameSuffix)
 % Outputs:
 % rmsTable: The table with the RMS data
 
+disp('Calculating RMS');
+
 rmsTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;

@@ -9,6 +9,8 @@ function [rangeTable] = calculateRangeAll(tableIn, colNameIn, colNameOutPrefix)
 % Outputs:
 % rangeTable: The table with the computed data
 
+disp('Calculating range of motion');
+
 rangeTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;

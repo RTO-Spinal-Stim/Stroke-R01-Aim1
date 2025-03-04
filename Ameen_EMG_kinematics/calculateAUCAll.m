@@ -9,6 +9,8 @@ function [aucTable] = calculateAUCAll(tableIn, colNameIn, columnNameSuffix)
 % Outputs:
 % aucTable: The table with the computed AUC data
 
+disp('Calculating area under the curve (AUC)');
+
 aucTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;

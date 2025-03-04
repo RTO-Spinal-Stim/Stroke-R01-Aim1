@@ -22,21 +22,14 @@ for i = 1:length(colNamesFieldNames)
 end
 
 %% Extract the data
-% Get the start and end rows
-start_row = 2; % The row to start at
-tmp = raw_data(:,indices.(colNameFieldName)); % Find the index of the first NaN value to get the row to end at.
-end_row = find(isnan(tmp), 1, 'first');
-if isempty(end_row)
-    end_row = length(tmp);
-else
-    end_row = end_row - 1; % Get the last number before the NaN index
-end
+nanIdx = isnan(raw_data(:,indices.(colNameFieldName)));
+% nanIdx(1) = true; % Do not include the header row
 
 % Perform the data extraction
 extracted_data = struct();
 for i = 1:length(colNamesFieldNames)
     colNameFieldName = colNamesFieldNames{i};
-    extracted_data.(colNameFieldName) = raw_data(start_row:end_row, indices.(colNameFieldName));
+    extracted_data.(colNameFieldName) = raw_data(~nanIdx, indices.(colNameFieldName));
 end
 
 %% Filter the data

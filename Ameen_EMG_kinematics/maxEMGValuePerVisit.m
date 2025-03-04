@@ -10,6 +10,8 @@ function [maxEMGTable] = maxEMGValuePerVisit(dataTable, emgColName, maxEMGColNam
 
 maxEMGTable = table;
 
+disp('Getting the max EMG value per muscle per visit');
+
 %% Get the unique visit names.
 visitNames = getNamesPrefixes(dataTable.Name, 2);
 for visitNum = 1:length(visitNames)

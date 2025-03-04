@@ -11,6 +11,8 @@ function [avgStructTable] = avgStructAll(dataTable, colNameToAverage, averagedCo
 % avgStructTable: Each row is one struct, where each field has the averaged
 % data
 
+disp('Averaging the data within one visit');
+
 visitNames = getNamesPrefixes(dataTable.Name, levelNum);
 avgStructTable = table;
 for i = 1:length(visitNames)

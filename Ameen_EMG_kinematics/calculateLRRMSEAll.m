@@ -14,6 +14,8 @@ function [rmseTable] = calculateLRRMSEAll(tableIn, colNameIn, colNameSuffix)
 % Outputs:
 % rmseTable: The table with the computed RMSE data
 
+disp('Calculating RMSE');
+
 rmseTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;

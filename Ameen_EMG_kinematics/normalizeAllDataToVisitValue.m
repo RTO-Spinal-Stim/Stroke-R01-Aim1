@@ -11,6 +11,8 @@ function [normalizedDataTable] = normalizeAllDataToVisitValue(dataTable, dataCol
 % Outputs:
 % normalizedDataTable: The normalized data.
 
+disp('Normalizing data to per-visit value');
+
 normalizedDataTable = table;
 for i = 1:height(dataTable)
     tmpTable = table;

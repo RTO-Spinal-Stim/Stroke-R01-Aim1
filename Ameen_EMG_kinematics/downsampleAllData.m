@@ -10,6 +10,8 @@ function [downsampledTable] = downsampleAllData(allDataTable, colNameToDownsampl
 % downsampledTable: Table with the downsampled data, one row per trial or
 % gait cycle.
 
+disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
+
 downsampledTable = table;
 for i = 1:height(allDataTable)
     dataToDownsample = allDataTable.(colNameToDownsample)(i);

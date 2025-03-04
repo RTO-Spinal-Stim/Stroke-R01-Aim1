@@ -32,7 +32,7 @@ if length(v1) ~= length(v2)
 end
 
 if ~exist('formulaNum','var')
-    formulaNum = 3;
+    formulaNum = 2;
 end
 
 formula = symmetryFormulae(formulaNum);

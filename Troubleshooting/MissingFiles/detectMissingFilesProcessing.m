@@ -1,4 +1,4 @@
-missingFiles = identifyMissingDataPaths(jsondecode(fileread('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Troubleshooting\missingFilesConfig.json')));
+missingFiles = identifyMissingDataPaths(jsondecode(fileread('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Troubleshooting\MissingFiles\missingFilesConfig.json')));
 missingFilesTable = table;
 subjects = cell(size(missingFiles));
 dataTypes = cell(size(missingFiles));
@@ -18,4 +18,4 @@ missingFilesTable.Interventions = interventions;
 missingFilesTable.FileNames = fileNames;
 missingFilesTable.Paths = missingFiles;
 missingFilesTable.Reason = cell(size(missingFiles));
-writetable(missingFilesTable, 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\missingFiles_250224.xlsx');
+writetable(missingFilesTable, 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\missingFiles_250303.xlsx');

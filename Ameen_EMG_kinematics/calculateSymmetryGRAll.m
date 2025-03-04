@@ -10,6 +10,8 @@ function [symTable] = calculateSymmetryGRAll(tableIn, dataColNames, dataColNames
 % endIdx: Vector of doubles specifying which value to end processing at
 % formulaNum: Scalar double specifying which symmetry formula to use.
 
+disp('Calculating symmetry indices for GaitRite');
+
 if ~exist('endIdx','var')
     endIdx = repmat(-1, 1, length(startIdx));
 end

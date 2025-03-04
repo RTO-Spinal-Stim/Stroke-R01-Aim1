@@ -4,7 +4,7 @@ function [delsysData] = loadAndFilterDelsysEMGOneIntervention(delsysConfig, inte
 % NOTE: Assumes that subject name, intervention name, pre/post, and speed (ssv/fv) are all present in the file name
 
 file_extension = delsysConfig.FILE_EXTENSION;
-validCombinations = delsysConfig.VALID_COMBINATIONS;
+subjects_interventions_to_fix = delsysConfig.SUBJECTS_INTERVENTIONS_TO_FIX;
 
 generic_mat_path = fullfile(intervention_folder_path, file_extension);
 mat_files = dir(generic_mat_path);
@@ -27,20 +27,19 @@ for i = 1:length(mat_file_names)
     nameNoTrial = [subject_name '_' intervention_field_name '_' pre_post '_' speed];
     priorNamesNoTrial{i} = nameNoTrial;
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
-    nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
+    nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];    
+    [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);    
+
+    %% Hard-coded fix for EMG muscle mappings for specific subjects & interventions
+    if isfield(subjects_interventions_to_fix, subject_name) && ...
+        any(strcmp(intervention_field_name, subjects_interventions_to_fix.(subject_name)))
+        loadedData = fixMuscleMappings(loadedData);
+        filteredData = fixMuscleMappings(filteredData);
+    end
+
     tmpTable = table;
-    [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);
     tmpTable.Name = convertCharsToStrings(nameWithTrial);
     tmpTable.Delsys_Loaded = loadedData;
     tmpTable.Delsys_Filtered = filteredData;    
     delsysData = [delsysData; tmpTable];
-
-    %% Correct EMG muscle mappings for specific subjects & interventions
-    % This stays separate from the rest of preprocessing because it
-    % requires additional dependency inputs beyond the rest of preprocessing, and is not mandatory if there's no
-    % errors or errors were corrected previously.
-    if isfield(validCombinations, subject_name) && ...
-        any(strcmp(intervention_name, validCombinations.(subject_name)))
-        delsysData.(field_name) = fixMuscleMappings(delsysData.(field_name).muscles, subject_name, intervention_name, validCombinations);
-    end
 end

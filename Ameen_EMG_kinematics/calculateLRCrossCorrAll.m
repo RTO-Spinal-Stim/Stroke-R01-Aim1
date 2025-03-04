@@ -13,6 +13,8 @@ function [crossCorrTable] = calculateLRCrossCorrAll(tableIn, colNameIn, colNameS
 % Outputs:
 % crossCorrTable: The table with the computed cross correlation data
 
+disp('Calculating cross correlations');
+
 crossCorrTable = table;
 for i = 1:height(tableIn)
     tmpTable = table;

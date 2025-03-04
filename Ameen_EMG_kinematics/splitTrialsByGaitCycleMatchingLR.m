@@ -14,6 +14,8 @@ function [cycleTable] = splitTrialsByGaitCycleMatchingLR(trialTable, colNameToSp
 % L heel strikes, and gait cycle 1's R data is between the first two R heel
 % strikes.
 
+disp('Splitting data by gait cycle');
+
 cycleTable = table;
 for i = 1:height(trialTable)
     LHS = trialTable.(gaitEventsColName)(i).gaitEvents.leftHeelStrikes;

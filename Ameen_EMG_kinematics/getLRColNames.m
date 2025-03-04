@@ -9,6 +9,8 @@ function [columnNamesL, columnNamesR] = getLRColNames(tableIn)
 % columnNamesL: The column names for the left side
 % columnNamesR: The column names for the right side
 
+disp('Getting L & R side column names');
+
 if istable(tableIn)
     columnNames = tableIn.Properties.VariableNames;
 elseif iscell(tableIn)

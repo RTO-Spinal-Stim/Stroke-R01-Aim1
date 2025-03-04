@@ -1,23 +1,16 @@
 %% Created by MT 02/04/25
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
-clc;
-clearvars;
-subject = 'SS13';
-% Folder to load the data from.
-subjectLoadPath = fullfile('Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data', subject);
-% Path to save the data to.
-subjectSaveFolder = fullfile('Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\', subject);
-saveFileName = 'Overground_EMG_Kinematics.mat';
-codeFolderPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics';
-addpath(genpath(codeFolderPath));
-
-doPlot = false;
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Comment this part out when running all subjects at once.
+% clc;
+% clearvars;
+% subject = 'SS13';
+% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+% config = jsondecode(fileread(configFilePath));
+% disp(['Loaded configuration from: ' configFilePath]);
+% doPlot = false;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
-configFilePath = fullfile(codeFolderPath,'config.json');
-config = jsondecode(fileread(configFilePath));
-disp(['Loaded configuration from: ' configFilePath]);
-
 intervention_folders = config.INTERVENTION_FOLDERS;
 intervention_field_names = config.MAPPED_INTERVENTION_FIELDS;
 mapped_interventions = containers.Map(intervention_folders, intervention_field_names);
@@ -26,6 +19,15 @@ delsysConfig = config.DELSYS_EMG;
 xsensConfig = config.XSENS;
 regexsConfig = config.REGEXS;
 
+% Folder to load the data from.
+pathsConfig = config.PATHS;
+subjectLoadPath = fullfile(pathsConfig.ROOT_LOAD, subject);
+% Path to save the data to.
+subjectSaveFolder = fullfile(pathsConfig.ROOT_SAVE, subject);
+saveFileName = pathsConfig.SAVE_FILE_NAME;
+codeFolderPath = pathsConfig.CODE_FOLDER_PATH; % Folder where the code lives
+addpath(genpath(pathsConfig.CODE_FOLDER_PATH));
+
 %% Initialize tables
 prePostTable = table;
 trialTable = table;
@@ -33,19 +35,16 @@ matchedCycleTable = table;
 visitTable = table;
 
 %% GaitRite Processing
-disp('Preprocessing Gaitrite');
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
 gaitRiteTable = processGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
 trialTable = addToTable(trialTable, gaitRiteTable);
 
 %% Delsys Processing
-disp('Preprocessing Delsys');
 subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
 delsysTable = processDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
 trialTable = addToTable(trialTable, delsysTable);
 
 %% XSENS Processing
-disp('Preprocessing XSENS');
 subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
 xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
 trialTable = addToTable(trialTable, xsensTable);
@@ -59,7 +58,6 @@ if doPlot
 end
 
 %% Time synchronization
-disp('Time synchronizing XSENS & Delsys');
 syncedTableDelsys = timeSynchronize(trialTable, delsysConfig.SAMPLING_FREQUENCY, 'seconds', 'Delsys_Frames');
 syncedTableXSENS = timeSynchronize(trialTable, xsensConfig.SAMPLING_FREQUENCY, 'seconds', 'XSENS_Frames');
 trialTable = addToTable(trialTable, syncedTableDelsys);
@@ -74,7 +72,6 @@ if doPlot
 end
 
 %% Split by gait cycle
-disp('Splitting XSENS & Delsys by gait cycle');
 xsensCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
 delsysCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
 matchedCycleTable = addToTable(matchedCycleTable, xsensCyclesTable);
@@ -90,7 +87,6 @@ end
 
 %% Downsample each gait cycle's data to 101 points.
 n_points = config.NUM_POINTS;
-disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
 xsensDownsampledTable = downsampleAllData(matchedCycleTable, 'XSENS_Filtered', 'XSENS_TimeNormalized', n_points);
 delsysDownsampledTable = downsampleAllData(matchedCycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
 matchedCycleTable = addToTable(matchedCycleTable, xsensDownsampledTable);
@@ -136,8 +132,6 @@ for i = 1:length(jointsLR)
 end
 
 %% Calculate the number of muscle synergies in each gait cycle of each trial
-disp('Computing the number of muscle synergies');
-config = jsondecode(fileread(configFilePath));
 VAFthresh = config.DELSYS_EMG.VAF_THRESHOLD;
 synergiesTableL = calculateSynergiesAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', musclesL, VAFthresh, 'L');
 synergiesTableR = calculateSynergiesAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', musclesR, VAFthresh, 'R');
@@ -151,73 +145,67 @@ matchedCycleTable = addToTable(matchedCycleTable, synergiesTableR);
 % end
 
 %% SPM Analysis for EMG & XSENS
-disp('Running SPM analysis');
 spmTableXSENS = SPManalysisAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_SPM', jointsL, jointsR);
 spmTableDelsys = SPManalysisAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM', musclesL, musclesR);
 visitTable = addToTable(visitTable, spmTableXSENS);
 visitTable = addToTable(visitTable, spmTableDelsys);
 
 %% Average the data within one visit.
-disp('Averaging the data within one visit');
 avgTableXSENS = avgStructAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', 2);
 avgTableDelsys = avgStructAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_Averaged', 2);
 visitTable = addToTable(visitTable, avgTableXSENS);
 visitTable = addToTable(visitTable, avgTableDelsys);
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM in one visit.
-disp('Calculating magnitude & durations of L vs. R differences from SPM');
 magDurTableXSENS = magsDursDiffsLR_All(visitTable, 'XSENS_SPM', 'XSENS_Averaged', 'XSENS_MagsDiffs');
 magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Delsys_MagsDiffs');
 visitTable = addToTable(visitTable, magDurTableXSENS);
 visitTable = addToTable(visitTable, magDurTableDelsys);
 
 %% Calculate area under the curve (AUC)
-disp('Calculating area under the curve (AUC)');
 aucTableXSENS = calculateAUCAll(matchedCycleTable, 'XSENS_TimeNormalized', 'AUC_JointAngles');
 aucTableDelsys = calculateAUCAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'AUC_EMG');
 matchedCycleTable = addToTable(matchedCycleTable, aucTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, aucTableDelsys);
 
 %% Calculate root mean square (RMS)
-disp('Calculating RMS');
 rmsTableXSENS = calculateRMSAll(matchedCycleTable, 'XSENS_TimeNormalized', 'RMS_JointAngles');
 rmsTableDelsys = calculateRMSAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'RMS_EMG');
 matchedCycleTable = addToTable(matchedCycleTable, rmsTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, rmsTableDelsys);
 
 %% Calculate root mean squared error (RMSE)
-disp('Calculating RMSE');
 rmseTableXSENS = calculateLRRMSEAll(matchedCycleTable, 'XSENS_TimeNormalized', 'RMSE_JointAngles');
 rmseTableDelsys = calculateLRRMSEAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'RMSE_EMG');
 matchedCycleTable = addToTable(matchedCycleTable, rmseTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, rmseTableDelsys);
 
 %% Calculate cross-correlations
-disp('Calculating cross correlations');
 xcorrTableXSENS = calculateLRCrossCorrAll(matchedCycleTable, 'XSENS_TimeNormalized', 'JointAngles_CrossCorr');
 xcorrTableDelsys = calculateLRCrossCorrAll(matchedCycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG_CrossCorr');
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 
 %% Calculate range of motion (ROM)
-disp('Calculating range of motion');
 romTableXSENS = calculateRangeAll(matchedCycleTable, 'XSENS_TimeNormalized', 'JointAngles');
 matchedCycleTable = addToTable(matchedCycleTable, romTableXSENS);
 
 %% Calculate symmetries
-disp('Calculating symmetry indices');
 grColumnsIn = {'stepLengthsAll', 'swingDurationsAll', 'stepWidthsAll'};
-grColumnsOut = {'stepLengthSym', 'swingDurationSym', 'stepWidthSym'};
+grColumnsOut = {'stepLength_Sym', 'swingDuration_Sym', 'stepWidth_Sym'};
 startIdx = [2, 3, 2];
 endIdx = repmat(-1,1,length(grColumnsIn));
 formulaNum = 3;
 spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'leftRightIdxAll', startIdx, endIdx, formulaNum);
 trialTable = addToTable(trialTable, spatiotemporalSymTable);
 [colNamesL, colNamesR] = getLRColNames(matchedCycleTable);
-stepLengthsSymTable = calculateSymmetryAll(matchedCycleTable, colNamesL, colNamesR, '_Sym');
-matchedCycleTable = addToTable(matchedCycleTable, stepLengthsSymTable); 
+lrSidesSymTable = calculateSymmetryAll(matchedCycleTable, colNamesL, colNamesR, '_Sym');
+matchedCycleTable = addToTable(matchedCycleTable, lrSidesSymTable); 
 
 %% Save the structs to the participant's save folder.
-subjectSavePath = fullfile(subjectSaveFolder, saveFileName);
+subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
+if ~isfolder(subjectSaveFolder)
+    mkdir(subjectSaveFolder);
+end
 save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable','-v6');
-disp(['Saved ' subject ' structs to: ' subjectSavePath]);
+disp(['Saved ' subject ' tables to: ' subjectSavePath]);

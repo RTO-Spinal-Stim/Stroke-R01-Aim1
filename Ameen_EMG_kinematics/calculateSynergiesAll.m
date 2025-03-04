@@ -13,6 +13,8 @@ function [synergiesTable] = calculateSynergiesAll(dataTable, dataColName, fieldN
 % Outputs:
 % synergiesTable: Each row is one gait cycle.
 
+disp('Computing the number of muscle synergies');
+
 % Initialize the suffix
 if ~exist('fieldNamePrefix','var')
     fieldNamePrefix = '';
