@@ -26,11 +26,7 @@ for i = 1:height(dataTable)
     fieldNames = fieldnames(dataToNormalize);
     for fieldNum = 1:length(fieldNames)
         fieldName = fieldNames{fieldNum};
-        try
-            normalizedStruct.(fieldName) = dataToNormalize.(fieldName) ./ visitData.(fieldName);
-        catch
-            disp('a');
-        end
+        normalizedStruct.(fieldName) = dataToNormalize.(fieldName) ./ visitData.(fieldName);
     end
     tmpTable.Name = dataTable.Name(i);
     tmpTable.(normalizedDataColName) = normalizedStruct;

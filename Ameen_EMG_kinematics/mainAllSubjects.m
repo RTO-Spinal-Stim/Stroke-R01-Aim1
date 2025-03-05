@@ -18,7 +18,7 @@ for i = 1:length(dirNames)
 end
 
 % Remove unwanted subjects
-subjectsToRemove = {'SS20', 'SS21', 'SS27'}; % 8, 9, 10 are the ones with muscle renamings needed.
+subjectsToRemove = {'SS27'}; % 8, 9, 10 are the ones with muscle renamings needed.
 subjects(ismember(subjects, subjectsToRemove)) = [];
 
 % Subjects to redo
@@ -41,8 +41,10 @@ end
 % 1. Scalar values only
 % 2. Visit, trial, and gait cycle level
 % 3. Split the name column by underscores, one column per part of the name
-splitNameColumns = {'Subject','Intervention','Speed','PrePost'};
+splitNameColumnsVisit = {'Subject','Intervention','Speed','PrePost'};
 pathTemplate = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\{subject}\{subject}_Overground_EMG_Kinematics.mat';
-visitTable = combineSubjectTables(subjects, pathTemplate, 'visitTable', splitNameColumns);
-trialTable = combineSubjectTables(subjects, pathTemplate, 'trialTable', splitNameColumns);
-cycleTable = combineSubjectTables(subjects, pathTemplate, 'cycleTable', splitNameColumns);
+visitTableAll = combineSubjectTables(subjects, pathTemplate, 'visitTable', splitNameColumnsVisit);
+splitNameColumnsTrial = {'Subject','Intervention','Speed','PrePost', 'TrialNum'};
+trialTableAll = combineSubjectTables(subjects, pathTemplate, 'trialTable', splitNameColumnsTrial);
+splitNameColumnsCycle = {'Subject','Intervention','Speed','PrePost', 'TrialNum','CycleNum'};
+cycleTableAll = combineSubjectTables(subjects, pathTemplate, 'matchedCycleTable', splitNameColumnsCycle);

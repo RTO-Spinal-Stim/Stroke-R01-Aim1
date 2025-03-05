@@ -31,39 +31,14 @@ for subNum = 1:length(subjectList)
 
     % Get the column names that are scalar. Either a scalar numeric/char,
     % or a scalar struct with fields that are scalar numeric/char.
-    scalarColumnNames = {};
-    allColumnNames = dataTable.Properties.VariableNames;
-    for i = 1:length(allColumnNames)
-        currData = dataTable.(allColumnNames{i});
-        isScalar = true;
-        for j = 1:length(currData)
-            if ~isscalar(currData(j))
-                isScalar = false;                                
-            end
-            if isstruct(currData(j))
-                fldNames = fieldnames(currData(j));
-                for fldNum = 1:length(fldNames)
-                    if ~(isscalar(currData(j).(fldNames{fldNum})) && ~isstruct(currData(j).(fldNames{fldNum})))
-                        isScalar = false;
-                        break;
-                    end
-                end
-            end
-            if ~isScalar
-                break;
-            end
-        end
-        if isScalar
-            scalarColumnNames = [scalarColumnNames; allColumnNames(i)];
-        end
-    end
-    scalarColumnNames(ismember(scalarColumnNames, 'Name')) = [];
+    scalarColumnNames = getScalarColumnNames(dataTable);
 
     % Put the scalar data into the table.
     for rowNum = 1:height(dataTable)
         tmpTable = table;
         % For each row, distribute the 'Name' column to multiple columns
         parsedName = strsplit(dataTable.Name(rowNum), '_');
+        assert(length(splitNameColumns) == length(parsedName));
         for i = 1:length(splitNameColumns)
             tmpTable.(splitNameColumns{i}) = parsedName(i);
         end

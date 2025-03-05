@@ -77,6 +77,11 @@ delsysCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'Delsys_Filtere
 matchedCycleTable = addToTable(matchedCycleTable, xsensCyclesTable);
 matchedCycleTable = addToTable(matchedCycleTable, delsysCyclesTable);
 
+%% Distribute GaitRite vectors from the trial table to the gait cycle table.
+% e.g. step/stride lengths/widths/durations/etc.
+% Also include the start and end of each gait cycle and swing/stance phase
+matchedCycleTable = putGaitRiteDataIntoCyclesTable(gaitRiteTable, matchedCycleTable);
+
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
 if doPlot
     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
