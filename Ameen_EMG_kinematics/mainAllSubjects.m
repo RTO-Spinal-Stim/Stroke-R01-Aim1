@@ -18,14 +18,16 @@ for i = 1:length(dirNames)
 end
 
 % Remove unwanted subjects
-subjectsToRemove = {'SS27'}; % 8, 9, 10 are the ones with muscle renamings needed.
+% 8, 9, 10 are the ones with muscle renamings needed. CHECK THE MUSCLES
+% WITH OTHER SUBJECTS!
+subjectsToRemove = {'SS01', 'SS02', 'SS03','SS04','SS05','SS06','SS08','SS09','SS10','SS13', 'SS27'};
 subjects(ismember(subjects, subjectsToRemove)) = [];
 
 % Subjects to redo
-subjectsToRedo = {};
+subjectsToRedo = subjects;
 
 %% Iterate over each subject
-doPlot = false;
+doPlot = true;
 for subNum = 1:length(subjects)
     subject = subjects{subNum};    
     subjectSavePath = fullfile(config.PATHS.ROOT_SAVE, subject, [subject '_' config.PATHS.SAVE_FILE_NAME]);

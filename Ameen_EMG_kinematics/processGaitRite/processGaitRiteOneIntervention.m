@@ -46,4 +46,5 @@ for i = 1:length(xlsx_file_names)
     gaitRiteData = addToTable(gaitRiteData, tmpTable);
 end
 
+% Put the name column first
 gaitRiteData = [gaitRiteData(:,end), gaitRiteData(:,1:end-1)];

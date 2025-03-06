@@ -50,12 +50,12 @@ xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, int
 trialTable = addToTable(trialTable, xsensTable);
 
 %% Plot raw and filtered timeseries data
-if doPlot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
-    plotRawAndFilteredData(trialTable, 'Raw and Filtered EMG', baseSavePathEMG, struct('Raw','Delsys_Loaded', 'Filtered', 'Delsys_Filtered'), true);
-    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
-    plotRawAndFilteredData(trialTable, 'Raw and Filtered Joint Angles', baseSavePathXSENS, struct('Raw','XSENS_Loaded', 'Filtered', 'XSENS_Filtered'), false);
-end
+% if doPlot
+%     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Raw_Filtered';
+%     plotRawAndFilteredData(trialTable, 'Raw and Filtered EMG', baseSavePathEMG, struct('Raw','Delsys_Loaded', 'Filtered', 'Delsys_Filtered'), true);
+%     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Raw_Filtered';
+%     plotRawAndFilteredData(trialTable, 'Raw and Filtered Joint Angles', baseSavePathXSENS, struct('Raw','XSENS_Loaded', 'Filtered', 'XSENS_Filtered'), false);
+% end
 
 %% Time synchronization
 syncedTableDelsys = timeSynchronize(trialTable, delsysConfig.SAMPLING_FREQUENCY, 'seconds', 'Delsys_Frames');
@@ -83,12 +83,12 @@ matchedCycleTable = addToTable(matchedCycleTable, delsysCyclesTable);
 matchedCycleTable = putGaitRiteDataIntoCyclesTable(gaitRiteTable, matchedCycleTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
-if doPlot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
-    plotAllTrials(delsysCyclesTable, 'Filtered EMG', baseSavePathEMG, 'Delsys_Filtered');
-    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
-    plotAllTrials(xsensCyclesTable, 'Filtered Joint Angles', baseSavePathXSENS, 'XSENS_Filtered');
-end
+% if doPlot
+%     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Filtered_GaitCycles';
+%     plotAllTrials(delsysCyclesTable, 'Filtered EMG', baseSavePathEMG, 'Delsys_Filtered');
+%     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Filtered_GaitCycles';
+%     plotAllTrials(xsensCyclesTable, 'Filtered Joint Angles', baseSavePathXSENS, 'XSENS_Filtered');
+% end
 
 %% Downsample each gait cycle's data to 101 points.
 n_points = config.NUM_POINTS;
@@ -114,10 +114,10 @@ normalizedEMGTable = normalizeAllDataToVisitValue(matchedCycleTable, 'Delsys_Tim
 matchedCycleTable = addToTable(matchedCycleTable, normalizedEMGTable);
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
-if doPlot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
-    plotAllTrials(matchedCycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
-end
+% if doPlot
+%     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\ScaledToMax_GaitCycles';
+%     plotAllTrials(matchedCycleTable, 'Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');    
+% end
 
 %% Set up muscle & joint names for analyses
 disp('Defining L & R names');
@@ -196,12 +196,12 @@ romTableXSENS = calculateRangeAll(matchedCycleTable, 'XSENS_TimeNormalized', 'Jo
 matchedCycleTable = addToTable(matchedCycleTable, romTableXSENS);
 
 %% Calculate symmetries
-grColumnsIn = {'stepLengthsAll', 'swingDurationsAll', 'stepWidthsAll'};
-grColumnsOut = {'stepLength_Sym', 'swingDuration_Sym', 'stepWidth_Sym'};
+grColumnsIn = {'All_StepLengths', 'All_SwingDurations', 'All_StepWidths'};
+grColumnsOut = {'StepLength_Sym', 'SwingDuration_Sym', 'StepWidth_Sym'};
 startIdx = [2, 3, 2];
 endIdx = repmat(-1,1,length(grColumnsIn));
 formulaNum = 3;
-spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'leftRightIdxAll', startIdx, endIdx, formulaNum);
+spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'All_Idx', startIdx, endIdx, formulaNum);
 trialTable = addToTable(trialTable, spatiotemporalSymTable);
 [colNamesL, colNamesR] = getLRColNames(matchedCycleTable);
 lrSidesSymTable = calculateSymmetryAll(matchedCycleTable, colNamesL, colNamesR, '_Sym');

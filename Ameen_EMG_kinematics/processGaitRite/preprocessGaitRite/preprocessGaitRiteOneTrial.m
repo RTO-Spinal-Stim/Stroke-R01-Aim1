@@ -43,23 +43,6 @@ rightStanceStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 leftSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 rightSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 
-% stepLenSym = NaN(num_heel_strikes - 2, 1);
-% swingTimeSym = NaN(num_heel_strikes - 3, 1);
-
-%% Step length symmetry
-% for i = 2:length(left_right)-1
-%     stepLenSym(i-1) = (2*abs(step_len(i)-step_len(i+1)))/(step_len(i)+step_len(i+1));
-% end
-% 
-% processed_data.stepLengthSymmetries = {stepLenSym};
-
-%% Swing time symmetry
-% for i = 3:length(left_right)-1
-%     swingTimeSym(i-2) = (2*abs(swing_durations(i)-swing_durations(i+1)))/(swing_durations(i)+swing_durations(i+1));
-% end
-% 
-% processed_data.swingTimeSymmetries = {swingTimeSym};
-
 %% Isolate L & R
 left_events_idx = left_right==1;
 right_events_idx = left_right==0;

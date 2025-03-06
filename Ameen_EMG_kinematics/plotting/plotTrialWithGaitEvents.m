@@ -28,7 +28,9 @@ for i = 1:height(allDataTable)
     end
     % Save the plot.
     saveFolderPath = baseSavePath;
-    mkdir(saveFolderPath);
+    if ~isfolder(saveFolderPath)
+        mkdir(saveFolderPath);
+    end
     savePath = fullfile(saveFolderPath, name);
     saveas(figOneTrial, [savePath '.fig']);
     saveas(figOneTrial, [savePath '.png']);
