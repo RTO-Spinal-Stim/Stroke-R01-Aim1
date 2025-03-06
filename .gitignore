@@ -5,3 +5,9 @@
 *.db
 *.fig
 *.svg
+*.css
+*.js
+*.map
+*.scss
+*.html
+*jquery-AUTHORS.txt

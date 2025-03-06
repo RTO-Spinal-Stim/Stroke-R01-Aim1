@@ -45,7 +45,9 @@ for trialNum = 1:length(uniqueTrialNames)
     set(h, 'Position', [0.4825, 0.4903, 0.0562, 0.1391]); % In the middle of the axes.
     % Save the plot.
     saveFolderPath = baseSavePath;
-    mkdir(saveFolderPath);
+    if ~isfolder(saveFolderPath)
+        mkdir(saveFolderPath);
+    end
     saveName = '';
     for j = 1:length(nameParts)-2
         saveName = [saveName '_' nameParts{j}];
