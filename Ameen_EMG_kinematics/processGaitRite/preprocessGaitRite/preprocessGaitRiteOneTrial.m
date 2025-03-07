@@ -44,6 +44,10 @@ step_widths = data(:, step_width_idx) / 100; % m
 stride_widths = data(:, stride_width_idx) / 100; % m
 step_durations = data(:, step_times_idx); % sec
 
+if any(diff(left_right)==0)
+    error('Left and right GaitRite steps are not alternating!');
+end
+
 %% Initialize the processed data
 num_heel_strikes = length(left_right);
 leftStanceStartStopSeconds = zeros(num_heel_strikes - 2, 2);
