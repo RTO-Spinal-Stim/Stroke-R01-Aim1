@@ -8,6 +8,11 @@ function [cycleTable] = putGaitRiteDataIntoCyclesTable(grTable, cycleTable)
 %
 % Outputs:
 % cycleTable: The output table with one row per gait cycle
+%
+% HOW THIS WORKS:
+% Step Lengths: Computed based on the front of the two feet involved in a
+% step. Therefore, the first heel strike always results in a step length of
+% 0 (should be NaN), because there's no preceding foot fall.
 
 %% Remove the scalar columns from the grTable
 scalarColumnNames = getScalarColumnNames(grTable);

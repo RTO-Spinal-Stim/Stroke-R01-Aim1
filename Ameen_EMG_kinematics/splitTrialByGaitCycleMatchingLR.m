@@ -1,4 +1,4 @@
-function [perGaitCycleStruct, maxNumCycles] = splitTrialByGaitCycleMatchingLR(structData, left_heel_strike_indices, right_heel_strike_indices)
+function [perGaitCycleStruct, maxNumCycles, startFoot] = splitTrialByGaitCycleMatchingLR(structData, left_heel_strike_indices, right_heel_strike_indices)
 
 %% PURPOSE: SPLIT A TRIAL OF TIMESERIES DATA BY GAIT CYCLES. MATCHES L & R SIDE DATA FROM L & R GAIT CYCLES TOGETHER INTO ONE GAIT CYCLE.
 % Inputs:
@@ -16,16 +16,26 @@ function [perGaitCycleStruct, maxNumCycles] = splitTrialByGaitCycleMatchingLR(st
 % strikes.
 
 fieldNames = fieldnames(structData);
+fieldNamesNoSide = cell(length(fieldNames)/2,1);
+for i = 1:length(fieldNamesNoSide)
+    fieldNamesNoSide{i} = fieldNames{i}(2:end);
+end
+fieldNamesNoSide = unique(fieldNamesNoSide);
 perGaitCycleStruct = struct();
 maxNumCycles = 0;
-for fieldNum=1:length(fieldNames)
-    fieldName = fieldNames{fieldNum};
-    if fieldName(1) == 'L'
-        perGaitCycleStruct.(fieldName) = splitDataByGaitCycle(structData.(fieldName), left_heel_strike_indices);
-    elseif fieldName(1) == 'R'
-        perGaitCycleStruct.(fieldName) = splitDataByGaitCycle(structData.(fieldName), right_heel_strike_indices);
-    else
-        error('Joint name does not begin with L or R');
+startFoot = [];
+for fieldNum=1:length(fieldNamesNoSide)
+    fieldName = fieldNamesNoSide{fieldNum}; 
+    fieldNameL = ['L' fieldName];
+    fieldNameR = ['R' fieldName];
+    
+    dataOut = splitDataByGaitCycle(structData.(fieldNameL), structData.(fieldNameR), left_heel_strike_indices, right_heel_strike_indices);
+    if isempty(startFoot)
+        startFoot = dataOut.StartFoot;
     end
-    maxNumCycles = max([maxNumCycles, length(perGaitCycleStruct.(fieldName))]);
+
+    perGaitCycleStruct.(fieldNameL) = dataOut.L_Data;
+    perGaitCycleStruct.(fieldNameR) = dataOut.R_Data;
+
+    maxNumCycles = max([maxNumCycles, height(dataOut)]);
 end

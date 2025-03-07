@@ -71,16 +71,20 @@ if doPlot
     plotTrialWithGaitEvents(trialTable, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'XSENS_Filtered', 'XSENS_Frames');
 end
 
-%% Split by gait cycle
-xsensCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
-delsysCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
+%% Split data by gait cycle without doing any matching between L & R gait cycles
+xsensCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'XSENS_Filtered','XSENS_Frames');
+delsysCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'Delsys_Filtered','Delsys_Frames');
 matchedCycleTable = addToTable(matchedCycleTable, xsensCyclesTable);
 matchedCycleTable = addToTable(matchedCycleTable, delsysCyclesTable);
+
+%% Split by gait cycle
+% xsensCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'XSENS_Filtered', 'XSENS_Frames');
+% delsysCyclesTable = splitTrialsByGaitCycleMatchingLR(trialTable, 'Delsys_Filtered', 'Delsys_Frames');
 
 %% Distribute GaitRite vectors from the trial table to the gait cycle table.
 % e.g. step/stride lengths/widths/durations/etc.
 % Also include the start and end of each gait cycle and swing/stance phase
-matchedCycleTable = putGaitRiteDataIntoCyclesTable(gaitRiteTable, matchedCycleTable);
+% matchedCycleTable = putGaitRiteDataIntoCyclesTable(gaitRiteTable, matchedCycleTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
 % if doPlot
