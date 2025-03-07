@@ -46,8 +46,8 @@
         "FILTER": {
             "BANDPASS_ORDER": 4,
             "BANDPASS_CUTOFF": [
-                4, 
-                100
+                10, 
+                400
             ],
             "LOWPASS_ORDER": 2,
             "LOWPASS_CUTOFF": 5        

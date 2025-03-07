@@ -1,6 +1,14 @@
 function [tableOut] = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, data)
 
 %% PURPOSE: PREPROCESS ONE PARSED OUT GAITRITE TRIAL
+% Inputs:
+% gaitRiteConfig: The config struct for GaitRite
+% header_row: The cell array of the header row
+% data: The cell array of data, without a header row.
+%
+% tableOut: The processed table of data
+%
+% NOTE: GaitRite L = 0, R = 1
 
 %% Configuration
 Gait_Fs = gaitRiteConfig.SAMPLING_FREQUENCY;
@@ -44,11 +52,11 @@ leftSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 rightSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 
 %% Isolate L & R
-left_events_idx = left_right==1;
-right_events_idx = left_right==0;
+left_events_idx = left_right==0; % L = 0
+right_events_idx = left_right==1; % R = 1
 processed_data.L_Idx = {left_events_idx}; 
 processed_data.R_Idx = {right_events_idx};
-processed_data.All_Idx = {logical(left_right)}; % 1 = L, 0 = R
+processed_data.All_Idx = {logical(left_right)}; % L = 0, R = 1
 processed_data.L_StepLengths = {step_len(left_events_idx)};
 processed_data.R_StepLengths = {step_len(right_events_idx)};
 processed_data.All_StepLengths = {step_len};

@@ -2,13 +2,13 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Comment this part out when running all subjects at once.
-% clc;
-% clearvars;
-% subject = 'SS13';
-% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
-% config = jsondecode(fileread(configFilePath));
-% disp(['Loaded configuration from: ' configFilePath]);
-% doPlot = false;
+clc;
+clearvars;
+subject = 'SS01';
+configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+config = jsondecode(fileread(configFilePath));
+disp(['Loaded configuration from: ' configFilePath]);
+doPlot = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
 intervention_folders = config.INTERVENTION_FOLDERS;
