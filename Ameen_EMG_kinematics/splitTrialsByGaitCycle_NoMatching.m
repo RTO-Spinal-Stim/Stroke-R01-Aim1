@@ -8,6 +8,8 @@ function [tableOut] = splitTrialsByGaitCycle_NoMatching(tableIn, colNameToSplit,
 %
 % tableOut: The table of data split by gait cycles
 
+disp('Segmenting the data by gait cycle WITHOUT matching');
+
 tableOut = table;
 
 for i = 1:height(tableIn)
@@ -32,7 +34,12 @@ for i = 1:height(tableIn)
         elseif ismember(startHSIdx, RHS)
             startFoot = 'R';
         end
-        currCycleName = [currTrialName '_cycle' num2str(cycleNum) startFoot];
+        if cycleNum < 10
+            cycleNumStr = ['0' num2str(cycleNum)];
+        else
+            cycleNumStr = num2str(cycleNum);
+        end
+        currCycleName = [currTrialName '_cycle' cycleNumStr '_' startFoot];
         tmpTable = table;
         tmpTable.Name = convertCharsToStrings(currCycleName);
         tmpTable.(colNameToSplit) = cycleData;

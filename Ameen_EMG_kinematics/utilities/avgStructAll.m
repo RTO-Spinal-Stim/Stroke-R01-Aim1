@@ -1,17 +1,25 @@
-function [avgStructTable] = avgStructAll(dataTable, colNameToAverage, averagedColName, levelNum)
+function [avgStructTable] = avgStructAll(dataTable, colNameToAverage, averagedColName, sideEndRegex, levelNum)
 
 %% PURPOSE: AVERAGE THE DATA IN A STRUCT.
 % Inputs:
 % dataTable: The table containing all of the data. Each row is one entry.
 % colNameToAverage: The column name to use for averaging.
 % averagedColName: The column name to store the averages in.
+% sideEndRegex: The regex indicating which rows to include in the averaging. 
 % levelNum: The level to average within (counting backwards from the end)
 %
 % Output:
 % avgStructTable: Each row is one struct, where each field has the averaged
 % data
+%
+% NOTE: For the sideEndRegex, if the "Name" field ends with 'L' or 'R' to 
+% indicate left and right sides, use '.*L$' to select the left side or '.*R$' for the right side
 
 disp('Averaging the data within one visit');
+
+% Apply the regex to each cell and get logical indices of matches
+% matchIndices = cellfun(@(x) ~isempty(regexp(x, sideEndRegex, 'once')), cellstr(dataTable.Name));
+% filteredDataTable = dataTable(matchIndices,:);
 
 visitNames = getNamesPrefixes(dataTable.Name, levelNum);
 avgStructTable = table;
