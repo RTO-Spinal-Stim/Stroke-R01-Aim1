@@ -7,7 +7,8 @@ function [scalarColumnNames] = getScalarColumnNames(tableIn)
 % Outputs:
 % scalarColumnNames: The column names for scalar data
 %
-% Either a scalar numeric/char, or a scalar struct with fields that are scalar numeric/char
+% NOTE: To be returned here, the data must be either a scalar numeric/char, 
+% or a scalar struct with fields that are scalar numeric/char
 
 scalarColumnNames = {};
 allColumnNames = tableIn.Properties.VariableNames;

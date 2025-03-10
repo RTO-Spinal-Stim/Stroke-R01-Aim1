@@ -12,7 +12,7 @@ function [columnNamesL, columnNamesR] = getLRColNames(tableIn)
 % The columns must start with 'L_' and 'R_' and the rest of the name must
 % be identical to be returned here.
 
-disp('Getting L & R side column names');
+% disp('Getting L & R side column names');
 
 if istable(tableIn)
     columnNames = tableIn.Properties.VariableNames;

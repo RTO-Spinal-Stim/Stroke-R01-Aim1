@@ -28,12 +28,12 @@ saveFileName = pathsConfig.SAVE_FILE_NAME;
 codeFolderPath = pathsConfig.CODE_FOLDER_PATH; % Folder where the code lives
 addpath(genpath(pathsConfig.CODE_FOLDER_PATH));
 
-%% Initialize tables
-prePostTable = table;
-trialTable = table;
-cycleTable = table; % Unmatched
-visitTable = table;
-speedPrePostTable = table; % Each combination of SSV/FV & Pre/Post
+%% Initialize outcome measure tables
+trialTable = table; % Each row is one trial, all data
+cycleTable = table; % Each row is one UNMATCHED gait cycle, all data
+visitTable = table; % Each row is one whole session
+speedPrePostTable = table; % Each row is one combination of SSV/FV & Pre/Post
+cycleTableContraRemoved = table; % Each row is one UNMATCHED gait cycle, with the contralateral data removed and column names merged
 
 %% GaitRite Processing
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
@@ -208,17 +208,17 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 
 %% Calculate symmetries
-% grColumnsIn = {'All_StepLengths', 'All_SwingDurations', 'All_StepWidths'};
-% grColumnsOut = {'StepLength_Sym', 'SwingDuration_Sym', 'StepWidth_Sym'};
-% startIdx = [2, 3, 2];
-% endIdx = repmat(-1,1,length(grColumnsIn));
-% formulaNum = 3;
-% spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'All_Idx', startIdx, endIdx, formulaNum);
-% trialTable = addToTable(trialTable, spatiotemporalSymTable);
-[colNamesL, colNamesR] = getLRColNames(matchedCycleTable);
-lrSidesSymTable = calculateSymmetryAll(cycleTable, colNamesL, colNamesR, '_Sym');
-grSymTable = calculateSymmetryAll(grDistributedTable, colNamesL, colNamesR, '_Sym');
-matchedCycleTable = addToTable(matchedCycleTable, lrSidesSymTable); 
+formulaNum = 2; % The modified symmetry formula
+levelNumToMatch = 5; % 'trial'
+[colNamesL, colNamesR] = getLRColNames(cycleTable);
+cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
+scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
+allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
+nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; {'Name'}]));
+cycleTableContraRemoved = removevars(cycleTableContraRemoved, nonscalarColumnNames);
+% Compute the symmetry values
+lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemoved, '_Sym', formulaNum, levelNumToMatch);
+grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelNumToMatch);
 
 
 %% Save the structs to the participant's save folder.
@@ -226,5 +226,6 @@ subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
 if ~isfolder(subjectSaveFolder)
     mkdir(subjectSaveFolder);
 end
-save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable','-v6');
+save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable', 'cycleTableContraRemoved', ...
+    'cycleTable', 'speedPrePostTable', 'grSymTable', 'lrSideCycleSymTable','-v6');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);
