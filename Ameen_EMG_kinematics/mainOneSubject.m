@@ -215,20 +215,29 @@ cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, 
 scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
 allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
 nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; {'Name'}]));
-cycleTableContraRemoved = removevars(cycleTableContraRemoved, nonscalarColumnNames);
+cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
 % Compute the symmetry values
-lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemoved, '_Sym', formulaNum, levelNumToMatch);
+lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, levelNumToMatch);
 grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelNumToMatch);
 matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
 
 %% Calculate pre to post improvement
-prePostChangeTable = calculatePrePostChange(matchedCycleTable);
+formulaNum = 2; % Percent difference
+levelNum = 4; % The level to average the PRE data within
+prePostCycleChangeTable = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTable = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+prePostChangeGRDistributedTable = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
+prePostGRSymTable = calculatePrePostChange(grSymTable, formulaNum, levelNum);
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
 if ~isfolder(subjectSaveFolder)
     mkdir(subjectSaveFolder);
 end
-save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable', 'cycleTableContraRemoved', ...
-    'cycleTable', 'speedPrePostTable', 'grSymTable','-v6');
+save(subjectSavePath, 'visitTable', 'speedPrePostTable', 'trialTable', 'cycleTable', ...
+    'cycleTableContraRemoved', 'prePostCycleChangeTable', ...
+    'matchedCycleTable', 'prePostChangeMatchedCycleTable', ...
+    'grDistributedTable', 'prePostChangeGRDistributedTable', ...
+    'grSymTable', 'prePostGRSymTable', ...
+     '-v6');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);

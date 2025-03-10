@@ -43,18 +43,55 @@ end
 % 1. Scalar values only
 % 2. Visit, trial, and gait cycle level
 % 3. Split the name column by underscores, one column per part of the name
-splitNameColumnsVisit = {'Subject','Intervention','PrePost','Speed'};
 pathTemplate = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\{subject}\{subject}_Overground_EMG_Kinematics.mat';
-visitTableAll = combineSubjectTables(subjects, pathTemplate, 'visitTable', splitNameColumnsVisit);
-splitNameColumnsTrial = {'Subject','Intervention','PrePost','Speed', 'TrialNum'};
-trialTableAll = combineSubjectTables(subjects, pathTemplate, 'trialTable', splitNameColumnsTrial);
-splitNameColumnsCycle = {'Subject','Intervention','PrePost', 'Speed', 'TrialNum','CycleNum'};
-cycleTableAll = combineSubjectTables(subjects, pathTemplate, 'matchedCycleTable', splitNameColumnsCycle);
+splitNameColumns.cycleTableContraRemoved = {'Subject','Intervention','PrePost','Speed', 'Trial', 'Cycle', 'Side'};
+splitNameColumns.prePostCycleChangeTable = {'Subject','Intervention','Speed', 'Trial', 'Cycle', 'Side'};
+splitNameColumns.matchedCycleTable = splitNameColumns.cycleTableContraRemoved;
+splitNameColumns.prePostChangeMatchedCycleTable = splitNameColumns.prePostCycleChangeTable;
+splitNameColumns.grDistributedTable = {'Subject','Intervention','PrePost','Speed', 'Trial', 'GaitRiteRow', 'Side'};
+splitNameColumns.prePostChangeGRDistributedTable = {'Subject','Intervention','Speed', 'Trial', 'GaitRiteRow', 'Side'};
+splitNameColumns.grSymTable = splitNameColumns.grDistributedTable;
+splitNameColumns.prePostGRSymTable = splitNameColumns.prePostChangeGRDistributedTable;
+
+% cycleTableContraRemoved
+cycleTableContraRemovedTableAll = combineSubjectTables(subjects, pathTemplate, 'cycleTableContraRemoved', splitNameColumns.cycleTableContraRemoved);
+% prePostCycleChangeTable
+prePostCycleChangeTableAll = combineSubjectTables(subjects, pathTemplate, 'prePostCycleChangeTable', splitNameColumns.prePostCycleChangeTable);
+% matchedCycleTable
+matchedCycleTableAll = combineSubjectTables(subjects, pathTemplate, 'matchedCycleTable', splitNameColumns.matchedCycleTable);
+% prePostChangeMatchedCycleTable
+prePostChangeMatchedCycleTableAll = combineSubjectTables(subjects, pathTemplate, 'prePostChangeMatchedCycleTable', splitNameColumns.prePostChangeMatchedCycleTable);
+% grDistributedTable
+grDistributedTableAll = combineSubjectTables(subjects, pathTemplate, 'grDistributedTable', splitNameColumns.grDistributedTable);
+% prePostChangeGRDistributedTable
+prePostChangeGRDistributedTableAll = combineSubjectTables(subjects, pathTemplate, 'prePostChangeGRDistributedTable', splitNameColumns.prePostChangeGRDistributedTable);
+% grSymTable
+grSymTableAll = combineSubjectTables(subjects, pathTemplate, 'grSymTable', splitNameColumns.grSymTable);
+% prePostGRSymTable
+prePostGRSymTableAll = combineSubjectTables(subjects, pathTemplate, 'prePostGRSymTable', splitNameColumns.prePostGRSymTable);
 
 %% Write the tables to file.
-visitTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\VisitTable.csv';
-writetable(visitTableAll, visitTablePath);
-trialTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\TrialTable.csv';
-writetable(trialTableAll, trialTablePath);
-cycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\CycleTable.csv';
-writetable(cycleTableAll, cycleTablePath);
+% cycleTableContraRemoved
+cycleTableContraRemovedPath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\cycleTableContraRemoved.csv';
+writetable(cycleTableContraRemovedTableAll, cycleTableContraRemovedPath);
+% prePostCycleChangeTable
+prePostCycleChangeTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\prePostCycleChangeTable.csv';
+writetable(prePostCycleChangeTableAll, prePostCycleChangeTablePath);
+% matchedCycleTable
+matchedCycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\matchedCycleTable.csv';
+writetable(matchedCycleTableAll, matchedCycleTablePath);
+% prePostChangeMatchedCycleTable
+prePostChangeMatchedCycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\prePostChangeMatchedCycleTable.csv';
+writetable(prePostChangeMatchedCycleTableAll, prePostChangeMatchedCycleTablePath);
+% grDistributedTable
+grDistributedTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\grDistributedTable.csv';
+writetable(grDistributedTableAll, grDistributedTablePath);
+% prePostChangeGRDistributedTable
+prePostChangeGRDistributedTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\prePostChangeGRDistributedTable.csv';
+writetable(prePostChangeGRDistributedTableAll, prePostChangeGRDistributedTablePath);
+% grSymTable
+grSymTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\grSymTable.csv';
+writetable(grSymTableAll, grSymTablePath);
+% prePostGRSymTable
+prePostGRSymTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\prePostGRSymTable.csv';
+writetable(prePostGRSymTableAll, prePostGRSymTablePath);
