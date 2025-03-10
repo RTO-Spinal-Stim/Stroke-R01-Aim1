@@ -60,7 +60,10 @@ for i = 1:height(tableIn)-1
         else
             tmpOut = calculateSymmetryTwoVectors(v1, v2, formulaNum);
         end
-        tmpTable.([colName colNameSuffix]) = {tmpOut};
+        if length(tmpOut) > 1
+            tmpOut = {tmpOut};
+        end
+        tmpTable.([colName colNameSuffix]) = tmpOut;
     end
 
     symmetryTable = [symmetryTable; tmpTable];

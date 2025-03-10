@@ -1,4 +1,4 @@
-function [matchedTable] = matchCycles(tableIn, startFootColName)
+function [matchedTable] = matchCycles(tableIn)
 
 %% PURPOSE: MATCH THE GAIT CYCLES' DATA TOGETHER
 % Inputs:
@@ -31,8 +31,8 @@ for i = 1:length(trialNamesToMatch)
         nextCycleSide = char(nextCycleRow.Name);
         nextCycleSide = nextCycleSide(end);
         tmpTable = table;
-        tmpTable.Name = convertCharsToStrings(getNamesPrefixes(currCycleRow.Name, cycleLevelNum));
-        tmpTable.(startFootColName) = currCycleSide;
+        currRowName = [char(convertCharsToStrings(getNamesPrefixes(currCycleRow.Name, cycleLevelNum))) '_' currCycleSide];
+        tmpTable.Name = convertCharsToStrings(currRowName);
 
         % Iterate over each column in the cycle
         for colNum = 1:length(colNames)

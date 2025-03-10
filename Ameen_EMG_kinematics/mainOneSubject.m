@@ -175,7 +175,7 @@ cycleTable = addToTable(cycleTable, romTableXSENS);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Match the L and R gait cycles for symmetry analysis
-matchedCycleTable = matchCycles(cycleTable, 'StartFoot');
+matchedCycleTable = matchCycles(cycleTable);
 
 %% Average the data within one SSV/FV & pre/post combination.
 avgTableXSENS = avgStructAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', '.*L$', 4);
@@ -219,7 +219,10 @@ cycleTableContraRemoved = removevars(cycleTableContraRemoved, nonscalarColumnNam
 % Compute the symmetry values
 lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemoved, '_Sym', formulaNum, levelNumToMatch);
 grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelNumToMatch);
+matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
 
+%% Calculate pre to post improvement
+prePostChangeTable = calculatePrePostChange(matchedCycleTable);
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
@@ -227,5 +230,5 @@ if ~isfolder(subjectSaveFolder)
     mkdir(subjectSaveFolder);
 end
 save(subjectSavePath, 'trialTable', 'visitTable','matchedCycleTable', 'cycleTableContraRemoved', ...
-    'cycleTable', 'speedPrePostTable', 'grSymTable', 'lrSideCycleSymTable','-v6');
+    'cycleTable', 'speedPrePostTable', 'grSymTable','-v6');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);
