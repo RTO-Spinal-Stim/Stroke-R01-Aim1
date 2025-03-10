@@ -1,6 +1,6 @@
 function [tableOut] = splitTrialsByGaitCycle_NoMatching(tableIn, colNameToSplit, gaitEventsColName)
 
-%% PURPOSE: SPLIT THE TRIALS BY GAIT CYCLE
+%% PURPOSE: SPLIT THE TRIALS BY GAIT CYCLE. IF THE GAIT CYCLE IS L TO L, IT IS MARKED AS "L", AND VICE VERSA
 % Inputs:
 % tableIn: The input data table
 % colNameToSplit: The column name for the data to split

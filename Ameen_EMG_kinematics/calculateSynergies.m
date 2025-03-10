@@ -47,7 +47,8 @@ aggEMGData = NaN(length(muscleNames), min_n_points);
 for i = 1:length(muscleNames)
     muscle_name = muscleNames{i};
     n_points_original = length(emgData.(muscle_name));
-    if n_points_original > min_n_points
+    if n_points_original ~= min_n_points
+        % Handle inconsistent length timeseries, just in case.
         dataToStore = resample(emgData.(muscle_name), min_n_points, n_points_original);        
     else
         dataToStore = emgData.(muscle_name);

@@ -31,9 +31,9 @@ addpath(genpath(pathsConfig.CODE_FOLDER_PATH));
 %% Initialize tables
 prePostTable = table;
 trialTable = table;
-matchedCycleTable = table;
 cycleTable = table; % Unmatched
 visitTable = table;
+speedPrePostTable = table; % Each combination of SSV/FV & Pre/Post
 
 %% GaitRite Processing
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
@@ -85,7 +85,7 @@ cycleTable = addToTable(cycleTable, delsysCyclesTable);
 %% Distribute GaitRite vectors from the trial table to the gait cycle table.
 % e.g. step/stride lengths/widths/durations/etc.
 % Also include the start and end of each gait cycle and swing/stance phase
-% matchedCycleTable = putGaitRiteDataIntoCyclesTable(gaitRiteTable, matchedCycleTable);
+grDistributedTable = distributeGaitRiteDataToSeparateTable(gaitRiteTable);
 
 %% Plot each gait cycle's filtered data, non-time normalized and each gait cycle of one condition plotted on top of each other.
 % if doPlot
@@ -177,23 +177,23 @@ cycleTable = addToTable(cycleTable, romTableXSENS);
 %% Match the L and R gait cycles for symmetry analysis
 matchedCycleTable = matchCycles(cycleTable, 'StartFoot');
 
-%% Average the data within one visit.
+%% Average the data within one SSV/FV & pre/post combination.
 avgTableXSENS = avgStructAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', '.*L$', 4);
 avgTableDelsys = avgStructAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_Averaged', '.*R$', 4);
-visitTable = addToTable(visitTable, avgTableXSENS);
-visitTable = addToTable(visitTable, avgTableDelsys);
+speedPrePostTable = addToTable(speedPrePostTable, avgTableXSENS);
+speedPrePostTable = addToTable(speedPrePostTable, avgTableDelsys);
 
 %% SPM Analysis for EMG & XSENS
 spmTableXSENS = SPManalysisAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_SPM', jointsL, jointsR);
 spmTableDelsys = SPManalysisAll(matchedCycleTable, 'Delsys_TimeNormalized', 'Delsys_SPM', musclesL, musclesR);
-visitTable = addToTable(visitTable, spmTableXSENS);
-visitTable = addToTable(visitTable, spmTableDelsys);
+speedPrePostTable = addToTable(speedPrePostTable, spmTableXSENS);
+speedPrePostTable = addToTable(speedPrePostTable, spmTableDelsys);
 
 %% Calculate the magnitude and duration of L vs. R differences obtained from SPM in one visit.
-magDurTableXSENS = magsDursDiffsLR_All(visitTable, 'XSENS_SPM', 'XSENS_Averaged', 'XSENS_MagsDiffs');
-magDurTableDelsys = magsDursDiffsLR_All(visitTable, 'Delsys_SPM', 'Delsys_Averaged', 'Delsys_MagsDiffs');
-visitTable = addToTable(visitTable, magDurTableXSENS);
-visitTable = addToTable(visitTable, magDurTableDelsys);
+magDurTableXSENS = magsDursDiffsLR_All(speedPrePostTable, 'XSENS_SPM', 'XSENS_Averaged', 'XSENS_MagsDiffs');
+magDurTableDelsys = magsDursDiffsLR_All(speedPrePostTable, 'Delsys_SPM', 'Delsys_Averaged', 'Delsys_MagsDiffs');
+speedPrePostTable = addToTable(speedPrePostTable, magDurTableXSENS);
+speedPrePostTable = addToTable(speedPrePostTable, magDurTableDelsys);
 
 %% Calculate root mean squared error (RMSE)
 rmseTableXSENS = calculateLRRMSEAll(matchedCycleTable, 'XSENS_TimeNormalized', 'RMSE_JointAngles');
@@ -208,16 +208,18 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 
 %% Calculate symmetries
-grColumnsIn = {'All_StepLengths', 'All_SwingDurations', 'All_StepWidths'};
-grColumnsOut = {'StepLength_Sym', 'SwingDuration_Sym', 'StepWidth_Sym'};
-startIdx = [2, 3, 2];
-endIdx = repmat(-1,1,length(grColumnsIn));
-formulaNum = 3;
-spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'All_Idx', startIdx, endIdx, formulaNum);
-trialTable = addToTable(trialTable, spatiotemporalSymTable);
+% grColumnsIn = {'All_StepLengths', 'All_SwingDurations', 'All_StepWidths'};
+% grColumnsOut = {'StepLength_Sym', 'SwingDuration_Sym', 'StepWidth_Sym'};
+% startIdx = [2, 3, 2];
+% endIdx = repmat(-1,1,length(grColumnsIn));
+% formulaNum = 3;
+% spatiotemporalSymTable = calculateSymmetryGRAll(trialTable, grColumnsIn, grColumnsOut, 'All_Idx', startIdx, endIdx, formulaNum);
+% trialTable = addToTable(trialTable, spatiotemporalSymTable);
 [colNamesL, colNamesR] = getLRColNames(matchedCycleTable);
-lrSidesSymTable = calculateSymmetryAll(matchedCycleTable, colNamesL, colNamesR, '_Sym');
+lrSidesSymTable = calculateSymmetryAll(cycleTable, colNamesL, colNamesR, '_Sym');
+grSymTable = calculateSymmetryAll(grDistributedTable, colNamesL, colNamesR, '_Sym');
 matchedCycleTable = addToTable(matchedCycleTable, lrSidesSymTable); 
+
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);

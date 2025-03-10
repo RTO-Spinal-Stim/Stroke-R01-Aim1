@@ -29,6 +29,16 @@ stride_lengths_idx = ismember(header_row, colNames.STRIDE_LENGTH);
 step_width_idx = ismember(header_row, colNames.STEP_WIDTH);
 stride_width_idx = ismember(header_row, colNames.STRIDE_WIDTH);
 
+columnsToConvertZeroToNaN = step_len_idx | swing_time_idx | step_times_idx | ...
+    stance_times_idx | stride_times_idx | stride_lengths_idx | step_width_idx | stride_width_idx;
+for i = 1:length(columnsToConvertZeroToNaN)
+    if columnsToConvertZeroToNaN(i) == 0
+        continue;
+    end
+    zeroIdx = data(:, i) == 0;
+    data(zeroIdx, i) = NaN;
+end
+
 %% Extract the data
 left_right = data(:, left_right_idx);
 heel_on = data(:, heel_on_idx);

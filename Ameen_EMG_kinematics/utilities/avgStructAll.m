@@ -17,9 +17,9 @@ function [avgStructTable] = avgStructAll(dataTable, colNameToAverage, averagedCo
 
 disp('Averaging the data within one visit');
 
-% Apply the regex to each cell and get logical indices of matches
-% matchIndices = cellfun(@(x) ~isempty(regexp(x, sideEndRegex, 'once')), cellstr(dataTable.Name));
-% filteredDataTable = dataTable(matchIndices,:);
+if ~exist('levelNum','var')
+    levelNum = 4;
+end
 
 visitNames = getNamesPrefixes(dataTable.Name, levelNum);
 avgStructTable = table;

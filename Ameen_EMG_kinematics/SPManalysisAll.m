@@ -1,4 +1,4 @@
-function [spmTable] = SPManalysisAll(dataTable, dataColName, spmColName, group1Names, group2Names, alphaValue)
+function [spmTable] = SPManalysisAll(dataTable, dataColName, spmColName, group1Names, group2Names, alphaValue, levelNum)
 
 %% PURPOSE: RUN SPM ANALYSIS ON ALL CYCLES/TRIALS.
 % Inputs:
@@ -17,8 +17,12 @@ if ~exist('alphaValue','var')
     alphaValue = 0.05;
 end
 
+if ~exist('levelNum','var')
+    levelNum = 4;
+end
+
 spmTable = table;
-visitNames = getNamesPrefixes(dataTable.Name, 2);
+visitNames = getNamesPrefixes(dataTable.Name, levelNum);
 for i = 1:length(visitNames)
     visitName = visitNames{i};    
     tmpTable = table;
