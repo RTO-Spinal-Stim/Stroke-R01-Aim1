@@ -2,13 +2,13 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Comment this part out when running all subjects at once.
-% clc;
-% clearvars;
-% subject = 'SS01';
-% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
-% config = jsondecode(fileread(configFilePath));
-% disp(['Loaded configuration from: ' configFilePath]);
-% doPlot = false;
+clc;
+clearvars;
+subject = 'SS01';
+configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+config = jsondecode(fileread(configFilePath));
+disp(['Loaded configuration from: ' configFilePath]);
+doPlot = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
 intervention_folders = config.INTERVENTION_FOLDERS;
@@ -225,10 +225,10 @@ matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can c
 %% Calculate pre to post change
 formulaNum = 2; % Percent difference
 levelNum = 4; % The level to average the PRE data within
+prePostGRSymTable = calculatePrePostChange(grSymTable, formulaNum, levelNum);
 prePostCycleChangeTable = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
 prePostChangeMatchedCycleTable = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
 prePostChangeGRDistributedTable = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
-prePostGRSymTable = calculatePrePostChange(grSymTable, formulaNum, levelNum);
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
