@@ -26,6 +26,9 @@ xlsx_file_names = {xlsx_files.name}';
 gaitRiteData = table;
 for i = 1:length(xlsx_file_names)    
     xlsx_file_name_with_ext = xlsx_file_names{i};
+    if startsWith(xlsx_file_name_with_ext, '~$')
+        continue; % Cache file, doesn't really exist.
+    end
     period_index = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:period_index-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);

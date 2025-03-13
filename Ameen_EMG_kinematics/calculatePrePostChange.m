@@ -9,6 +9,8 @@ function [tableOut] = calculatePrePostChange(tableIn, formulaNum, levelNum)
 % Outputs:
 % tableOut: The table of output data
 
+disp('Calculating pre vs. post change');
+
 if ~exist('formulaNum','var')
     formulaNum = 2;
 end

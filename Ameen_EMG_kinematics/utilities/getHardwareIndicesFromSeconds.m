@@ -14,7 +14,9 @@ for i = 1:length(secondsStructFieldNames)
     for j = 1:length(subFieldNames)
         subFieldName = subFieldNames{j};
         indicesStruct.(fieldName).(subFieldName) = round(round(secondsStruct.(fieldName).(subFieldName), numDigits-1) .* fs); % Second round is to remove the zeros (and approximation errors?)
-        if ~all(rem(indicesStruct.(fieldName).(subFieldName),1)==0)
+        noNaNVals = indicesStruct.(fieldName).(subFieldName);
+        noNaNVals(isnan(noNaNVals)) = [];
+        if ~all(rem(noNaNVals,1)==0)
             error('Not whole-number indices');
         end
     end

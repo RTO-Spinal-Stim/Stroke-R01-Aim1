@@ -2,13 +2,13 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Comment this part out when running all subjects at once.
-clc;
-clearvars;
-subject = 'SS01';
-configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
-config = jsondecode(fileread(configFilePath));
-disp(['Loaded configuration from: ' configFilePath]);
-doPlot = false;
+% clc;
+% clearvars;
+% subject = 'SS01';
+% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+% config = jsondecode(fileread(configFilePath));
+% disp(['Loaded configuration from: ' configFilePath]);
+% doPlot = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
 intervention_folders = config.INTERVENTION_FOLDERS;
@@ -211,6 +211,7 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 formulaNum = 2; % The modified symmetry formula
 levelNumToMatch = 5; % 'trial'
 [colNamesL, colNamesR] = getLRColNames(cycleTable);
+% Cycle table
 cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
 scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
 allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
@@ -221,7 +222,7 @@ lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns
 grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelNumToMatch);
 matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
 
-%% Calculate pre to post improvement
+%% Calculate pre to post change
 formulaNum = 2; % Percent difference
 levelNum = 4; % The level to average the PRE data within
 prePostCycleChangeTable = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
@@ -238,6 +239,5 @@ save(subjectSavePath, 'visitTable', 'speedPrePostTable', 'trialTable', 'cycleTab
     'cycleTableContraRemoved', 'prePostCycleChangeTable', ...
     'matchedCycleTable', 'prePostChangeMatchedCycleTable', ...
     'grDistributedTable', 'prePostChangeGRDistributedTable', ...
-    'grSymTable', 'prePostGRSymTable', ...
-     '-v6');
+    'grSymTable', 'prePostGRSymTable');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);

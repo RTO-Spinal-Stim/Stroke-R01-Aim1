@@ -45,11 +45,7 @@ for i = 1:length(spm_fields)
     for j = 1:size(endpoints,1)
         curr_start = endpoints(j,1);
         curr_end = endpoints(j,2);
-        try
-            currMag = mean(averages.(fieldL)(curr_start:curr_end)) - mean(averages.(fieldR)(curr_start:curr_end));
-        catch
-            disp('a');
-        end
+        currMag = mean(averages.(fieldL)(curr_start:curr_end)) - mean(averages.(fieldR)(curr_start:curr_end));
         currDur = (curr_end - curr_start) + 1; % +1 because we want the number of points that it is different for. If only one singular point is different, should yield 1, not 0.
         assert(currDur > 0);
         magnitudes.(spm_field)(j) = currMag;

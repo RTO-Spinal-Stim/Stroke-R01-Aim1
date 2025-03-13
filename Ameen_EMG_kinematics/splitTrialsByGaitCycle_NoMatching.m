@@ -17,6 +17,7 @@ for i = 1:height(tableIn)
     LHS = tableIn.(gaitEventsColName)(i).gaitEvents.leftHeelStrikes;
     RHS = tableIn.(gaitEventsColName)(i).gaitEvents.rightHeelStrikes;
     allHS = sort([LHS; RHS]); % Get all of the heel strike events together
+    allHS(isnan(allHS)) = []; % Remove NaN
     num_gait_cycles = length(allHS) - 2; % The number of gait cycles is two less than the total number of footfalls
     currData = tableIn.(colNameToSplit)(i);
     currTrialName = char(tableIn.Name(i));

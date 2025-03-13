@@ -12,14 +12,17 @@ function [matchedTable] = matchCycles(tableIn)
 % matched gait cycle.
 
 trialLevelNum = length(strsplit(tableIn.Name(1), '_')) - 2;
-trialNamesToMatch = getNamesPrefixes(tableIn.Name, trialLevelNum);
+% Get the unique trial names
+trialNamesToMatch = getNamesPrefixes(tableIn.Name, trialLevelNum); 
 cycleLevelNum = trialLevelNum + 1;
 colNames = tableIn.Properties.VariableNames;
 colNames(ismember(colNames,'Name')) = [];
 matchedTable = table;
 % Iterate over each trial
 for i = 1:length(trialNamesToMatch)
+    % Get all the rows matching this trial name
     matchRows = contains(tableIn.Name, trialNamesToMatch{i});
+    % Filter the table for only the rows in this trial
     filteredTable = tableIn(matchRows,:);    
 
     % Iterate over each cycle in the trial
@@ -45,6 +48,9 @@ for i = 1:length(trialNamesToMatch)
             fldNames = fieldnames(currColData);            
             for fldNum = 1:length(fldNames)
                 fldName = fldNames{fldNum};
+                % If this field is on the ipsilateral side of the current
+                % gait cycle, use the data from the current gait cycle. If
+                % contralateral, use the data from the next gait cycle.
                 if startsWith(fldName, currCycleSide)
                     tmpTable.(colName).(fldName) = currCycleRow.(colName).(fldName);
                 elseif startsWith(fldName, nextCycleSide)

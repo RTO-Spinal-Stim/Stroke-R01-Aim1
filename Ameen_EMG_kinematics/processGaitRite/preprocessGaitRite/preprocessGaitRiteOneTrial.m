@@ -30,7 +30,8 @@ step_width_idx = ismember(header_row, colNames.STEP_WIDTH);
 stride_width_idx = ismember(header_row, colNames.STRIDE_WIDTH);
 
 columnsToConvertZeroToNaN = step_len_idx | swing_time_idx | step_times_idx | ...
-    stance_times_idx | stride_times_idx | stride_lengths_idx | step_width_idx | stride_width_idx;
+    stance_times_idx | stride_times_idx | stride_lengths_idx | step_width_idx | stride_width_idx | ...
+    heel_on_idx | heel_off_idx | toe_on_idx | toe_off_idx;
 for i = 1:length(columnsToConvertZeroToNaN)
     if columnsToConvertZeroToNaN(i) == 0
         continue;
