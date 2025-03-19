@@ -9,9 +9,6 @@ function [symmetryTable] = calculateSymmetryAll(tableIn, colNameSuffix, formulaN
 %
 % Outputs:
 % symmetryTable: The table of computed symmetry values.
-%
-% NOTE: The fields of the struct must begin with 'L' or 'R',
-% and the number of 'L' and 'R' fields should be matching.
 
 disp('Calculating symmetry indices');
 

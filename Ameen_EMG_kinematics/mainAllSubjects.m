@@ -105,10 +105,61 @@ mergedPrePostMatchedCycleTable = mergeTables(prePostGRSymTableAll, prePostChange
 mergedUnmatchedCycleTable = mergeTables(grDistributedTableAll, cycleTableContraRemovedTableAll, colNamesToMergeBy);
 mergedPrePostUnmatchedCycleTable = mergeTables(prePostChangeGRDistributedTableAll, prePostCycleChangeTableAll, colNamesToMergeBy);
 
+%% Add session number
+tepsLogPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\TEPs_log.xlsx';
+tepsLog = readExcelFileOneSheet(tepsLogPath, 'Subject','Sheet1');
+allColNames = tepsLog.Properties.VariableNames;
+colNames = {'Subject', 'SessionOrder', 'SessionCode'};
+colNamesIdx = ismember(allColNames, colNames);
+reducedTEPsLog = unique(tepsLog(:, colNamesIdx), 'rows');
+for i = 1:height(reducedTEPsLog)
+    reducedTEPsLog.Subject{i} = ['SS' reducedTEPsLog.Subject{i}];
+end
+% Map the intervention names
+mappedInterventions = containers.Map(config.INTERVENTION_FOLDERS, config.MAPPED_INTERVENTION_FIELDS);
+reducedTEPsLog.SessionCode = cellfun(@(x) mappedInterventions(x), reducedTEPsLog.SessionCode, 'UniformOutput', false);
+sessionOrderColName = 'SessionOrder';
+sessionCodeColName = 'SessionCode';
+interventionColName = 'Intervention';
+trialTableAllSessionNum = addSessionOrder(trialTableAll, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+mergedMatchedCycleTableSessionNum = addSessionOrder(mergedMatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+mergedPrePostMatchedCycleTableSessionNum = addSessionOrder(mergedPrePostMatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+mergedUnmatchedCycleTableSessionNum = addSessionOrder(mergedUnmatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+mergedPrePostUnmatchedCycleTableSessionNum = addSessionOrder(mergedPrePostUnmatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+
 %% Save the merged tables
 tablesPathPrefixMerged = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTables';
-writetable(trialTableAll, fullfile(tablesPathPrefixMerged, 'trialTableAll.csv'));
-writetable(mergedMatchedCycleTable, fullfile(tablesPathPrefixMerged, 'matchedCycles.csv'));
-writetable(mergedPrePostMatchedCycleTable, fullfile(tablesPathPrefixMerged, 'matchedCyclesPrePost.csv'));
-writetable(mergedUnmatchedCycleTable, fullfile(tablesPathPrefixMerged, 'unmatchedCycles.csv'));
-writetable(mergedPrePostUnmatchedCycleTable, fullfile(tablesPathPrefixMerged, 'unmatchedCyclesPrePost.csv'));
+writetable(trialTableAllSessionNum, fullfile(tablesPathPrefixMerged, 'trialTableAll.csv'));
+writetable(mergedMatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'matchedCycles.csv'));
+writetable(mergedPrePostMatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'matchedCyclesPrePost.csv'));
+writetable(mergedUnmatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'unmatchedCycles.csv'));
+writetable(mergedPrePostUnmatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'unmatchedCyclesPrePost.csv'));
+
+%% Adjust the L & R sides to "U" and "A" for unaffected and affected sides
+tepsLogPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\TEPs_log.xlsx';
+tepsLog = readExcelFileOneSheet(tepsLogPath, 'Subject','Sheet1');
+colNames = {'Subject','PareticSide'};
+inputTableSideCol = 'Side';
+tepsLogSideCol = 'PareticSide';
+allColNames = tepsLog.Properties.VariableNames;
+colNamesIdx = ismember(allColNames, colNames);
+reducedTEPsLog = unique(tepsLog(:, colNamesIdx), 'rows');
+for i = 1:height(reducedTEPsLog)
+    reducedTEPsLog.Subject{i} = ['SS' reducedTEPsLog.Subject{i}];
+end
+mergedMatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedMatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+mergedPrePostMatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedPrePostMatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+mergedUnmatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedUnmatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+mergedPrePostUnmatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedPrePostUnmatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+
+%% Save the unaffected and affected side tables
+tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected';
+writetable(trialTableAllSessionNum, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
+writetable(mergedMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'));
+writetable(mergedPrePostMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'));
+writetable(mergedUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));
+writetable(mergedPrePostUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'));
+
+%% Widen the unaffected and affected side tables
+inputTableSideCol = 'Side';
+mergedMatchedCycleTableUAWide = widenTableBySides(mergedMatchedCycleTableUA, inputTableSideCol);

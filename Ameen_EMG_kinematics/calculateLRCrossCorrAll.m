@@ -1,4 +1,4 @@
-function [crossCorrTable] = calculateLRCrossCorrAll(tableIn, colNameIn, colNameSuffix)
+function [crossCorrTable] = calculateLRCrossCorrAll(tableIn, colNameIn, colNameSuffix, sidePrefixes)
 
 %% PURPOSE: CALCULATE THE CROSS-CORRELATIONS BETWEEN CONSECUTIVE GAIT CYCLES
 % NOTE: The cross correlation is computed between the i'th gait cycle of one side and
@@ -9,11 +9,21 @@ function [crossCorrTable] = calculateLRCrossCorrAll(tableIn, colNameIn, colNameS
 % tableIn: The input data table
 % colNameIn: The column name of the input data. This should be a struct
 % colNameSuffix: The suffix of the column name to store the computed data
+% sidePrefixes: Cell array of the single char prefixes to use in the
+% columns. Default: {'L','R'} for left & right. Could also be {'A','U'} for
+% affected and unaffected, or other
 %
 % Outputs:
 % crossCorrTable: The table with the computed cross correlation data
 
 disp('Calculating cross correlations');
+
+if ~exist('sidePrefixes','var')
+    sidePrefixes = {'L','R'};
+end
+
+firstSidePrefix = sidePrefixes{1};
+secondSidePrefix = sidePrefixes{2};
 
 crossCorrTable = table;
 for i = 1:height(tableIn)
@@ -38,17 +48,17 @@ for i = 1:height(tableIn)
 
     for fieldNum = 1:length(structFieldsNoSides)
         fieldName = structFieldsNoSides{fieldNum};
-        fieldNameL = ['L' fieldName];
-        fieldNameR = ['R' fieldName];
+        fieldNameSide1 = [firstSidePrefix fieldName];
+        fieldNameSide2 = [secondSidePrefix fieldName];
         fieldNameStoreMag = [fieldName '_Mag_' colNameSuffix];
         fieldNameStoreLag = [fieldName '_Lag_' colNameSuffix];
         % There is one more L or R gait cycle vs. the other side.
-        if isempty(data.(fieldNameL)) || isempty(data.(fieldNameR))
+        if isempty(data.(fieldNameSide1)) || isempty(data.(fieldNameSide2))
             tmpTable.(fieldNameStoreMag) = NaN;
             tmpTable.(fieldNameStoreLag) = NaN;
             continue;
         end
-        [C, lags] = xcorr(data.(fieldNameL), data.(fieldNameR),'normalized');        
+        [C, lags] = xcorr(data.(fieldNameSide1), data.(fieldNameSide2),'normalized');        
         [maxC, maxCidx] = max(C);
         tmpTable.(fieldNameStoreMag) = maxC;
         tmpTable.(fieldNameStoreLag) = lags(maxCidx);

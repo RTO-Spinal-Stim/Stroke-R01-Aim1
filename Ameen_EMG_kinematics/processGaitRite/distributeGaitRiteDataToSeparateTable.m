@@ -30,7 +30,7 @@ if ~exist('colNamesToRemove','var')
     colNamesToRemove = {colNameAllIdx};
 end
 
-%% Get the column names that start with "L_" and "R_"
+%% Get the column names that start with the prefix for each side, e.g. "L_" and "R_"
 columnNames = grTable.Properties.VariableNames;
 colNamesAll = columnNames(contains(columnNames, 'All_'));
 colNamesAll(ismember(colNamesAll, colNamesToRemove)) = [];
