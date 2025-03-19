@@ -1,4 +1,4 @@
-function [tableOut] = combineSubjectTables(subjectList, pathTemplate, varName, splitNameColumns)
+function [tableOut] = combineSubjectTables(subjectList, pathTemplate, varName, splitNameColumns, colsToConvertToNumeric)
 
 %% PURPOSE: COMBINE EACH PARTICIPANT'S TABLE OF PROCESSED DATA FROM THEIR .MAT FILE INTO ONE TABLE
 % Inputs:
@@ -8,6 +8,8 @@ function [tableOut] = combineSubjectTables(subjectList, pathTemplate, varName, s
 % varName: The variable name in the .mat file to load
 % splitNameColumns: The column names to split the Name column into. Must be
 % in the proper order!
+% colsToConvertToNumeric: The column names to convert to numeric (e.g.
+% 'cycle1' to '1'
 %
 % tableOut: The combined table of all participants.
 %
@@ -59,6 +61,19 @@ for subNum = 1:length(subjectList)
         tableOut = [tableOut; tmpTable];
     end
 
+end
+
+%% Convert the specified columns to numeric
+numericRegex = '\d+';
+for i = 1:length(colsToConvertToNumeric)
+    colName = colsToConvertToNumeric{i};
+    numericVals = NaN(height(tableOut),1);
+    for j = 1:height(tableOut)
+        charNumericValArray = regexp(char(tableOut.(colName)(j)), numericRegex, 'match');
+        charNumericVal = strjoin(charNumericValArray, '');
+        numericVals(j) = str2double(charNumericVal);
+    end
+    tableOut.(colName) = numericVals;
 end
 
 %% Sort the table
