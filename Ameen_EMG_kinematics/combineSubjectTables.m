@@ -26,7 +26,7 @@ for subNum = 1:length(subjectList)
         continue;
     end
 
-    disp(['Loading: ' fullPath]);
+    disp(['Loading Variable: ' varName ' From: ' fullPath]);
 
     dataTable = load(fullPath, varName);
     dataTable = dataTable.(varName);

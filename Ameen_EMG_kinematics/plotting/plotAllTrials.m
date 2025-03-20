@@ -8,35 +8,25 @@ function [] = plotAllTrials(allDataTable, figName, baseSavePath, plotFieldName)
 % baseSavePath: The folder to save all of the plots to.
 % plotFieldName: The field that is being plotted.
 
+levelNum = 4;
+
 %% Get the list of unique trial names by removing the cycle name.
-uniqueTrialNames = {};
-for i = 1:height(allDataTable)
-    currFullName = allDataTable.Name(i);
-    nameParts = strsplit(currFullName, '_');
-    currNameNoTrial = '';
-    for j = 1:length(nameParts) - 2
-        currNameNoTrial = [currNameNoTrial '_' char(nameParts(j))];
-    end
-    currNameNoTrial = currNameNoTrial(2:end); % Remove the initial underscore.
-    if ~ismember(currNameNoTrial, uniqueTrialNames)
-        uniqueTrialNames = [uniqueTrialNames; {currNameNoTrial}];
-    end
-end
+uniqueNames = getNamesPrefixes(allDataTable.Name, levelNum);
 
 figAllTrials = figure('Name',figName);
 figAllTrials.WindowState = 'maximized';
-for trialNum = 1:length(uniqueTrialNames)
-    trialName = uniqueTrialNames{trialNum};
+for trialNum = 1:length(uniqueNames)
+    currName = uniqueNames{trialNum};
     legendNames = {};
     clf;
     for i = 1:height(allDataTable)
-        if ~contains(allDataTable.Name(i), trialName)
+        if ~contains(allDataTable.Name(i), currName)
             continue;
         end        
-        figAllTrialsConfig.title = [figName ': ' trialName ' All Trials Gait Cycles'];        
+        figAllTrialsConfig.title = [figName ': ' currName ' All Trials Gait Cycles'];        
         cycleData = allDataTable.(plotFieldName)(i);
         nameParts = strsplit(allDataTable.Name(i), '_');
-        legendName = [char(nameParts(end-1)) ' ' char(nameParts(end))];
+        legendName = strjoin(nameParts(levelNum+1:end), ' ');
         figAllTrialsConfig.tooltipLabel = legendName;
         figAllTrials = plotOneTrialData(cycleData, figAllTrials, figAllTrialsConfig);
         legendNames = [legendNames; {legendName}];        
@@ -48,12 +38,7 @@ for trialNum = 1:length(uniqueTrialNames)
     if ~isfolder(saveFolderPath)
         mkdir(saveFolderPath);
     end
-    saveName = '';
-    for j = 1:length(nameParts)-2
-        saveName = [saveName '_' nameParts{j}];
-    end
-    saveName = saveName(2:end); % Remove the initial space.
-    savePath = fullfile(saveFolderPath, saveName);
+    savePath = fullfile(saveFolderPath, currName);
     saveas(figAllTrials, [savePath '.fig']);
     saveas(figAllTrials, [savePath '.png']);
     saveas(figAllTrials, [savePath '.svg']);

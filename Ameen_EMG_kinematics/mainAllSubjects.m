@@ -1,43 +1,30 @@
 configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
 config = jsondecode(fileread(configPath));
 
-subjectRegex = [config.REGEXS.SUBJECT_ID '\>']; % \> is for the end of a word, to avoid returning "SS14_" folder
-
-subjectFolder = config.PATHS.ROOT_LOAD;
-dirItems = dir(subjectFolder); % Get all items in subject data directory
-
-% Get the directory names
-dirNames = {dirItems([dirItems.isdir]).name};
-dirNames = dirNames(~ismember(dirNames, {'.', '..'}));
-
-allSubjects = {};
-for i = 1:length(dirNames)
-    if regexp(dirNames{i}, subjectRegex)
-        allSubjects = [allSubjects; dirNames{i}];
-    end
-end
-
-% Remove unwanted subjects
-% 8, 9, 10 are the ones with muscle renamings needed. CHECK THE MUSCLES
-% WITH OTHER SUBJECTS!
-subjectsToRemove = {'SS27'};
-allSubjects(ismember(allSubjects, subjectsToRemove)) = [];
-
-% Subjects to redo
-subjectsToRedo = allSubjects;
-subjectsToRedo(ismember(subjectsToRedo, {'SS01', 'SS02','SS03','SS04','SS05','SS06','SS08','SS09','SS10','SS13','SS18','SS20'})) = [];
+runConfig = toml.map_to_struct(toml.read('subjects_to_run.toml'));
+allSubjects = runConfig.subjects.run;
 
 %% Iterate over each subject
 doPlot = false;
 for subNum = 1:length(allSubjects)
     subject = allSubjects{subNum};    
     subjectSavePath = fullfile(config.PATHS.ROOT_SAVE, subject, [subject '_' config.PATHS.SAVE_FILE_NAME]);
-    if isfile(subjectSavePath) && ~ismember(subject, subjectsToRedo)
-        disp(['Skipping subject (' num2str(subNum) '/' num2str(length(allSubjects)) '): ' subject]);
-        continue; % Skip the subjects that have already been done.
-    end
     disp(['Now running subject (' num2str(subNum) '/' num2str(length(allSubjects)) '): ' subject]);
     mainOneSubject; % Run the main pipeline.
+end
+
+%% Plot each subject
+allSubjectsPlot = runConfig.subjects.plot;
+for subNum = 1:length(allSubjectsPlot)
+    subject = allSubjectsPlot{subNum};
+    loadPath = fullfile(config.PATHS.ROOT_SAVE, subject, [subject '_Overground_EMG_Kinematics.mat']);
+    load(loadPath, 'matchedCycleTable');
+    % Plot each gait cycle's filtered data, time normalized (for EMG, scaled to max EMG) and each gait cycle of one condition plotted on top of each other.
+    baseSavePath = fullfile(config.PATHS.PLOTS.ROOT, config.PATHS.PLOTS.FILTERED_TIME_NORMALIZED);
+    baseSavePathEMG = fullfile(baseSavePath, 'EMG');
+    baseSavePathXSENS = fullfile(baseSavePath, 'Joint Angles');
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized'); 
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
 %% Combine all of the tables for all subjects into one main table
@@ -77,33 +64,45 @@ grSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grSymTable', sp
 % prePostGRSymTable
 prePostGRSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostGRSymTable', splitNameColumns.prePostGRSymTable, grColsToConvertToNumeric);
 
+%% Add the StimNoStim, Intensity, and Frequency columns
+interventionColumnName = 'Intervention';
+trialTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(trialTableAll, interventionColumnName);
+cycleTableContraRemovedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(cycleTableContraRemovedTableAll, interventionColumnName);
+prePostCycleChangeTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostCycleChangeTableAll, interventionColumnName);
+matchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(matchedCycleTableAll, interventionColumnName);
+prePostChangeMatchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostChangeMatchedCycleTableAll, interventionColumnName);
+grDistributedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(grDistributedTableAll, interventionColumnName);
+prePostChangeGRDistributedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostChangeGRDistributedTableAll, interventionColumnName);
+grSymTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(grSymTableAll, interventionColumnName);
+prePostGRSymTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostGRSymTableAll, interventionColumnName);
+
 %% Write the tables to file.
 tablesPathPrefixUnmerged = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\UnmergedTables';
 % trialTableAll
-writetable(trialTableAll, fullfile(tablesPathPrefixUnmerged, 'trialTableAll.csv'));
+writetable(trialTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'trialTableAll.csv'));
 % cycleTableContraRemoved
-writetable(cycleTableContraRemovedTableAll, fullfile(tablesPathPrefixUnmerged, 'cycleTableContraRemoved.csv'));
+writetable(cycleTableContraRemovedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'cycleTableContraRemoved.csv'));
 % prePostCycleChangeTable
-writetable(prePostCycleChangeTableAll, fullfile(tablesPathPrefixUnmerged, 'prePostCycleChangeTable.csv'));
+writetable(prePostCycleChangeTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostCycleChangeTable.csv'));
 % matchedCycleTable
-writetable(matchedCycleTableAll, fullfile(tablesPathPrefixUnmerged, 'matchedCycleTable.csv'));
+writetable(matchedCycleTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'matchedCycleTable.csv'));
 % prePostChangeMatchedCycleTable
-writetable(prePostChangeMatchedCycleTableAll, fullfile(tablesPathPrefixUnmerged, 'prePostChangeMatchedCycleTable.csv'));
+writetable(prePostChangeMatchedCycleTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostChangeMatchedCycleTable.csv'));
 % grDistributedTable
-writetable(grDistributedTableAll, fullfile(tablesPathPrefixUnmerged, 'grDistributedTable.csv'));
+writetable(grDistributedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'grDistributedTable.csv'));
 % prePostChangeGRDistributedTable
-writetable(prePostChangeGRDistributedTableAll, fullfile(tablesPathPrefixUnmerged, 'prePostChangeGRDistributedTable.csv'));
+writetable(prePostChangeGRDistributedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostChangeGRDistributedTable.csv'));
 % grSymTable
-writetable(grSymTableAll, fullfile(tablesPathPrefixUnmerged, 'grSymTable.csv'));
+writetable(grSymTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'grSymTable.csv'));
 % prePostGRSymTable
-writetable(prePostGRSymTableAll, fullfile(tablesPathPrefixUnmerged, 'prePostGRSymTable.csv'));
+writetable(prePostGRSymTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostGRSymTable.csv'));
 
 %% Merge the tables that can be merged.
 colNamesToMergeBy = {'GaitRiteRow', 'Cycle'};
-mergedMatchedCycleTable = mergeTables(grSymTableAll, matchedCycleTableAll, colNamesToMergeBy);
-mergedPrePostMatchedCycleTable = mergeTables(prePostGRSymTableAll, prePostChangeMatchedCycleTableAll, colNamesToMergeBy);
-mergedUnmatchedCycleTable = mergeTables(grDistributedTableAll, cycleTableContraRemovedTableAll, colNamesToMergeBy);
-mergedPrePostUnmatchedCycleTable = mergeTables(prePostChangeGRDistributedTableAll, prePostCycleChangeTableAll, colNamesToMergeBy);
+mergedMatchedCycleTable = mergeTables(grSymTableAllAddedCols, matchedCycleTableAllAddedCols, colNamesToMergeBy);
+mergedPrePostMatchedCycleTable = mergeTables(prePostGRSymTableAllAddedCols, prePostChangeMatchedCycleTableAllAddedCols, colNamesToMergeBy);
+mergedUnmatchedCycleTable = mergeTables(grDistributedTableAllAddedCols, cycleTableContraRemovedTableAllAddedCols, colNamesToMergeBy);
+mergedPrePostUnmatchedCycleTable = mergeTables(prePostChangeGRDistributedTableAllAddedCols, prePostCycleChangeTableAllAddedCols, colNamesToMergeBy);
 
 %% Add session number
 tepsLogPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\TEPs_log.xlsx';

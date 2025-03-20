@@ -219,12 +219,24 @@ grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelN
 matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
 
 %% Calculate pre to post change
-formulaNum = 2; % Percent difference
 levelNum = 4; % The level to average the PRE data within
-prePostGRSymTable = calculatePrePostChange(grSymTable, formulaNum, levelNum);
-prePostCycleChangeTable = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTable = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
-prePostChangeGRDistributedTable = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
+% Percent difference
+formulaNum = 2;
+prePostGRSymTablePercDiff = calculatePrePostChange(grSymTable, formulaNum, levelNum);
+prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+prePostChangeGRDistributedTablePercDiff = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
+% Difference
+formulaNum = 1;
+prePostGRSymTableDiff = calculatePrePostChange(grSymTable, formulaNum, levelNum);
+prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+prePostChangeGRDistributedTableDiff = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
+% Combine the two tables
+prePostGRSymTable = join(prePostGRSymTablePercDiff, prePostGRSymTableDiff, 'Keys', 'Name');
+prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', 'Name');
+prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', 'Name');
+prePostChangeGRDistributedTable = join(prePostChangeGRDistributedTableDiff, prePostChangeGRDistributedTablePercDiff, 'Keys', 'Name');
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
