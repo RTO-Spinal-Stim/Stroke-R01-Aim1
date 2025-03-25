@@ -11,6 +11,8 @@ function [matchedTable] = matchCycles(tableIn)
 % matchedTable: The table used for symmetry analysis, where each row is one
 % matched gait cycle.
 
+disp('Matching L & R gait cycles')
+
 trialLevelNum = length(strsplit(tableIn.Name(1), '_')) - 2;
 % Get the unique trial names
 trialNamesToMatch = getNamesPrefixes(tableIn.Name, trialLevelNum); 

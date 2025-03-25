@@ -15,11 +15,24 @@ function [delsysData] = loadAndFilterDelsysEMGOneIntervention(delsysConfig, inte
 file_extension = delsysConfig.FILE_EXTENSION;
 subjects_interventions_to_fix = delsysConfig.SUBJECTS_INTERVENTIONS_TO_FIX;
 
+% Get the mat files
 generic_mat_path = fullfile(intervention_folder_path, file_extension);
 mat_files = dir(generic_mat_path);
 mat_file_names = {mat_files.name};
 
-mat_file_names = sort(mat_file_names); % Ensure the trials are in order.
+[~, idx] = sort(mat_file_names); % Ensure the trials are in order.
+mat_files = mat_files(idx,:);
+mat_file_names = {mat_files.name};
+
+% Get the adicht files
+generic_adicht_path = fullfile(intervention_folder_path, '*.adicht');
+adicht_files = dir(generic_adicht_path);
+adicht_file_names = {adicht_files.name};
+
+[~,idx] = sort(adicht_file_names);
+adicht_files = adicht_files(idx,:);
+adicht_file_names = {adicht_files.name};
+
 
 %% Rename/number struct fields and preprocess each file
 delsysData = table;
@@ -40,7 +53,7 @@ for i = 1:length(mat_file_names)
     priorNamesNoTrial{i} = nameNoTrial;
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];    
-    [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);    
+    [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);
 
     %% Hard-coded fix for EMG muscle mappings for specific subjects & interventions
     if isfield(subjects_interventions_to_fix, subject_id) && ...
@@ -48,10 +61,44 @@ for i = 1:length(mat_file_names)
         loadedData = fixMuscleMappings(loadedData);
         filteredData = fixMuscleMappings(filteredData);
     end
-
+    
     tmpTable = table;
     tmpTable.Name = convertCharsToStrings(nameWithTrial);
+    adicht_idx = ismember(adicht_file_names, strrep(mat_file_name_with_ext, '.mat', '.adicht'));
+    if any(adicht_idx)
+        tmpTable.DateTimeSaved_Delsys = getDateSaved(adicht_files(adicht_idx).date);
+    else
+        tmpTable.DateTimeSaved_Delsys = NaT(1,'TimeZone','America/Chicago');
+    end
     tmpTable.Delsys_Loaded = loadedData;
     tmpTable.Delsys_Filtered = filteredData;    
     delsysData = [delsysData; tmpTable];
+end
+
+end
+
+function [dateTimeSaved] = getDateSaved(fullDate)
+
+%% PURPOSE: GET THE DATE AND TIME SAVED
+% Inputs:
+% fullDate: The full date for the current file from the dir()
+%
+% dateSaved: The datetime object
+
+fullDate = char(fullDate);
+spaceIdx = strfind(fullDate, ' ');
+timeSaved = fullDate(spaceIdx(1)+1:end);            
+% Missing AM or PM, so add it here.
+colonIdx = strfind(timeSaved, ':');
+hrNum = str2double(timeSaved(1:colonIdx(1)-1));
+if hrNum >= 12                
+    timeSaved = [timeSaved ' PM'];
+    if hrNum >= 13
+        hrNum = hrNum - 12;
+        timeSaved = [num2str(hrNum) timeSaved(3:end)];
+    end
+else
+    timeSaved = [timeSaved ' AM'];
+end
+dateTimeSaved = datetime(timeSaved, 'InputFormat', 'h:mm:ss a', 'TimeZone', 'America/Chicago');
 end

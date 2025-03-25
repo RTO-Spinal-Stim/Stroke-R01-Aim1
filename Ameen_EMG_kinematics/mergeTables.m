@@ -16,6 +16,8 @@ function [mergedTable] = mergeTables(grTable, cycleTable, colNamesToMergeBy)
 % NOTE: Removes the first two gait cycles from each trial in the cycleTable
 % to match to the grTable
 
+disp('Merging GaitRite and cycle tables');
+
 if height(grTable) <= height(cycleTable)
     error('GaitRite table must have more rows than the cycle table!');
 end

@@ -1,79 +1,44 @@
-function [tableOut] = addToTable(existingTable, newTable)
+function [mergedTable] = addToTable(existingTable, newTable)
 
-%% PURPOSE: ADD THE NEW TABLE IN TO THE EXISTING TABLE.
-% FIRST, ATTEMPTS VERTICAL CONCATENATION.
-% IF THAT FAILS, ATTEMPTS AN OUTER JOIN.
+%% PURPOSE: ADD THE NEW TABLE IN TO THE EXISTING TABLE USING A LEFT JOIN
+% https://www.mathworks.com/help/matlab/ref/table.join.html
+% Inputs:
+% existingTable: The table for which columns are being added
+% newTable: The table to add the columns from
+%
+% Outputs:
+% mergedTable: The merged table
 
-%% First, try just vertically concatenating the table.
-try
-    tableOut = [existingTable; newTable];
-    return;
-catch
-end
-
-% tableOut = outerjoin(existingTable, newTable, 'Keys','Name','MergeKeys',true);
-
-%%%%%%% NEW %%%%%%%%
-
-%% Next, perform an outer join.
-newTableVarNames = newTable.Properties.VariableNames;
-existingTableVarNames = newTable.Properties.VariableNames;
-
-% Find matching columns
-matchingCols = intersect(existingTableVarNames, newTableVarNames);
-numMatches = length(matchingCols);
-
-% if numMatches == 1
-tableOut = outerjoin(existingTable, newTable, 'Keys', 'Name', ...
-    'MergeKeys', true);
-return;
+% %% First, try just vertically concatenating the table.
+% try
+%     tableOut = [existingTable; newTable];
+%     return;
+% catch
 % end
 
-% Case 3: Multiple but not all columns match
-if numMatches > 1
-    % Method: Use all matching columns as keys for the join
-    tableOut = outerjoin(existingTable, newTable, 'Keys', matchingCols, ...
-        'MergeKeys', true);
+if height(existingTable) == 0
+    mergedTable = newTable;
+    return;
+end
 
-    % For non-key columns that appear in both tables (causing _existingTable and _newTable suffixes)
-    % we need to decide which one to keep or how to merge them
-    oldNames = tableOut.Properties.VariableNames;
+existingVarNames = existingTable.Properties.VariableNames;
+newVarNames = newTable.Properties.VariableNames;
 
-    % Find pairs of columns that need to be merged
-    for colName = setdiff(existingTableVarNames, matchingCols)
-        existingColName = [colName '_existingTable'];
-        newColName = [colName '_newTable'];
-
-        % Check if both columns exist (meaning this column was in both tables but wasn't a key)
-        if ismember(existingColName, oldNames) && ismember(newColName, oldNames)
-            % Here you need to decide how to handle duplicate columns
-            % Option 1: Keep existing table's values, fill in with new table's values where missing
-            tableOut.(colName) = coalesce(tableOut.(existingColName), ...
-                tableOut.(newColName));
-
-            % Remove the original columns
-            tableOut = removevars(tableOut, {existingColName, newColName});
-        elseif ismember(existingColName, oldNames)
-            % If only existing column is present, rename it
-            tableOut = renamevars(tableOut, existingColName, colName);
-        elseif ismember(newColName, oldNames)
-            % If only new column is present, rename it
-            tableOut = renamevars(tableOut, newColName, colName);
-        end
+%% If the "Name" entries are different but all column names are the same, vertically concatenate.
+if all(ismember(existingVarNames, newVarNames)) && length(existingVarNames) == length(newVarNames)
+    if ~any(ismember(newTable.Name, existingTable.Name))
+        mergedTable = [existingTable; newTable];
+        return;
     end
-else
-    % No matching columns - could throw error or handle differently
-    error('No matching columns found between tables');
 end
 
-% novelVarNames = newTableVarNames(ismember(newTableVarNames, existingTableVarNames));
-% 
-% tableOut = outerjoin(existingTable, newTable, 'Keys','Name','MergeKeys',true);
+%% Otherwise, perform the horizontal concatenation
+assert(height(newTable) == height(existingTable),'Both tables must have the same number of rows!');
+mergedTable = join(newTable, existingTable, 'Keys', 'Name', ...
+        'LeftVariables', newVarNames, ...
+        'RightVariables', setdiff(existingVarNames, 'Name'),...
+        'KeepOneCopy', newVarNames);
 
-end
-
-% Helper function to coalesce two columns
-function result = coalesce(col1, col2)
-    result = col1;
-    result(ismissing(result)) = col2(ismissing(result));
-end
+newVarNamesToAdd = setdiff(newVarNames, 'Name');
+finalColumnOrder = [existingVarNames, setdiff(newVarNamesToAdd, existingVarNames)];
+mergedTable = mergedTable(:, finalColumnOrder);

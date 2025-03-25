@@ -32,7 +32,24 @@ for i = 1:length(xlsx_file_names)
     tmpTable = table;
     [loadedData, filteredData] = loadAndFilterXSENSOneFile(xlsx_file_path, xsensConfig);
     tmpTable.Name = convertCharsToStrings(nameWithTrial);
+    % Get the datetime
+    tmpTable.DateTimeSaved_XSENS = getDateTimeSaved(xlsx_file_path);
     tmpTable.XSENS_Loaded = loadedData;
     tmpTable.XSENS_Filtered = filteredData;
     xsensData = [xsensData; tmpTable];
+end
+
+end
+
+function [dateTimeSaved] = getDateTimeSaved(xlsx_file_path)
+
+%% PURPOSE: GET THE DATE THAT THE XSENS XLSX FILE WAS SAVED.
+% Created for XSENS 2022 .xlsx files
+
+[raw_data, header_row, cell_data] = xlsread(xlsx_file_path, 'General Information');
+fullDate = cell_data{4,2};
+spaceIdx = strfind(fullDate, ' ');
+timeSaved = fullDate(spaceIdx(1)+1:end);
+dateTimeSaved = datetime(timeSaved, 'InputFormat', 'h:mm:ss a', 'TimeZone', 'UTC');
+dateTimeSaved.TimeZone = 'America/Chicago';
 end

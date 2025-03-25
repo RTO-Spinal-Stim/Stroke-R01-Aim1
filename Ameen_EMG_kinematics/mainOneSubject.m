@@ -4,7 +4,7 @@
 % Comment this part out when running all subjects at once.
 % clc;
 % clearvars;
-% subject = 'SS01';
+% subject = 'SS06';
 % configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
 % config = jsondecode(fileread(configFilePath));
 % disp(['Loaded configuration from: ' configFilePath]);
@@ -38,17 +38,25 @@ cycleTableContraRemoved = table; % Each row is one UNMATCHED gait cycle, with th
 %% GaitRite Processing
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
 gaitRiteTable = processGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
-trialTable = addToTable(trialTable, gaitRiteTable);
+% trialTable = addToTable(trialTable, gaitRiteTable);
 
 %% Delsys Processing
 subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
 delsysTable = processDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
-trialTable = addToTable(trialTable, delsysTable);
+% trialTable = addToTable(trialTable, delsysTable);
 
 %% XSENS Processing
 subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
 xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
-trialTable = addToTable(trialTable, xsensTable);
+% trialTable = addToTable(trialTable, xsensTable);
+
+%% Adjust the order of GaitRite trials as needed
+[xsensTableReordered, delsysTableReordered] = checkTriaelOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});
+trialTable = addToTable(trialTable, gaitRiteTable);
+trialTable = addToTable(trialTable, delsysTableReordered);
+trialTable = addToTable(trialTable, xsensTableReordered);
+dateTimeColNames = trialTable.Properties.VariableNames(contains(trialTable.Properties.VariableNames, 'DateTimeSaved'));
+trialTable = removevars(trialTable, dateTimeColNames);
 
 %% Plot raw and filtered timeseries data
 % if doPlot
@@ -65,12 +73,12 @@ trialTable = addToTable(trialTable, syncedTableDelsys);
 trialTable = addToTable(trialTable, syncedTableXSENS);
 
 %% Plot each trial's data individually, along with gait event information.
-if doPlot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
-    plotTrialWithGaitEvents(trialTable, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Delsys_Filtered', 'Delsys_Frames');
-    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
-    plotTrialWithGaitEvents(trialTable, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'XSENS_Filtered', 'XSENS_Frames');
-end
+% if doPlot
+%     baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\Trials_GaitEvents';
+%     plotTrialWithGaitEvents(trialTable, 'Filtered EMG and Gait Events', baseSavePathEMG, 'Delsys_Filtered', 'Delsys_Frames');
+%     baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\Trials_GaitEvents';
+%     plotTrialWithGaitEvents(trialTable, 'Filtered Joint Angles and GaitEvents', baseSavePathXSENS, 'XSENS_Filtered', 'XSENS_Frames');
+% end
 
 %% Split data by gait cycle without doing any matching between L & R gait cycles
 xsensCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'XSENS_Filtered','XSENS_Frames');
@@ -97,14 +105,6 @@ xsensDownsampledTable = downsampleAllData(cycleTable, 'XSENS_Filtered', 'XSENS_T
 delsysDownsampledTable = downsampleAllData(cycleTable, 'Delsys_Filtered', 'Delsys_TimeNormalized', n_points);
 cycleTable = addToTable(cycleTable, xsensDownsampledTable);
 cycleTable = addToTable(cycleTable, delsysDownsampledTable);
-
-%% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
-if doPlot
-    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\EMG\TimeNormalized_GaitCycles';
-    plotAllTrials(matchedCycleTable, 'Time-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized');
-    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Joint Angles\TimeNormalized_GaitCycles';
-    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
-end
 
 %% Identify the max EMG data value across one whole visit (all trials & gait cycles)
 maxEMGTable = maxEMGValuePerVisit(cycleTable, 'Delsys_TimeNormalized', 'Max_EMG_Value');
@@ -172,6 +172,14 @@ cycleTable = addToTable(cycleTable, romTableXSENS);
 
 %% Match the L and R gait cycles for symmetry analysis
 matchedCycleTable = matchCycles(cycleTable);
+
+%% Plot each gait cycle's time-normalized data, and each gait cycle of one condition plotted on top of each other.
+if doPlot
+    baseSavePathEMG = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Filtered_TimeNormalized\EMG';
+    plotAllTrials(matchedCycleTable, 'Scaled Time-Normalized EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized');
+    baseSavePathXSENS = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Plots\Filtered_TimeNormalized\Joint Angles';
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
+end
 
 %% Average the data within one SSV/FV & pre/post combination.
 avgTableXSENS = avgStructAll(matchedCycleTable, 'XSENS_TimeNormalized', 'XSENS_Averaged', 4);

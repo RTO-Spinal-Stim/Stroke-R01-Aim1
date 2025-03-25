@@ -12,6 +12,8 @@ function [tableOut] = convertLeftRightSideToAffectedUnaffected(tableIn, demsTabl
 % Outputs:
 % tableOut: The table with the converted side
 
+disp('Converting L(eft) & R(ight) to U(naffected) & A(ffected)')
+
 tableOut = tableIn;
 
 for i = 1:height(demsTable)

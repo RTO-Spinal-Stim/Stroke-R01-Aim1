@@ -23,7 +23,6 @@ end
 
 %% Extract the data
 nanIdx = isnan(raw_data(:,indices.(colNameFieldName)));
-% nanIdx(1) = true; % Do not include the header row
 
 % Perform the data extraction
 extracted_data = struct();

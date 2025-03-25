@@ -10,9 +10,6 @@
             "FILTERED_TIME_NORMALIZED": "Filtered_TimeNormalized"
         }
     },
-    "SUBJECT_LIST_EXCLUSION": [
-        "SS21"
-    ],
     "REGEXS": {
         "SUBJECT_ID": "SS\\d{2}",
         "INTERVENTIONS": [
@@ -29,6 +26,12 @@
     ],
     "MAPPED_INTERVENTION_FIELDS": [
         "RMT30", "TOL30", "RMT50", "TOL50", "SHAM1", "SHAM2"
+    ],
+    "TIMEPOINTS": [
+        "PRE", "POST"
+    ],
+    "SPEEDS": [
+        "SSV", "FV"
     ],
     "DELSYS_EMG": {
         "FOLDER_NAME": "Delsys",

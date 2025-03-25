@@ -13,6 +13,8 @@ function [tableOut] = addSessionOrder(tableIn, tepsLog, sessionNumberColName, se
 % Outputs:
 % tableOut: The output data table
 
+disp('Adding session order to table');
+
 % Prep the output variable
 tableOut = tableIn;
 tableOut.(sessionNumberColName) = NaN(height(tableOut),1);

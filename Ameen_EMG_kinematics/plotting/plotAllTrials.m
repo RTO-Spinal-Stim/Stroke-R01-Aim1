@@ -22,7 +22,7 @@ for trialNum = 1:length(uniqueNames)
     for i = 1:height(allDataTable)
         if ~contains(allDataTable.Name(i), currName)
             continue;
-        end        
+        end
         figAllTrialsConfig.title = [figName ': ' currName ' All Trials Gait Cycles'];        
         cycleData = allDataTable.(plotFieldName)(i);
         nameParts = strsplit(allDataTable.Name(i), '_');
