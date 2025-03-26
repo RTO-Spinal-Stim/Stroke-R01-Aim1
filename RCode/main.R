@@ -10,6 +10,10 @@ setwd(config$paths$wd)
 files <- list.files(config$paths$helper_functions, pattern = "\\.R$", full.names = TRUE)
 sapply(files, source)
 
+# TESTING ONLY
+files <- list.files("Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\RCode\\plotter", pattern = "\\.R$", full.names = TRUE)
+sapply(files, source)
+
 # Create the folder to store the results of this analysis
 analysis_name <- config$analysis_name
 analysis_output_folder = file.path(config$paths$root_save, analysis_name)
@@ -85,6 +89,9 @@ for (col_name in outcome_measures_cols) {
   # Hypothesis tests
   comps <- hyp_tests(lmer_model, curr_data, emmeans, col_name)
   comps_list[[col_name]] <- comps
+  
+  collapsed_df <- collapse_data(curr_data, c())
+  gp <- plot_for_diff_bars(collapsed_df, comps, plot_grouping_factors, col_name, plot_type = "scatter", emmeans=emmeans)
 
   # Bar graph with difference bars
   bar_graph_with_diff_bars(curr_data, comps, plot_grouping_factors, col_name, emmeans, colors=colors, fill_factor=fill_factor, min_y_distance=0.05, text_size=2)

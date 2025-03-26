@@ -21,10 +21,10 @@ root_save = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Stats"
 
 [plots]
 grouping_factors = [
-    "Intervention", 
-    "Speed",        
+    "Speed",
+    "Intervention",             
 ]
-fill_factor = "Speed"
+fill_factor = "Intervention"
 
 [plots.colors.Intervention]
 SHAM1 = "#1b9e77"
