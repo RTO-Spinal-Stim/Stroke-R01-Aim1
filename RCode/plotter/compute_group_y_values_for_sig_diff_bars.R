@@ -28,7 +28,8 @@ compute_group_y_values_for_sig_diff_bars <- function(df, grouping_factors) {
       summarize(
         group_mean_y = mean(!!sym(numeric_col_name), na.rm = TRUE),
         group_min_y = min(!!sym(numeric_col_name), na.rm = TRUE),
-        group_max_y = max(!!sym(numeric_col_name), na.rm = TRUE)
+        group_max_y = max(!!sym(numeric_col_name), na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       ungroup()
 
