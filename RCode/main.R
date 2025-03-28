@@ -90,11 +90,22 @@ for (col_name in outcome_measures_cols) {
   comps <- hyp_tests(lmer_model, curr_data, emmeans, col_name)
   comps_list[[col_name]] <- comps
   
+  # Plot the data in a way that will work with significant difference bars
   collapsed_df <- collapse_data(curr_data, c())
-  gp <- plot_for_diff_bars(collapsed_df, comps, plot_grouping_factors, col_name, plot_type = "scatter", emmeans=emmeans)
+  plot_result <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "scatter", fill_factor=fill_factor)
+  plotted_df <- plot_result$df
+  gp_no_sig_diff_bars <- plot_result$gp
 
+  # Add the significant difference bars
+  plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors, 
+                      col_name, fill_factor=fill_factor, vert_bar_height=0.05, text_offset=0.05, 
+                      bar_offsets=c(0.05, 0.1), min_y_distance=0.05, text_size=2, 
+                      diff_bars_config = config$plots$diff_bars_config, 
+                      diff_bars_factors = config$plots$diff_bars_factors, show_p_values = TRUE, 
+                      horz_offset = 0.05)
+  
   # Bar graph with difference bars
-  bar_graph_with_diff_bars(curr_data, comps, plot_grouping_factors, col_name, emmeans, colors=colors, fill_factor=fill_factor, min_y_distance=0.05, text_size=2)
+  # bar_graph_with_diff_bars(curr_data, comps, plot_grouping_factors, col_name, emmeans, colors=colors, fill_factor=fill_factor, min_y_distance=0.05, text_size=2)
 
   # Line plots
   line_plot_from_lmer(curr_data, col_name, lmer_model)
@@ -109,7 +120,7 @@ for (col_name in outcome_measures_cols) {
   summarize_model(lmer_model)
 
   # Create the histogram
-  plot_all_histograms(curr_data, plot_grouping_factors, col_name, fill_factor = fill_factor) # Per task
+  plot_all_histograms(curr_data, plot_grouping_factors, col_name, fill_factor = fill_factor)
 
   dev.off()
 }

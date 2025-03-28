@@ -24,7 +24,19 @@ grouping_factors = [
     "Speed",
     "Intervention",             
 ]
-fill_factor = "Intervention"
+fill_factor = "Subject"
+
+# [[plots.sig_diff_bars]]
+# color = "black"
+# metrics = ["HIP_RMSE_JointAngles_Diff"]
+# Intervention = [
+#     "SHAM1",
+#     "SHAM2",
+#     "RMT30",
+#     "RMT50",
+#     "TOL30",
+#     "TOL50",
+# ]
 
 [plots.colors.Intervention]
 SHAM1 = "#1b9e77"
@@ -51,8 +63,13 @@ factors_in_model = [
 lmer_formula = "~ Intervention * Speed + (1 | Subject)"
 emmeans_formula = "~ Intervention * Speed"
 
+[factor_levels_to_keep]
+# Define the levels to keep for each factor.
+# If a factor is not listed here, all levels will be kept.
+
 [factor_levels_to_remove]
 # Define the levels to remove from each factor. 
+# If a factor is not listed here, no levels will be removed.
 # Same syntax as [factors_levels_order]
 
 # Define the order of the levels in each factor

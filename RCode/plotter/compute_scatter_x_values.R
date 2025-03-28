@@ -21,9 +21,9 @@ compute_scatter_x_values <- function(df, grouping_factors) {
     select(all_of(grouping_factors)) %>%
     distinct()
   
-  result_df <- df
+  result_df <- data.frame()
   factor_names <- names(df)[sapply(df, is.factor)]
-  for (i in seq_along(unique_combinations)) {
+  for (i in 1:nrow(unique_combinations)) {
     # Filter the data frame for the current unique combination
     current_combination <- unique_combinations[i, ]
     current_df <- df
@@ -41,11 +41,7 @@ compute_scatter_x_values <- function(df, grouping_factors) {
     current_df$x = x_values
     
     # Update the original data frame
-    result_df <- df %>%
-      left_join(
-        current_df %>% select(all_of(factor_names), x), 
-        by = factor_names
-      )
+    result_df <- rbind(result_df, current_df)
   }
   
   return(result_df)
