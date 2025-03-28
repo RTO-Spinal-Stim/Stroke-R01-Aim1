@@ -18,7 +18,7 @@ min_diff_bars_height <- function(vert_bars_df, comps_bars_df, col_name, min_heig
     # Get the y values between xleft and xright
     y_values <- vert_bars_df %>%
       filter(x >= xleft, x <= xright) %>%
-      pull(paste0(col_name,"_ymax"))
+      pull("group_max_y")
 
     # Append a zero to the y_values
     y_values <- c(y_values, 0)

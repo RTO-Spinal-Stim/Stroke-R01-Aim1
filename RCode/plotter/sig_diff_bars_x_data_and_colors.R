@@ -1,4 +1,4 @@
-sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df, col_name, interactions=FALSE, diff_bars_config=NULL, diff_bars_factors=NULL) {
+sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df, col_name, interactions=FALSE, diff_bars_config=NULL, diff_bars_factors=NULL, panel_id=1) {
     # PURPOSE: GET THE X & Y VALUES FOR THE SIGNIFICANT DIFFERENCE BARS
     # INPUTS:
     #   comps: comparison object (output of lmer)
@@ -63,7 +63,7 @@ sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df,
     }
 
     # Perform the contrast split
-    contrasts_split <- split_contrasts(main_effects_comps_df, contrast_factor_list)    
+    contrasts_split <- split_contrasts(main_effects_comps_df, contrast_factor_list) 
 
     bars_xy <- lapply(seq_along(contrasts_split), function(i) {
     

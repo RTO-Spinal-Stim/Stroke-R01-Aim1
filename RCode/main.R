@@ -97,12 +97,12 @@ for (col_name in outcome_measures_cols) {
   gp_no_sig_diff_bars <- plot_result$gp
 
   # Add the significant difference bars
-  plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors, 
-                      col_name, fill_factor=fill_factor, vert_bar_height=0.05, text_offset=0.05, 
-                      bar_offsets=c(0.05, 0.1), min_y_distance=0.05, text_size=2, 
-                      diff_bars_config = config$plots$diff_bars_config, 
-                      diff_bars_factors = config$plots$diff_bars_factors, show_p_values = TRUE, 
-                      horz_offset = 0.05)
+  result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors, 
+                      col_name, vert_bar_height=0.05, text_offset=0.02, min_y_distance=0.05, text_size=2, 
+                      show_p_values = TRUE, horz_offset = 0.008)
+  gp_sig_diff_bars <- result$plot
+  print(gp_sig_diff_bars)
+  sig_diff_bars_df <- result$sig_diff_bars_df
   
   # Bar graph with difference bars
   # bar_graph_with_diff_bars(curr_data, comps, plot_grouping_factors, col_name, emmeans, colors=colors, fill_factor=fill_factor, min_y_distance=0.05, text_size=2)
@@ -114,7 +114,7 @@ for (col_name in outcome_measures_cols) {
   bar_plot_from_lmer(curr_data, col_name, lmer_model, comps)
 
   # Interaction plots
-  interaction_plot_from_lmer(curr_data, col_name, lmer_model, comps, x_axis_factor = "Gait_Phase", color_factor = "Turn_Strategy", facet_factors = NULL)
+  interaction_plot_from_lmer(curr_data, col_name, lmer_model, comps, x_axis_factor = plot_grouping_factors[1], color_factor = plot_grouping_factors[2], facet_factors = NULL)
 
   # Summarize and plot the residuals of the model
   summarize_model(lmer_model)
