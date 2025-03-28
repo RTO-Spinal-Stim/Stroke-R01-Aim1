@@ -60,7 +60,7 @@ for (factor_name in factors_with_levels_to_remove) {
 
 # Get the column names of interest from the data table
 outcome_measures_cols <- names(all_data)[sapply(all_data, function(x) !is.factor(x))]
-col_name = outcome_measures_cols[1]
+col_name = outcome_measures_cols[109]
 
 emmeans_list <- list()
 comps_list <- list()
@@ -98,8 +98,8 @@ for (col_name in outcome_measures_cols) {
 
   # Add the significant difference bars
   result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors, 
-                      col_name, vert_bar_height=0.05, text_offset=0.02, min_y_distance=0.05, text_size=2, 
-                      show_p_values = TRUE, horz_offset = 0.008)
+                      col_name, vert_bar_height=0.03, text_offset=0.005, min_y_distance=0.02, text_size=2, 
+                      show_p_values = TRUE, horz_offset = 0.008, step_increase=0.06)
   gp_sig_diff_bars <- result$plot
   print(gp_sig_diff_bars)
   sig_diff_bars_df <- result$sig_diff_bars_df

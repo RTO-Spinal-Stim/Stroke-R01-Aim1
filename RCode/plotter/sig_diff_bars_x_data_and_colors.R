@@ -100,9 +100,9 @@ sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df,
         # Set the color of the diff bars
         default_color <- "grey" # Default for plots that have this metric, but this is just the wrong level.
         for (j in seq_along(diff_bars_config)) {
-            if (length(diff_bars_config) > 0 && col_name %in% diff_bars_config[[j]]$metric) {
+            if (length(diff_bars_config) > 0 && col_name %in% diff_bars_config[[j]]$metrics) {
                 config_color <- diff_bars_config[[j]]$color
-                factor_name <- setdiff(names(diff_bars_config[[j]]), c("color", "metric"))
+                factor_name <- setdiff(names(diff_bars_config[[j]]), c("color", "metrics"))
                 factor_levels <- diff_bars_config[[j]][[factor_name]]
                 break()
             } else {
@@ -142,6 +142,18 @@ sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df,
                                 color=color)
     return(returned_df)
   })
+
+  # If the xleft value is larger than the xright value, swap them.
+  for (i in seq_along(bars_xy)) {
+    if (!is.null(bars_xy[[i]]$xleft) && !is.null(bars_xy[[i]]$xright)) {
+      if (bars_xy[[i]]$xleft > bars_xy[[i]]$xright) {
+          tmp_left <- bars_xy[[i]]$xleft
+          tmp_right <- bars_xy[[i]]$xright
+          bars_xy[[i]]$xleft <- tmp_right
+          bars_xy[[i]]$xright <- tmp_left
+      }
+    }
+  }
 
   # Combine the list of data frames into one data frame
   comps_bars_df <- do.call(rbind, bars_xy)

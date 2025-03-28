@@ -6,12 +6,14 @@ plot_sig_diff_bars <- function(gp, df, comps, grouping_factors, col_name, emmean
     # INPUTS:
     #   gp: ggplot object
     #   df: data frame with the following columns:
-    #       - group_mean_x: mean x value for each group
+    #       - group_mean_x: mean x value for each group (USED HERE)
     #       - group_mean_y: mean y value for each group
     #       - group_min_x: min x value for each group
     #       - group_max_x: max x value for each group
     #       - group_min_y: min y value for each group
-    #       - group_max_y: max y value for each group
+    #       - group_max_y: max y value for each group (USED HERE)
+    #       - x: actual value(s) to plot for each group
+    #       - y: actual value(s) to plot for each group
     #   comps: comparison object (output of lmer)
     #   grouping_factors: factors to use for grouping
     #   col_name: column name for y data
@@ -65,14 +67,14 @@ plot_sig_diff_bars <- function(gp, df, comps, grouping_factors, col_name, emmean
 
     if (show_p_values==TRUE) {
         gp <- gp +
-            geom_text(
-                data=sig_diff_bars_xy_df, 
-                aes(x=(xleft+xright)/2, y=y_positions+text_offset*diff(y_range), label=p, color=color), 
-                inherit.aes = FALSE, 
-                size=text_size, 
-                show.legend=FALSE, 
-                vjust=-0.5
-            )
+          geom_text(
+            data=sig_diff_bars_xy_df, 
+            aes(x=(xleft+xright)/2, y=y_positions+text_offset*diff(y_range), label=p, color=color), 
+            inherit.aes = FALSE, 
+            size=text_size, 
+            show.legend=FALSE, 
+            vjust=-0.5
+          )
     }
     return(list(plot = gp, sig_diff_bars_df = sig_diff_bars_xy_df))
 }

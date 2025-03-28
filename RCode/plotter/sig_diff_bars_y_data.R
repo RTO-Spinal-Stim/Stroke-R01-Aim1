@@ -39,8 +39,7 @@ sig_diff_bars_y_data <- function(gp, df, sig_diff_bars_x_df, col_name, p_cutoff=
     # Extract the y axis limit for this panel
     built_plot <- ggplot2::ggplot_build(gp)
     layout <- built_plot$layout$layout
-    y_range <- built_plot$layout$panel_params[[panel_id]]$y.range
-    x_range <- built_plot$layout$panel_params[[panel_id]]$x.range
+    y_range <- built_plot$layout$panel_params[[panel_id]]$y.range    
 
     # Get the minimum heights based on the data
     min_heights <- min_diff_bars_height(plotted_df, sig_diff_bars_x_df, col_name, min_y_distance_to_data*diff(y_range), step_increase*diff(y_range))
