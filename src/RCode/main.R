@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\RCode\\config.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -11,7 +11,7 @@ files <- list.files(config$paths$helper_functions, pattern = "\\.R$", full.names
 sapply(files, source)
 
 # TESTING ONLY
-files <- list.files("Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\RCode\\plotter", pattern = "\\.R$", full.names = TRUE)
+files <- list.files("Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\plotter", pattern = "\\.R$", full.names = TRUE)
 sapply(files, source)
 
 # Create the folder to store the results of this analysis

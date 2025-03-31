@@ -14,10 +14,10 @@ all_factor_columns = [
 ]
 
 [paths]
-wd = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\RCode"
-helper_functions = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\RCode\\plotter\\plotter_helper_functions"
+wd = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode"
+helper_functions = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\plotter\\plotter_helper_functions"
 data_file = "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\MergedTablesAffectedUnaffected\\matchedCyclesPrePost.csv"
-root_save = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Stats"
+root_save = "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\results\\stats"
 
 [plots]
 grouping_factors = [

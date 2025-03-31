@@ -11,3 +11,4 @@
 *.scss
 *.html
 *jquery-AUTHORS.txt
+*.pyc
