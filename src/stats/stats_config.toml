@@ -63,7 +63,7 @@ factors_in_model = [
 emmeans_formula = "~ Intervention * Speed"
 
 [stats.lmer]
-formula = "~ Intervention * Speed + C(Subject, random=True)"
+formula = "~ Intervention * Speed"
 random_effect_factor = "Subject"
 
 [factor_levels_to_keep]
