@@ -63,8 +63,14 @@ factors_in_model = [
 emmeans_formula = "~ Intervention * Speed"
 
 [stats.lmer]
-formula = "~ Intervention * Speed"
+lmer_formula = "~ Intervention * Speed + (1 | Subject)"
+fixed_effects_formula = "~ Intervention * Speed"
 random_effect_factor = "Subject"
+# random_effect_formula = "~ 1 + {outcome}" # Random intercept & slope for subjects
+random_effect_formula = "~ 1" # Random intercept for subjects
+vc_formula.Subject_Intervention = "0+C(Subject):C(Intervention)"
+vc_formula.Subject_Intervention_Speed = "0+C(Subject):C(Intervention):C(Speed)"
+vc_formula.Subject_Intervention_Speed_Trial = "0+C(Subject):C(Intervention):C(Speed):C(Trial)"
 
 [factor_levels_to_keep]
 # Define the levels to keep for each factor.
