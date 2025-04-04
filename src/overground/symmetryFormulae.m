@@ -24,7 +24,7 @@ switch formulaNum
     case 4
         formula = @(x1, x2) 100 * (1-abs(1-x1/x2));
     case 5
-        formula = @(x1, x2) x1/x2;
+        formula = @(x1, x2) x1/x2;    
     otherwise
         error('Wrong formulaNum entered!');
 end

@@ -81,7 +81,8 @@
             "STRIDE_TIME": "Stride_time",
             "STRIDE_LENGTH": "Stride_length",
             "STEP_WIDTH": "StepWidth",
-            "STRIDE_WIDTH": "StrideWidth"
+            "STRIDE_WIDTH": "StrideWidth",
+            "STRIDE_VELOCITY": "Stride_velocity"
         }
     },    
     "XSENS": {

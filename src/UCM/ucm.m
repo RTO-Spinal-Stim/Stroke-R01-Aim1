@@ -2,19 +2,19 @@
 clearvars;
 root_save_path = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\plots\UCM';
 % Color by intervention
-colors.SHAM1 = 'k';
-colors.SHAM2 = 'b';
-colors.RMT30 = 'g';
-colors.RMT50 = 'r';
-colors.TOL30 = 'm';
-colors.TOL50 = 'c';
+% colors.SHAM1 = 'k';
+% colors.SHAM2 = 'b';
+% colors.RMT30 = 'g';
+% colors.RMT50 = 'r';
+% colors.TOL30 = 'm';
+% colors.TOL50 = 'c';
 % Color by session order
-% colors.x1 = 'k';
-% colors.x2 = 'b';
-% colors.x3 = 'g';
-% colors.x4 = 'r';
-% colors.x5 = 'm';
-% colors.x6 = 'c';
+colors.x1 = 'k';
+colors.x2 = 'b';
+colors.x3 = 'g';
+colors.x4 = 'r';
+colors.x5 = 'm';
+colors.x6 = 'c';
 shapes.SSV = 'o';
 shapes.FV = '^';
 speeds.PRE = true; % Dummy variable
@@ -42,8 +42,8 @@ outcomeVarsNames = varNames(find(ismember(varNames, lastOutcomeMeasureColName))+
 %% Set plotting configuration
 facetFactors = {'Subject','PrePost','Speed'};
 % facetFactors = {'Subject'};
-color_factor = {'Intervention'};
-% color_factor = {'SessionOrder'};
+% color_factor = {'Intervention'};
+color_factor = {'SessionOrder'};
 
 % Get the columns that have all of the factors
 allFactorNames = {subjectColName,interventionColName,speedColName,prePostColName,sessionOrderColName};
@@ -59,7 +59,8 @@ subFolder = char(string(join(facetFactors,'_')));
 %% Plot the data
 fig = figure;
 fig.WindowState = 'maximized';
-outcomeVarsNames = {'StepLengths','StepDurations','SwingDurations'};
+% outcomeVarsNames = {'StepLengths','StepDurations','SwingDurations'};
+% outcomeVarsNames = {'ANKLE_JointAngles_Min'};
 subFolderPath = fullfile(root_save_path, subFolder, color_factor{1});
 if ~isfolder(subFolderPath)
     mkdir(subFolderPath);
@@ -77,10 +78,10 @@ for varNum = 1:length(outcomeVarsNames)
     % Get the min & max of the unaffected and affected sides separately
     aIdx = ismember(df.(sideColName), 'A');
     uIdx = ismember(df.(sideColName), 'U');
-    aExtremaRaw = [min(df.(varName)(aIdx),[],1,'omitnan'), max(df.(varName)(aIdx),[],1,'omitnan')];
+    aExtremaRaw = [min(abs(df.(varName)(aIdx)),[],1,'omitnan'), max(abs(df.(varName)(aIdx)),[],1,'omitnan')];
     aExtrema = aExtremaRaw;
     aExtrema(1) = min([0 aExtremaRaw(1)]);
-    uExtremaRaw = [min(df.(varName)(uIdx),[],1,'omitnan'), max(df.(varName)(uIdx),[],1,'omitnan')];
+    uExtremaRaw = [min(abs(df.(varName)(uIdx)),[],1,'omitnan'), max(abs(df.(varName)(uIdx)),[],1,'omitnan')];
     uExtrema = uExtremaRaw;
     uExtrema(1) = min([0 uExtremaRaw(1)]);
     tmpFig = figure;
@@ -109,7 +110,7 @@ for varNum = 1:length(outcomeVarsNames)
     end
     nanIdx = any(isnan(allPlotData),2);
     allPlotData(nanIdx,:) = [];
-    rotDataAll = (R*allPlotData')';
+    rotDataAll = (R*abs(allPlotData)')';
 
     xRotExtremaRaw = [min(rotDataAll(:,1),[],1,'omitnan'), max(rotDataAll(:,1),[],1,'omitnan')];
     yRotExtremaRaw = [min(rotDataAll(:,2),[],1,'omitnan'), max(rotDataAll(:,2),[],1,'omitnan')];    

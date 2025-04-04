@@ -38,17 +38,14 @@ cycleTableContraRemoved = table; % Each row is one UNMATCHED gait cycle, with th
 %% GaitRite Processing
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
 gaitRiteTable = processGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
-% trialTable = addToTable(trialTable, gaitRiteTable);
 
 %% Delsys Processing
 subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
 delsysTable = processDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
-% trialTable = addToTable(trialTable, delsysTable);
 
 %% XSENS Processing
 subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
 xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
-% trialTable = addToTable(trialTable, xsensTable);
 
 %% Adjust the order of GaitRite trials as needed
 [xsensTableReordered, delsysTableReordered] = checkTriaelOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});

@@ -28,10 +28,11 @@ stride_times_idx = ismember(header_row, colNames.STRIDE_TIME);
 stride_lengths_idx = ismember(header_row, colNames.STRIDE_LENGTH);
 step_width_idx = ismember(header_row, colNames.STEP_WIDTH);
 stride_width_idx = ismember(header_row, colNames.STRIDE_WIDTH);
+stride_velocity_idx = ismember(header_row, colNames.STRIDE_VELOCITY);
 
 columnsToConvertZeroToNaN = step_len_idx | swing_time_idx | step_times_idx | ...
     stance_times_idx | stride_times_idx | stride_lengths_idx | step_width_idx | stride_width_idx | ...
-    heel_on_idx | heel_off_idx | toe_on_idx | toe_off_idx;
+    heel_on_idx | heel_off_idx | toe_on_idx | toe_off_idx | stride_velocity_idx;
 for i = 1:length(columnsToConvertZeroToNaN)
     if columnsToConvertZeroToNaN(i) == 0
         continue;
@@ -54,6 +55,7 @@ stance_durations = data(:, stance_times_idx); % sec
 step_widths = data(:, step_width_idx) / 100; % m
 stride_widths = data(:, stride_width_idx) / 100; % m
 step_durations = data(:, step_times_idx); % sec
+stride_velocities = data(:, stride_velocity_idx) / 100; % m/s
 
 if any(diff(left_right)==0)
     error('Left and right GaitRite steps are not alternating!');
@@ -99,6 +101,9 @@ processed_data.All_StrideDurations = {stride_durations};
 processed_data.L_NumFootfalls = sum(left_events_idx);
 processed_data.R_NumFootfalls = sum(right_events_idx);
 processed_data.All_NumFootfalls = num_heel_strikes;
+processed_data.L_StrideVelocities = {stride_velocities(left_events_idx)};
+processed_data.R_StrideVelocities = {stride_velocities{right_events_idx}};
+processed_data.All_StrideVelocities = {stride_velocities};
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
     numStepsL = sum(left_events_idx) - 1;
