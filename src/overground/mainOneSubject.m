@@ -48,7 +48,7 @@ subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
 xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
 
 %% Adjust the order of GaitRite trials as needed
-[xsensTableReordered, delsysTableReordered] = checkTriaelOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});
+[xsensTableReordered, delsysTableReordered] = checkTrialOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});
 trialTable = addToTable(trialTable, gaitRiteTable);
 trialTable = addToTable(trialTable, delsysTableReordered);
 trialTable = addToTable(trialTable, xsensTableReordered);

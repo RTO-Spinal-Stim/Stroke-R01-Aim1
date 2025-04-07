@@ -1,4 +1,4 @@
-configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
 config = jsondecode(fileread(configPath));
 
 runConfig = toml.map_to_struct(toml.read('subjects_to_run.toml'));

@@ -2,25 +2,25 @@
 clearvars;
 root_save_path = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\plots\UCM';
 % Color by intervention
-% colors.SHAM1 = 'k';
-% colors.SHAM2 = 'b';
-% colors.RMT30 = 'g';
-% colors.RMT50 = 'r';
-% colors.TOL30 = 'm';
-% colors.TOL50 = 'c';
+colors.SHAM1 = 'k';
+colors.SHAM2 = 'b';
+colors.RMT30 = 'g';
+colors.RMT50 = 'r';
+colors.TOL30 = 'm';
+colors.TOL50 = 'c';
 % Color by session order
-colors.x1 = 'k';
-colors.x2 = 'b';
-colors.x3 = 'g';
-colors.x4 = 'r';
-colors.x5 = 'm';
-colors.x6 = 'c';
+% colors.x1 = 'k';
+% colors.x2 = 'b';
+% colors.x3 = 'g';
+% colors.x4 = 'r';
+% colors.x5 = 'm';
+% colors.x6 = 'c';
 shapes.SSV = 'o';
 shapes.FV = '^';
 speeds.PRE = true; % Dummy variable
 speeds.POST = true;
 % Unmatched
-data_path = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected\unmatchedCycles.csv';
+data_path = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics_NoStrideVelocity\MergedTablesAffectedUnaffected\unmatchedCycles.csv';
 df = readtable(data_path);
 
 %% Set column names
@@ -40,10 +40,10 @@ varNames = df.Properties.VariableNames;
 outcomeVarsNames = varNames(find(ismember(varNames, lastOutcomeMeasureColName))+1:end);
 
 %% Set plotting configuration
-facetFactors = {'Subject','PrePost','Speed'};
-% facetFactors = {'Subject'};
-% color_factor = {'Intervention'};
-color_factor = {'SessionOrder'};
+% facetFactors = {'Subject','PrePost','Speed'};
+facetFactors = {'Subject'};
+color_factor = {'Intervention'};
+% color_factor = {'SessionOrder'};
 
 % Get the columns that have all of the factors
 allFactorNames = {subjectColName,interventionColName,speedColName,prePostColName,sessionOrderColName};

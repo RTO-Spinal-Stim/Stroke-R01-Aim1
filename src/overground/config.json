@@ -3,9 +3,9 @@
         "ROOT_LOAD": "Y:\\Spinal Stim_Stroke R01\\AIM 1\\Subject Data",
         "ROOT_SAVE": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim",
         "SAVE_FILE_NAME": "Overground_EMG_Kinematics.mat",
-        "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Ameen_EMG_kinematics",
+        "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\overground",
         "PLOTS": {
-            "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\Plots",
+            "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\plots",
             "FILTERED_NON_TIME_NORMALIZED": "Filtered_GaitCycles",
             "FILTERED_TIME_NORMALIZED": "Filtered_TimeNormalized"
         }

@@ -102,7 +102,7 @@ processed_data.L_NumFootfalls = sum(left_events_idx);
 processed_data.R_NumFootfalls = sum(right_events_idx);
 processed_data.All_NumFootfalls = num_heel_strikes;
 processed_data.L_StrideVelocities = {stride_velocities(left_events_idx)};
-processed_data.R_StrideVelocities = {stride_velocities{right_events_idx}};
+processed_data.R_StrideVelocities = {stride_velocities(right_events_idx)};
 processed_data.All_StrideVelocities = {stride_velocities};
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
