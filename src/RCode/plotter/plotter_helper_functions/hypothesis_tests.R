@@ -238,6 +238,16 @@ make_marginal_means_table <- function(marginal_means, column_widths, n_decimal_p
   factor_names <- setdiff(names(marginal_means_df), c("emmean", "SE", "df", "lower.CL", "upper.CL", "asymp.LCL", "asymp.UCL"))
 
   char_widths <- sapply(column_widths, function(w) npc_to_char_width(as.numeric(w)))
+  
+  if ("lower.CL" %in% names(marginal_means_df)) {
+    marginal_means_df$asymp.LCL <- marginal_means_df$lower.CL
+    marginal_means_df$lower.CL <- NULL
+  }
+  
+  if ("upper.CL" %in% names(marginal_means_df)) {
+    marginal_means_df$asymp.UCL <- marginal_means_df$upper.CL
+    marginal_means_df$upper.CL <- NULL
+  }
 
   marginal_means_df$emmean <- round(marginal_means_df$emmean, n_decimal_places)
   marginal_means_df$lower.CL <- round(marginal_means_df$asymp.LCL, n_decimal_places)

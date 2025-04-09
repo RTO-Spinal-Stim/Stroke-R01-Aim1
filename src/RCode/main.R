@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_sessionOrder.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -25,7 +25,6 @@ if (!dir.exists(analysis_output_folder)) {
 # Factors
 plot_grouping_factors <- config$plots$grouping_factors
 fill_factor <- config$plots$fill_factor
-factors_in_model <- config$stats$factors_in_model
 all_factors_col_names <- config$all_factor_columns
 
 # Levels in each factor
@@ -60,7 +59,7 @@ for (factor_name in factors_with_levels_to_remove) {
 
 # Get the column names of interest from the data table
 outcome_measures_cols <- names(all_data)[sapply(all_data, function(x) !is.factor(x))]
-col_name = outcome_measures_cols[109]
+col_name = outcome_measures_cols[110]
 
 emmeans_list <- list()
 comps_list <- list()
@@ -74,55 +73,69 @@ for (col_name in outcome_measures_cols) {
   }
 
   # Open the PDF device
-  # pdf(file = file.path(analysis_output_folder, paste0(col_name, ".pdf")))
-
-  # Create a data frame for the current column
-  curr_data <- curr_col_data(all_data, col_name, all_factors_col_names)
-
-  # Create the lmer model
-  lmer_model <- make_model(curr_data, lmer_formula, col_name)
-
-  # Get the marginal means
-  emmeans <- get_emmeans(lmer_model, emmeans_formula, col_name)
-  emmeans_list[[col_name]] <- emmeans
-
-  # Hypothesis tests
-  comps <- hyp_tests(lmer_model, curr_data, emmeans, col_name)
-  comps_list[[col_name]] <- comps
+  pdf(file = file.path(analysis_output_folder, paste0(col_name, ".pdf")))
   
-  # Plot the data in a way that will work with significant difference bars
-  collapsed_df <- collapse_data(curr_data, c())
-  plot_result <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "scatter", fill_factor=fill_factor)
-  plotted_df <- plot_result$df
-  gp_no_sig_diff_bars <- plot_result$gp
-
-  # Add the significant difference bars
-  result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors, 
-                      col_name, vert_bar_height=0.03, text_offset=0.005, min_y_distance=0.02, text_size=2, 
-                      show_p_values = TRUE, horz_offset = 0.008, step_increase=0.06)
-  gp_sig_diff_bars <- result$plot
-  print(gp_sig_diff_bars)
-  sig_diff_bars_df <- result$sig_diff_bars_df
-  
-  # Bar graph with difference bars
-  # bar_graph_with_diff_bars(curr_data, comps, plot_grouping_factors, col_name, emmeans, colors=colors, fill_factor=fill_factor, min_y_distance=0.05, text_size=2)
-
-  # Line plots
-  line_plot_from_lmer(curr_data, col_name, lmer_model)
-
-  # Bar graphs
-  bar_plot_from_lmer(curr_data, col_name, lmer_model, comps)
-
-  # Interaction plots
-  interaction_plot_from_lmer(curr_data, col_name, lmer_model, comps, x_axis_factor = plot_grouping_factors[1], color_factor = plot_grouping_factors[2], facet_factors = NULL)
-
-  # Summarize and plot the residuals of the model
-  summarize_model(lmer_model)
-
-  # Create the histogram
-  plot_all_histograms(curr_data, plot_grouping_factors, col_name, fill_factor = fill_factor)
-
-  dev.off()
+  tryCatch(
+    {
+      # Create a data frame for the current column
+      curr_data <- curr_col_data(all_data, col_name, all_factors_col_names)
+      
+      # Create the lmer model
+      lmer_model <- make_model(curr_data, lmer_formula, col_name)
+      
+      # Get the marginal means
+      emmeans <- get_emmeans(lmer_model, emmeans_formula, col_name)
+      emmeans_list[[col_name]] <- emmeans
+      
+      # Hypothesis tests
+      comps <- hyp_tests(lmer_model, curr_data, emmeans, col_name)
+      comps_list[[col_name]] <- comps
+      
+      # Scatter plot to prep for significant difference bars
+      collapsed_df <- collapse_data(curr_data, c())
+      plot_result <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "scatter", fill_factor=fill_factor)
+      plotted_df <- plot_result$df
+      gp_no_sig_diff_bars <- plot_result$gp
+      
+      # Add the significant difference bars
+      result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, lmer_model, plot_grouping_factors, 
+                                   col_name, vert_bar_height=0.03, text_offset=0.005, min_y_distance=0.02, text_size=2, 
+                                   show_p_values = TRUE, horz_offset = 0.008, step_increase=0.06)
+      gp_sig_diff_bars <- result$plot
+      print(gp_sig_diff_bars)
+      sig_diff_bars_df_scatter <- result$sig_diff_bars_df
+      
+      # Bar plot to prep for significant difference bars
+      # plot_result_bar <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "bar", fill_factor=fill_factor)
+      # plotted_df <- plot_result_bar$df
+      # gp_no_sig_diff_bars <- plot_result_bar$gp
+      # 
+      # # Add the significant difference bars to the bar graph
+      # result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors,
+      #                              col_name, vert_bar_height=0.03, text_offset=0.005, min_y_distance=0.02, text_size=2, 
+      #                              show_p_values = TRUE, horz_offset = 0.008, step_increase=0.06)
+      # gp_sig_diff_bars <- result$plot
+      # print(gp_sig_diff_bars)
+      # sig_diff_bars_df_bar <- result$sig_diff_bars_df
+      
+      # Line plots
+      # line_plot_from_lmer(curr_data, col_name, lmer_model)
+      # 
+      # # Bar graphs
+      # bar_plot_from_lmer(curr_data, col_name, lmer_model, comps)
+      # 
+      # # Interaction plots
+      # interaction_plot_from_lmer(curr_data, col_name, lmer_model, comps, x_axis_factor = plot_grouping_factors[1], color_factor = plot_grouping_factors[2], facet_factors = NULL)
+      
+      # Summarize and plot the residuals of the model
+      summarize_model(lmer_model)
+      
+      # Create the histogram
+      plot_all_histograms(curr_data, plot_grouping_factors, col_name, fill_factor = fill_factor)   
+    }, finally = {
+      dev.off()   
+    }
+  )
 }
 
 # toml_file_path <- "config_transverse_gaitphases.toml"

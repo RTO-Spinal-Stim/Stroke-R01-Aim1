@@ -104,6 +104,16 @@ processed_data.All_NumFootfalls = num_heel_strikes;
 processed_data.L_StrideVelocities = {stride_velocities(left_events_idx)};
 processed_data.R_StrideVelocities = {stride_velocities(right_events_idx)};
 processed_data.All_StrideVelocities = {stride_velocities};
+processed_data.L_SwingPhasePerc = {swing_durations(left_events_idx) ./ stride_durations(left_events_idx)};
+processed_data.R_SwingPhasePerc = {swing_durations(right_events_idx) ./ stride_durations(right_events_idx)};
+processed_data.All_SwingPhasePerc = swing_durations ./ stride_durations;
+% Doing (1 - swing) because both swing and stride durations have the first
+% two values as zero. Stance has the last two values as zero, so I'd rather
+% not deal with indexing.
+processed_data.L_StancePhasePerc = {1 - (swing_durations(left_events_idx) ./ stride_durations(left_events_idx))};
+processed_data.R_StancePhasePerc = {1 - (swing_durations(right_events_idx) ./ stride_durations(right_events_idx))};
+processed_data.All_StancePhasePerc = {1 - (swing_durations ./ stride_durations)};
+
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
     numStepsL = sum(left_events_idx) - 1;
@@ -141,7 +151,7 @@ processed_data.seconds.gaitEvents.leftToeOns = leftToeOnsSeconds;
 
 processed_data.seconds.gaitEvents.rightHeelStrikes = rightHeelStrikesSeconds;
 processed_data.seconds.gaitEvents.rightToeOffs = rightToeOffsSeconds;
-processed_data.seconds.gaitEvents.rightHeeloffs = rightHeeloffsSeconds;
+processed_data.seconds.gaitEvents.rightHeelOffs = rightHeeloffsSeconds;
 processed_data.seconds.gaitEvents.rightToeOns = rightToeOnsSeconds;
 
 %% Gait phases start & stop (seconds)
@@ -171,15 +181,15 @@ processed_data.seconds.gaitPhases.rightSwingStartStop = rightSwingStartStopSecon
 %% Gait phase durations (seconds)
 % 2/20 MT commented out because this is already computed above.
 % QUESTION: Should it continue to be included here so I can get durations in frame numbers?
-% leftStanceDurationsSeconds = leftStanceStartStopSeconds(:,2)-leftStanceStartStopSeconds(:,1);
-% rightStanceDurationsSeconds = rightStanceStartStopSeconds(:,2)-rightStanceStartStopSeconds(:,1);
-% leftSwingDurationsSeconds = leftSwingStartStopSeconds(:,2)-leftSwingStartStopSeconds(:,1);
-% rightSwingDurationsSeconds = rightSwingStartStopSeconds(:,2)-rightSwingStartStopSeconds(:,1);
-% 
-% processed_data.seconds.gaitPhasesDurations.leftStanceDurations = leftStanceDurationsSeconds;
-% processed_data.seconds.gaitPhasesDurations.rightStanceDurations = rightStanceDurationsSeconds;
-% processed_data.seconds.gaitPhasesDurations.leftSwingDurations = leftSwingDurationsSeconds;
-% processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurationsSeconds;
+leftStanceDurationsSeconds = leftStanceStartStopSeconds(:,2)-leftStanceStartStopSeconds(:,1);
+rightStanceDurationsSeconds = rightStanceStartStopSeconds(:,2)-rightStanceStartStopSeconds(:,1);
+leftSwingDurationsSeconds = leftSwingStartStopSeconds(:,2)-leftSwingStartStopSeconds(:,1);
+rightSwingDurationsSeconds = rightSwingStartStopSeconds(:,2)-rightSwingStartStopSeconds(:,1);
+
+processed_data.seconds.gaitPhasesDurations.leftStanceDurations = leftStanceDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.rightStanceDurations = rightStanceDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.leftSwingDurations = leftSwingDurationsSeconds;
+processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurationsSeconds;
 
 %% Convert all times from seconds to GaitRite frames.
 processed_data.frames = getHardwareIndicesFromSeconds(processed_data.seconds, Gait_Fs);

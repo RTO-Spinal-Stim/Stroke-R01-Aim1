@@ -23,8 +23,9 @@ for subNum = 1:length(allSubjectsPlot)
     baseSavePath = fullfile(config.PATHS.PLOTS.ROOT, config.PATHS.PLOTS.FILTERED_TIME_NORMALIZED);
     baseSavePathEMG = fullfile(baseSavePath, 'EMG');
     baseSavePathXSENS = fullfile(baseSavePath, 'Joint Angles');
-    plotAllTrials(matchedCycleTable, 'Time-Normalized Scaled To Max EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized'); 
-    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
+    % plotAllTrials(matchedCycleTable, 'Time-Normalized Non-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized'); 
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Scaled EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized'); 
+    % plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
 %% Combine all of the tables for all subjects into one main table

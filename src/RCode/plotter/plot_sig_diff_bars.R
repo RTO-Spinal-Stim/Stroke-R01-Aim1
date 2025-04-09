@@ -1,4 +1,4 @@
-plot_sig_diff_bars <- function(gp, df, comps, grouping_factors, col_name, emmeans, 
+plot_sig_diff_bars <- function(gp, df, comps, lmer_model, grouping_factors, col_name, emmeans, 
                                 vert_bar_height=0.02, text_offset=0.01,
                                 min_y_distance=0.05, text_size=2, diff_bars_config=NULL, diff_bars_factors=NULL,
                                 fig_dims=NULL, show_p_values=TRUE, horz_offset=0.008, p_cutoff=0.05, step_increase=0.1, panel_id=1) {
@@ -35,7 +35,7 @@ plot_sig_diff_bars <- function(gp, df, comps, grouping_factors, col_name, emmean
     #   gp: ggplot object
 
     # Get the x data, p-values, and colors for the significant difference bars    
-    sig_diff_bars_x_df <- sig_diff_bars_x_data_and_colors(comps, grouping_factors, df, col_name, interactions=FALSE, diff_bars_config=diff_bars_config, diff_bars_factors=diff_bars_factors, panel_id=panel_id)
+    sig_diff_bars_x_df <- sig_diff_bars_x_data_and_colors(comps, lmer_model, grouping_factors, df, col_name, interactions=FALSE, diff_bars_config=diff_bars_config, diff_bars_factors=diff_bars_factors, panel_id=panel_id)
 
     # Get the y values for the significant difference bars
     sig_diff_bars_xy_df <- sig_diff_bars_y_data(gp, df, sig_diff_bars_x_df, col_name, p_cutoff=p_cutoff,
@@ -55,21 +55,22 @@ plot_sig_diff_bars <- function(gp, df, comps, grouping_factors, col_name, emmean
     diff_bar_horz_y = sig_diff_bars_xy_df$y_positions
     diff_bar_vert_y = sig_diff_bars_xy_df$y_positions-vert_bar_height*diff(y_range)
 
+    browser()
     gp <- gp +
-        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xright, y=y_positions, yend=y_positions, color=color), inherit.aes = FALSE, show.legend=FALSE) +
-        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xleft, y=y_positions, yend=diff_bar_vert_y, color=color), inherit.aes = FALSE, show.legend=FALSE) +
-        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xright, xend=diff_bar_xright, y=y_positions, yend=diff_bar_vert_y, color=color), inherit.aes = FALSE, show.legend=FALSE) +
+        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xright, y=y_positions, yend=y_positions), color=sig_diff_bars_xy_df$color, inherit.aes = FALSE, show.legend=FALSE) +
+        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xleft, y=y_positions, yend=diff_bar_vert_y), color=sig_diff_bars_xy_df$color, inherit.aes = FALSE, show.legend=FALSE) +
+        geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xright, xend=diff_bar_xright, y=y_positions, yend=diff_bar_vert_y), color=sig_diff_bars_xy_df$color, inherit.aes = FALSE, show.legend=FALSE) +
         theme(
             panel.grid.major.x = element_blank(),  # Remove major vertical grid lines
             panel.grid.minor.x = element_blank()
-        ) +
-        scale_color_manual(values = setNames(valid_colors, valid_colors))
+        )
 
     if (show_p_values==TRUE) {
         gp <- gp +
           geom_text(
             data=sig_diff_bars_xy_df, 
-            aes(x=(xleft+xright)/2, y=y_positions+text_offset*diff(y_range), label=p, color=color), 
+            aes(x=(xleft+xright)/2, y=y_positions+text_offset*diff(y_range), label=p), 
+            color=sig_diff_bars_xy_df$color,
             inherit.aes = FALSE, 
             size=text_size, 
             show.legend=FALSE, 

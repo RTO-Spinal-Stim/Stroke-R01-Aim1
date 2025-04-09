@@ -7,7 +7,8 @@
         "PLOTS": {
             "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\plots",
             "FILTERED_NON_TIME_NORMALIZED": "Filtered_GaitCycles",
-            "FILTERED_TIME_NORMALIZED": "Filtered_TimeNormalized"
+            "FILTERED_TIME_NORMALIZED": "Filtered_TimeNormalized",
+            "FILTERED_TIME_NORMALIZED_UNSCALED": "Filtered_TimeNormalized_Unscaled"
         }
     },
     "REGEXS": {

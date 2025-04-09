@@ -1,4 +1,4 @@
-sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df, col_name, interactions=FALSE, diff_bars_config=NULL, diff_bars_factors=NULL, panel_id=1) {
+sig_diff_bars_x_data_and_colors <- function(comps, lmer_model, grouping_factors, plotted_df, col_name, interactions=FALSE, diff_bars_config=NULL, diff_bars_factors=NULL, panel_id=1) {
     # PURPOSE: GET THE X & Y VALUES FOR THE SIGNIFICANT DIFFERENCE BARS
     # INPUTS:
     #   comps: comparison object (output of lmer)
@@ -54,26 +54,31 @@ sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df,
     # Split the comparisons into the different factors
     # When the "grouping_factors" changes order, it messes up splitting up the contrasts.
     # Therefore, use the order of the factors in the plotted_df to do this.
-    plotted_df_names <- names(plotted_df)
-    contrast_factor_list <- c()
-    for (i in seq_along(plotted_df_names)) {
-        if (plotted_df_names[i] %in% grouping_factors) {
-            contrast_factor_list <- c(contrast_factor_list, plotted_df_names[i])
-        }
-    }
+    # plotted_df_names <- names(plotted_df)
+    # contrast_factor_list <- c()
+    # for (i in seq_along(plotted_df_names)) {
+    #     if (plotted_df_names[i] %in% grouping_factors) {
+    #         contrast_factor_list <- c(contrast_factor_list, plotted_df_names[i])
+    #     }
+    # }
+    
+    # The contrasts were originally split in the hyp_tests() function using the factors from the model.
+    # So get them again from the same source to be in the same order.
+    contrast_factor_list <- get_fixed_effects_from_model(lmer_model)
 
     # Perform the contrast split
     contrasts_split <- split_contrasts(main_effects_comps_df, contrast_factor_list) 
 
     bars_xy <- lapply(seq_along(contrasts_split), function(i) {
     
+        # browser()
         contrast <- contrasts_split[[i]]
         
         # Remove all columns except factor_names from plotted_df
         plotted_df_removed <- plotted_df %>%
-        select(all_of(grouping_factors))
+        select(all_of(contrast_factor_list))
         
-        plotted_df_lists <- plotted_df_removed %>% mutate(new_column = pmap(across(all_of(grouping_factors), as.character), list)) %>% select(new_column)
+        plotted_df_lists <- plotted_df_removed %>% mutate(new_column = pmap(across(all_of(contrast_factor_list), as.character), list)) %>% select(new_column)
         plotted_list <- as.list(plotted_df_lists$new_column)
         
         # Find the index of the plotted_list that matches contrast$left
@@ -97,17 +102,17 @@ sig_diff_bars_x_data_and_colors <- function(comps, grouping_factors, plotted_df,
             stop("Could not find the index of the plotted list that matches the contrast")
         }
         
+        # browser()
         # Set the color of the diff bars
         default_color <- "grey" # Default for plots that have this metric, but this is just the wrong level.
+        factor_name <- NULL
+        factor_levels <- NULL
         for (j in seq_along(diff_bars_config)) {
             if (length(diff_bars_config) > 0 && col_name %in% diff_bars_config[[j]]$metrics) {
                 config_color <- diff_bars_config[[j]]$color
                 factor_name <- setdiff(names(diff_bars_config[[j]]), c("color", "metrics"))
                 factor_levels <- diff_bars_config[[j]][[factor_name]]
                 break()
-            } else {
-                factor_name <- NULL
-                factor_levels <- NULL
             }
         }
         
