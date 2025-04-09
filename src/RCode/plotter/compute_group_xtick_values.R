@@ -31,7 +31,7 @@ compute_group_mean_xtick_values <- function(df, grouping_factors) {
   # Compute x positions for each group
   for (i in seq_along(grouping_factors)) {
     # The unique levels of the factor. Should already be in the proper order.
-    factor_levels <- unique(df[[grouping_factors[i]]])
+    factor_levels <- levels(df[[grouping_factors[i]]])
     
     # Map factor levels to their order in the data for proper spacing
     level_positions <- match(df[[grouping_factors[i]]], factor_levels) - 1

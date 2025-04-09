@@ -55,7 +55,6 @@ plot_sig_diff_bars <- function(gp, df, comps, lmer_model, grouping_factors, col_
     diff_bar_horz_y = sig_diff_bars_xy_df$y_positions
     diff_bar_vert_y = sig_diff_bars_xy_df$y_positions-vert_bar_height*diff(y_range)
 
-    browser()
     gp <- gp +
         geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xright, y=y_positions, yend=y_positions), color=sig_diff_bars_xy_df$color, inherit.aes = FALSE, show.legend=FALSE) +
         geom_segment(data=sig_diff_bars_xy_df, aes(x=diff_bar_xleft, xend=diff_bar_xleft, y=y_positions, yend=diff_bar_vert_y), color=sig_diff_bars_xy_df$color, inherit.aes = FALSE, show.legend=FALSE) +
