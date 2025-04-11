@@ -38,6 +38,8 @@ for i = 1:height(tableIn)
     indexData.Max = struct;
     peaksData.Min = struct;
     indexData.Min = struct;
+    tmpTable = table;
+    tmpTable.Name = tableIn.Name(i);
     for fldNum = 1:length(fldNames)
         fldName = fldNames{fldNum};
         currData = rowData.(fldName);
@@ -45,26 +47,28 @@ for i = 1:height(tableIn)
         if size(currData,2) > size(currData,1)
             currData = currData';
         end
-        [peaksData.Max.(fldName), indexData.Max.(fldName)] = max(currData,[],1,'omitnan');
-        [peaksData.Min.(fldName), indexData.Min.(fldName)] = min(currData,[],1,'omitnan');
-    end
+        [maxVal, maxIdx] = max(currData,[],1,'omitnan');
+        [minVal, minIdx] = min(currData,[],1,'omitnan');
 
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
-    if ismember({'max'}, maxMin)
-        if ismember({indexStr}, indexPeak)
-            tmpTable.(['MaxPeakIndex_' colNameOutSuffix]) = indexData.Max;    
+        side = fldName(1);
+        streamName = fldName(2:end);
+        prefix = [side '_' streamName];
+        
+        if ismember({'max'}, maxMin)
+            if ismember({indexStr}, indexPeak)
+                tmpTable.([prefix '_MaxPeakIndex_' colNameOutSuffix]) = maxIdx;    
+            end
+            if ismember({peakStr}, indexPeak)
+                tmpTable.([prefix '_MaxPeakValue_' colNameOutSuffix]) = maxVal;
+            end
         end
-        if ismember({peakStr}, indexPeak)
-            tmpTable.(['MaxPeakValue_' colNameOutSuffix]) = peaksData.Max;
-        end
-    end
-    if ismember({'min'}, maxMin)
-        if ismember({indexStr}, indexPeak)
-            tmpTable.(['MinPeakIndex_' colNameOutSuffix]) = indexData.Min;
-        end
-        if ismember({peakStr}, indexPeak)
-            tmpTable.(['MinPeakValue_' colNameOutSuffix]) = peaksData.Min;
+        if ismember({'min'}, maxMin)
+            if ismember({indexStr}, indexPeak)
+                tmpTable.([prefix '_MinPeakIndex_' colNameOutSuffix]) = minIdx;
+            end
+            if ismember({peakStr}, indexPeak)
+                tmpTable.([prefix '_MinPeakValue_' colNameOutSuffix]) = minVal;
+            end
         end
     end
     tableOut = [tableOut; tmpTable];

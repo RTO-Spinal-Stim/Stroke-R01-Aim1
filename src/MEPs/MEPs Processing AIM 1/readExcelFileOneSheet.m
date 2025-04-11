@@ -3,7 +3,9 @@ function [excelTable] = readExcelFileOneSheet(excelFilePath, columnHeader, sheet
 %% PURPOSE: LOAD THE TEPs LOG FROM DISK AS A TABLE. REMOVES EXTRA ROWS.
 % Inputs:
 % excelFilePath: The file path of the Excel file.
-% columnHeader: The name of the column header.
+% columnHeader: The name of the column header to use to determine where to
+% cut off the NaNs. There should not be any missing data in this column for
+% the rows of interest.
 % sheetName: The name of the sheet to read from in the Excel file.
 %
 % Outputs:

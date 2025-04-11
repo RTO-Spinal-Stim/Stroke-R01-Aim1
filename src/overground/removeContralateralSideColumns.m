@@ -15,11 +15,6 @@ disp('Removing the contralateral side data and merging L & R columns');
 
 tableOut = table;
 
-%% Remove the non-scalar columns
-% scalarColumnNames = getScalarColumnNames(tableIn);
-% columnNamesL(~ismember(columnNamesL, scalarColumnNames)) = [];
-% columnNamesR(~ismember(columnNamesR, scalarColumnNames)) = [];
-
 %% Initialize the column names with the side removed.
 colNamesNoSide = cell(size(columnNamesL));
 for i = 1:length(columnNamesL)
