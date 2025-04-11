@@ -114,6 +114,8 @@ cycleTable = addToTable(cycleTable, normalizedEMGTable);
 %% Get % gait cycle when peaks occur
 emgPeaksTable = getPeaks(cycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG', {'max'}, {'index'});
 jointAnglesPeaksTable = getPeaks(cycleTable, 'XSENS_TimeNormalized', 'JointAngles', {'min', 'max'}, {'index'});
+cycleTable = addToTable(cycleTable, emgPeaksTable);
+cycleTable = addToTable(cycleTable, jointAnglesPeaksTable);
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
 % if doPlot
