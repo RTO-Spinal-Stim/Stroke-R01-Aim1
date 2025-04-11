@@ -71,48 +71,48 @@ rightSwingStartStopSeconds = zeros(num_heel_strikes - 2, 2);
 %% Isolate L & R
 left_events_idx = left_right==0; % L = 0
 right_events_idx = left_right==1; % R = 1
-processed_data.L_Idx = {left_events_idx}; 
-processed_data.R_Idx = {right_events_idx};
-processed_data.All_Idx = {logical(left_right)}; % L = 0, R = 1
-processed_data.L_StepLengths = {step_len(left_events_idx)};
-processed_data.R_StepLengths = {step_len(right_events_idx)};
-processed_data.All_StepLengths = {step_len};
-processed_data.L_SwingDurations = {swing_durations(left_events_idx)};
-processed_data.R_SwingDurations = {swing_durations(right_events_idx)};
-processed_data.All_SwingDurations = {swing_durations};
-processed_data.L_StrideLengths = {stride_lens(left_events_idx)};
-processed_data.R_StrideLengths = {stride_lens(right_events_idx)};
-processed_data.All_StrideLengths = {stride_lens};
-processed_data.L_StanceDurations = {stance_durations(left_events_idx)};
-processed_data.R_StanceDurations = {stance_durations(right_events_idx)};
-processed_data.All_StanceDurations = {stance_durations};
-processed_data.L_StepWidths = {step_widths(left_events_idx)};
-processed_data.R_StepWidths = {step_widths(right_events_idx)};
-processed_data.All_StepWidths = {step_widths};
-processed_data.L_StrideWidths = {stride_widths(left_events_idx)};
-processed_data.R_StrideWidths = {stride_widths(right_events_idx)};
-processed_data.All_StrideWidths = {stride_widths};
-processed_data.L_StepDurations = {step_durations(left_events_idx)};
-processed_data.R_StepDurations = {step_durations(right_events_idx)};
-processed_data.All_StepDurations = {step_durations};
-processed_data.L_StrideDurations = {stride_durations(left_events_idx)};
-processed_data.R_StrideDurations = {stride_durations(right_events_idx)};
-processed_data.All_StrideDurations = {stride_durations};
-processed_data.L_NumFootfalls = sum(left_events_idx);
-processed_data.R_NumFootfalls = sum(right_events_idx);
-processed_data.All_NumFootfalls = num_heel_strikes;
-processed_data.L_StrideVelocities = {stride_velocities(left_events_idx)};
-processed_data.R_StrideVelocities = {stride_velocities(right_events_idx)};
-processed_data.All_StrideVelocities = {stride_velocities};
-processed_data.L_SwingPhasePerc = {swing_durations(left_events_idx) ./ stride_durations(left_events_idx)};
-processed_data.R_SwingPhasePerc = {swing_durations(right_events_idx) ./ stride_durations(right_events_idx)};
-processed_data.All_SwingPhasePerc = swing_durations ./ stride_durations;
+processed_data.L_Idx_GR = {left_events_idx}; 
+processed_data.R_Idx_GR = {right_events_idx};
+processed_data.All_Idx_GR = {logical(left_right)}; % L = 0, R = 1
+processed_data.L_StepLengths_GR = {step_len(left_events_idx)};
+processed_data.R_StepLengths_GR = {step_len(right_events_idx)};
+processed_data.All_StepLengths_GR = {step_len};
+processed_data.L_SwingDurations_GR = {swing_durations(left_events_idx)};
+processed_data.R_SwingDurations_GR = {swing_durations(right_events_idx)};
+processed_data.All_SwingDurations_GR = {swing_durations};
+processed_data.L_StrideLengths_GR = {stride_lens(left_events_idx)};
+processed_data.R_StrideLengths_GR = {stride_lens(right_events_idx)};
+processed_data.All_StrideLengths_GR = {stride_lens};
+processed_data.L_StanceDurations_GR = {stance_durations(left_events_idx)};
+processed_data.R_StanceDurations_GR = {stance_durations(right_events_idx)};
+processed_data.All_StanceDurations_GR = {stance_durations};
+processed_data.L_StepWidths_GR = {step_widths(left_events_idx)};
+processed_data.R_StepWidths_GR = {step_widths(right_events_idx)};
+processed_data.All_StepWidths_GR = {step_widths};
+processed_data.L_StrideWidths_GR = {stride_widths(left_events_idx)};
+processed_data.R_StrideWidths_GR = {stride_widths(right_events_idx)};
+processed_data.All_StrideWidths_GR = {stride_widths};
+processed_data.L_StepDurations_GR = {step_durations(left_events_idx)};
+processed_data.R_StepDurations_GR = {step_durations(right_events_idx)};
+processed_data.All_StepDurations_GR = {step_durations};
+processed_data.L_StrideDurations_GR = {stride_durations(left_events_idx)};
+processed_data.R_StrideDurations_GR = {stride_durations(right_events_idx)};
+processed_data.All_StrideDurations_GR = {stride_durations};
+processed_data.L_NumFootfalls_GR = sum(left_events_idx);
+processed_data.R_NumFootfalls_GR = sum(right_events_idx);
+processed_data.All_NumFootfalls_GR = num_heel_strikes;
+processed_data.L_StrideVelocities_GR = {stride_velocities(left_events_idx)};
+processed_data.R_StrideVelocities_GR = {stride_velocities(right_events_idx)};
+processed_data.All_StrideVelocities_GR = {stride_velocities};
+processed_data.L_SwingPhasePerc_GR = {swing_durations(left_events_idx) ./ stride_durations(left_events_idx)};
+processed_data.R_SwingPhasePerc_GR = {swing_durations(right_events_idx) ./ stride_durations(right_events_idx)};
+processed_data.All_SwingPhasePerc_GR = swing_durations ./ stride_durations;
 % Doing (1 - swing) because both swing and stride durations have the first
 % two values as zero. Stance has the last two values as zero, so I'd rather
 % not deal with indexing.
-processed_data.L_StancePhasePerc = {1 - (swing_durations(left_events_idx) ./ stride_durations(left_events_idx))};
-processed_data.R_StancePhasePerc = {1 - (swing_durations(right_events_idx) ./ stride_durations(right_events_idx))};
-processed_data.All_StancePhasePerc = {1 - (swing_durations ./ stride_durations)};
+processed_data.L_StancePhasePerc_GR = {1 - (swing_durations(left_events_idx) ./ stride_durations(left_events_idx))};
+processed_data.R_StancePhasePerc_GR = {1 - (swing_durations(right_events_idx) ./ stride_durations(right_events_idx))};
+processed_data.All_StancePhasePerc_GR = {1 - (swing_durations ./ stride_durations)};
 
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
@@ -122,15 +122,15 @@ elseif right_events_idx(1) == 1
     numStepsL = sum(left_events_idx);
     numStepsR = sum(right_events_idx) - 1;
 end
-processed_data.L_NumSteps = numStepsL;
-processed_data.R_NumSteps = numStepsR;
-processed_data.All_NumSteps = numStepsL + numStepsR;
+processed_data.L_NumSteps_GR = numStepsL;
+processed_data.R_NumSteps_GR = numStepsR;
+processed_data.All_NumSteps_GR = numStepsL + numStepsR;
 % A "gait cycle" is the interval between subsequent ipsilateral footfalls (e.g. L to L)
 numGaitCyclesL = sum(left_events_idx) - 1;
 numGaitCyclesR = sum(right_events_idx) - 1;
-processed_data.L_NumGaitCycles = numGaitCyclesL;
-processed_data.R_NumGaitCycles = numGaitCyclesR;
-processed_data.All_NumGaitCycles = numGaitCyclesL + numGaitCyclesR;
+processed_data.L_NumGaitCycles_GR = numGaitCyclesL;
+processed_data.R_NumGaitCycles_GR = numGaitCyclesR;
+processed_data.All_NumGaitCycles_GR = numGaitCyclesL + numGaitCyclesR;
 
 
 %% Gait events (seconds)
@@ -194,6 +194,6 @@ processed_data.seconds.gaitPhasesDurations.rightSwingDurations = rightSwingDurat
 %% Convert all times from seconds to GaitRite frames.
 processed_data.frames = getHardwareIndicesFromSeconds(processed_data.seconds, Gait_Fs);
 
-tableOut = struct2table(processed_data);
+tableOut = struct2table(processed_data, 'AsArray', true);
 
 end

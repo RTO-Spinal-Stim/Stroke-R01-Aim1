@@ -4,8 +4,8 @@
 % Comment this part out when running all subjects at once.
 % clc;
 % clearvars;
-% subject = 'SS06';
-% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\Ameen_EMG_kinematics\config.json';
+% subject = 'SS27';
+% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
 % config = jsondecode(fileread(configFilePath));
 % disp(['Loaded configuration from: ' configFilePath]);
 % doPlot = false;
@@ -110,6 +110,10 @@ visitTable = addToTable(visitTable, maxEMGTable);
 %% Normalize the time-normalized EMG data to the max value across one whole visit (all trials & gait cycles)
 normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized');
 cycleTable = addToTable(cycleTable, normalizedEMGTable);
+
+%% Get % gait cycle when peaks occur
+emgPeaksTable = getPeaks(cycleTable, 'Delsys_Normalized_TimeNormalized', 'EMG', {'max'}, {'index'});
+jointAnglesPeaksTable = getPeaks(cycleTable, 'XSENS_TimeNormalized', 'JointAngles', {'min', 'max'}, {'index'});
 
 %% Plot each gait cycle's scaled to max EMG data, and each gait cycle of one condition plotted on top of each other.
 % if doPlot

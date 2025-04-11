@@ -22,9 +22,9 @@ for i = 1:length(scalarColumnNames)
     grTable.(scalarColumnNames{i}) = [];
 end
 
-colNameAllIdx = 'All_Idx';
-colNameLIdx = 'L_Idx';
-colNameRIdx = 'R_Idx';
+colNameAllIdx = 'All_Idx_GR';
+colNameLIdx = 'L_Idx_GR';
+colNameRIdx = 'R_Idx_GR';
 
 if ~exist('colNamesToRemove','var')
     colNamesToRemove = {colNameAllIdx};

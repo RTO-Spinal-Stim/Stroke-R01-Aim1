@@ -1,4 +1,4 @@
-analysis_name = "Subject_Intervention_Speed"
+analysis_name = "Subject_SessionOrder_Speed"
 
 all_factor_columns = [
     "Subject",
@@ -55,8 +55,8 @@ A = "#1b9e77"
 U = "#d95f02"
 
 [stats]
-lmer_formula = "~ SessionOrder + (1 | Subject)"
-emmeans_formula = "~ SessionOrder"
+lmer_formula = "~ Speed * SessionOrder + (1 | Subject)"
+emmeans_formula = "~ Speed * SessionOrder"
 
 [factors_levels_to_keep]
 # Define the levels to keep for each factor.
@@ -66,7 +66,7 @@ emmeans_formula = "~ SessionOrder"
 # Define the levels to remove from each factor. 
 # If a factor is not listed here, no levels will be removed.
 # Same syntax as [factors_levels_order]
-Speed = "SSV"
+# Speed = "SSV"
 
 # Define the order of the levels in each factor
 [factors_levels_order]

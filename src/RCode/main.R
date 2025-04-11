@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_sessionOrder.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -59,10 +59,12 @@ for (factor_name in factors_with_levels_to_remove) {
 
 # Get the column names of interest from the data table
 outcome_measures_cols <- names(all_data)[sapply(all_data, function(x) !is.factor(x))]
-col_name = outcome_measures_cols[110]
+col_name = outcome_measures_cols[109]
 
 emmeans_list <- list()
 comps_list <- list()
+
+outcome_measures_cols = rev(outcome_measures_cols)
 
 # Run the hypothesis testing and plotting functions
 for (col_name in outcome_measures_cols) {
@@ -132,6 +134,11 @@ for (col_name in outcome_measures_cols) {
       
       # Create the histogram
       plot_all_histograms(curr_data, plot_grouping_factors, col_name, fill_factor = fill_factor)   
+    }, error = function(e) {
+      message("Error processing column '", col_name, "': ", e$message)
+      plot(1, type="n", axes=FALSE, xlab="", ylab="")
+      # print("Error processing column ", col_name)
+      text(1, 1, paste("Error processing:", col_name, "\n", e$message), cex=1.2)
     }, finally = {
       dev.off()   
     }
