@@ -106,6 +106,7 @@ mergedUnmatchedCycleTable = mergeTables(grDistributedTableAllAddedCols, cycleTab
 mergedPrePostUnmatchedCycleTable = mergeTables(prePostChangeGRDistributedTableAllAddedCols, prePostCycleChangeTableAllAddedCols, colNamesToMergeBy);
 
 %% Add session number
+addpath('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MEPs\MEPs Processing AIM 1');
 tepsLogPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\TEPs_log.xlsx';
 tepsLog = readExcelFileOneSheet(tepsLogPath, 'Subject','Sheet1');
 allColNames = tepsLog.Properties.VariableNames;
@@ -159,6 +160,19 @@ writetable(mergedMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matche
 writetable(mergedPrePostMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'));
 writetable(mergedUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));
 writetable(mergedPrePostUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'));
+
+%% Add the 10MWT data to each table
+trialTableAllSessionNum10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'), configPath);
+mergedMatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'), configPath);
+% mergedPrePostMatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'), configPath);
+mergedUnmatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'), configPath);
+% mergedPrePostUnmatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'), configPath);
+
+%% Save the 10MWT tables
+tablesPathPrefixMergedUA10MWT = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected10MWT';
+writetable(trialTableAllSessionNum10MWT, fullfile(tablesPathPrefixMergedUA10MWT, 'trialTableAll.csv'));
+writetable(mergedMatchedCycleTableUA10MWT, fullfile(tablesPathPrefixMergedUA10MWT, 'matchedCycles.csv'));
+writetable(mergedUnmatchedCycleTableUA10MWT, fullfile(tablesPathPrefixMergedUA10MWT, 'unmatchedCycles.csv'));
 
 %% Widen the unaffected and affected side tables
 inputTableSideCol = 'Side';

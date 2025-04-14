@@ -2,12 +2,12 @@
 clearvars;
 root_save_path = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\plots\UCM';
 % Color by intervention
-colors.SHAM1 = 'k';
-colors.SHAM2 = 'b';
-colors.RMT30 = 'g';
-colors.RMT50 = 'r';
-colors.TOL30 = 'm';
-colors.TOL50 = 'c';
+% colors.SHAM1 = 'k';
+% colors.SHAM2 = 'b';
+% colors.RMT30 = 'g';
+% colors.RMT50 = 'r';
+% colors.TOL30 = 'm';
+% colors.TOL50 = 'c';
 % Color by session order
 % colors.x1 = 'k';
 % colors.x2 = 'b';
@@ -17,10 +17,10 @@ colors.TOL50 = 'c';
 % colors.x6 = 'c';
 shapes.SSV = 'o';
 shapes.FV = '^';
-speeds.PRE = true; % Dummy variable
-speeds.POST = true;
+speedsToPlot.PRE = true; % Dummy variable
+speedsToPlot.POST = true;
 % Unmatched
-data_path = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics_NoStrideVelocity\MergedTablesAffectedUnaffected\unmatchedCycles.csv';
+data_path = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected10MWT\unmatchedCycles.csv';
 df = readtable(data_path);
 
 %% Set column names
@@ -45,6 +45,11 @@ facetFactors = {'Subject'};
 color_factor = {'Intervention'};
 % color_factor = {'SessionOrder'};
 
+saveFolder = color_factor{1};
+if ~exist('colors','var')
+    saveFolder = 'Speed';
+end
+
 % Get the columns that have all of the factors
 allFactorNames = {subjectColName,interventionColName,speedColName,prePostColName,sessionOrderColName};
 allFactorsIdx = ismember(varNames, allFactorNames);
@@ -59,9 +64,11 @@ subFolder = char(string(join(facetFactors,'_')));
 %% Plot the data
 fig = figure;
 fig.WindowState = 'maximized';
-% outcomeVarsNames = {'StepLengths','StepDurations','SwingDurations'};
+% outcomeVarsNames = {'StepLengths_GR','StepDurations_GR','SwingDurations_GR'};
 % outcomeVarsNames = {'ANKLE_JointAngles_Min'};
-subFolderPath = fullfile(root_save_path, subFolder, color_factor{1});
+% outcomeVarsNames(ismember(outcomeVarsNames, 'NumSynergies')) = [];
+outcomeVarsNames(1:12) = []; 
+subFolderPath = fullfile(root_save_path, subFolder, saveFolder);
 if ~isfolder(subFolderPath)
     mkdir(subFolderPath);
 end
@@ -122,7 +129,7 @@ for varNum = 1:length(outcomeVarsNames)
     xlims2 = tmpAx.XLim;
     ylims2 = tmpAx.YLim;
     close(tmpFig);
-    figure(fig);
+    figure(fig);    
 
     for facetRowNum = 1:height(unique_facets) 
         clf;        
@@ -134,21 +141,37 @@ for varNum = 1:length(outcomeVarsNames)
         facet_idx = ismember(dfToFilterBy, curr_facet, 'rows');
         facet_df = df(facet_idx,:);
         unique_names_curr_df = unique(facet_df(:,allFactorsIdx), 'rows');
-        currDfToFilterBy = facet_df(:, allFactorsIdx); % Variable to use to get the rows from.
+        currDfToFilterBy = facet_df(:, allFactorsIdx); % Variable to use to get the rows from.        
         
         figName = char(join(string(table2cell(curr_facet)),' '));
-        fig.Name = [figName ' ' varName];                
-        colorGroupNames = fieldnames(colors);
-        h = gobjects(length(colorGroupNames)+4,1);
-        for intNum = 1:length(colorGroupNames)
-            h(intNum) = scatter(ax1,NaN, NaN, colors.(colorGroupNames{intNum}));
+        fig.Name = [figName ' ' varName];   
+        colorGroupNames = {};
+        prePostNames = {'PRE'; 'POST'};
+        if exist('colors','var')
+            prePostNames = {};
+            colorGroupNames = fieldnames(colors);
+            h = gobjects(length(colorGroupNames)+4,1);
+            for intNum = 1:length(colorGroupNames)
+                h(intNum) = scatter(ax1,NaN, NaN, colors.(colorGroupNames{intNum}));
+            end
         end
         h(length(colorGroupNames)+1) = scatter(ax1,NaN, NaN,'o','k');
         h(length(colorGroupNames)+2) = scatter(ax1,NaN, NaN,'^','k');
-        h(length(colorGroupNames)+3) = scatter(ax1,NaN, NaN,'sq','k');
-        h(length(colorGroupNames)+4) = scatter(ax1,NaN, NaN,'sq','k','filled');        
-        legend(ax1,[colorGroupNames; fieldnames(shapes); fieldnames(speeds)],'AutoUpdate','off','Location','northoutside','NumColumns',5);
+        if exist('colors','var')
+            h(length(colorGroupNames)+3) = scatter(ax1,NaN, NaN,'sq','k');
+            h(length(colorGroupNames)+4) = scatter(ax1,NaN, NaN,'sq','k','filled');        
+        end
+        legend(ax1,[colorGroupNames; fieldnames(shapes); prePostNames],'AutoUpdate','off','Location','northoutside','NumColumns',5);
         allAggData = [];
+        % Set the color limits        
+        if ismember({'TenMWT'}, df.Properties.VariableNames)
+            unique_names_curr_df_with_speed = unique(facet_df(:,allFactorsIdx | ismember(facet_df.Properties.VariableNames,{'TenMWT'})), 'rows');
+            speeds = 10 ./ unique_names_curr_df_with_speed.TenMWT;
+            minSpeed = min(speeds);
+            maxSpeed = max(speeds);
+            colormap(turbo);
+            clim([minSpeed maxSpeed]);
+        end
         for nameRow = 1:height(unique_names_curr_df)
             currComb = unique_names_curr_df(nameRow,:);
             nameIdx = ismember(currDfToFilterBy, unique_names_curr_df(nameRow,:), 'rows');
@@ -156,8 +179,9 @@ for varNum = 1:length(outcomeVarsNames)
             name = join(string(table2cell(currCombFacetCols)),'_');              
 
             % Aggregate the data
-            currNameDf = facet_df(nameIdx, ismember(varNames, [allFactorNames, {trialColName, sideColName, prePostColName, varName}]));
-            aggData = NaN(height(currNameDf)-1,2);                        
+            currNameDf = facet_df(nameIdx, ismember(varNames, [allFactorNames, {trialColName, sideColName, prePostColName, varName, 'TenMWT'}]));
+            aggData = NaN(height(currNameDf)-1,2);
+            speedsToPlot = [];
             for rowNum = 1:height(currNameDf)-1
                 if currNameDf.(trialColName)(rowNum) ~= currNameDf.(trialColName)(rowNum+1)
                     continue; % End of trial
@@ -171,6 +195,10 @@ for varNum = 1:length(outcomeVarsNames)
                 elseif strcmp(currSide, 'U')
                     aggData(rowNum,1) = nextData;
                     aggData(rowNum,2) = currData;
+                end
+                if ismember({'TenMWT'}, currNameDf.Properties.VariableNames)
+                    speed = 10 / currNameDf.TenMWT(rowNum);
+                    speedsToPlot = [speedsToPlot; speed];
                 end
             end
     
@@ -193,23 +221,29 @@ for varNum = 1:length(outcomeVarsNames)
                 colorFactor = num2str(colorFactor);
             end
             colorFactorVarName = genvarname(colorFactor);
-            color = colors.(colorFactorVarName);
+            if exist('colors','var')
+                color = colors.(colorFactorVarName);
+            else
+                color = speedsToPlot;
+            end
             shape = shapes.(currComb.Speed{1});
    
             % Plot            
-            if isequal(currComb.PrePost{1},'PRE')
-                scatter(ax1,aggData(:,1), aggData(:,2), color,shape);
+            if isequal(currComb.PrePost{1},'PRE') && exist('colors','var')
+                scatter(ax1,aggData(:,1), aggData(:,2), [], color,shape);
             else
-                scatter(ax1,aggData(:,1), aggData(:,2), color, 'filled', shape);
+                scatter(ax1,aggData(:,1), aggData(:,2), [], color, 'filled', shape);
             end  
             allAggData = [allAggData; aggData];            
             rotData = (R*aggData')';
-            if isequal(currComb.PrePost{1},'PRE')
-                scatter(ax2,rotData(:,1), rotData(:,2), color,shape);
+            if isequal(currComb.PrePost{1},'PRE') && exist('colors','var')
+                scatter(ax2,rotData(:,1), rotData(:,2), [], color,shape);
             else
-                scatter(ax2,rotData(:,1), rotData(:,2), color,'filled',shape);
+                scatter(ax2,rotData(:,1), rotData(:,2), [], color,'filled',shape);
             end            
         end
+        c = colorbar(ax1);
+        c.Label.String = "Speed (m/s)";
         aggVector = facet_df.(varName);
         meanVal = abs(mean(aggVector,'omitnan') * 2);
         % Determine UCM & ORT vectors
@@ -247,8 +281,8 @@ for varNum = 1:length(outcomeVarsNames)
         ylim(ax1,ylims1);
         line(ax1,[0 meanVal],[meanVal, 0],'Color','black','LineStyle','-');        
         line(ax1,[0 meanVal], [0 meanVal],'Color','black','LineStyle','--'); 
-        xlabel('Symmetry');
-        ylabel('Rotated Magnitude');
+        xlabel(ax2,'Symmetry');
+        ylabel(ax2,'Rotated Magnitude');
         axis(ax2,'equal');
         xlim(ax2,xlims2);
         ylim(ax2,ylims2);       
