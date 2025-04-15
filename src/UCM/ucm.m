@@ -181,7 +181,7 @@ for varNum = 1:length(outcomeVarsNames)
             % Aggregate the data
             currNameDf = facet_df(nameIdx, ismember(varNames, [allFactorNames, {trialColName, sideColName, prePostColName, varName, 'TenMWT'}]));
             aggData = NaN(height(currNameDf)-1,2);
-            speedsToPlot = [];
+            speedsToPlot = NaN(size(aggData,1),1);
             for rowNum = 1:height(currNameDf)-1
                 if currNameDf.(trialColName)(rowNum) ~= currNameDf.(trialColName)(rowNum+1)
                     continue; % End of trial
@@ -198,12 +198,13 @@ for varNum = 1:length(outcomeVarsNames)
                 end
                 if ismember({'TenMWT'}, currNameDf.Properties.VariableNames)
                     speed = 10 / currNameDf.TenMWT(rowNum);
-                    speedsToPlot = [speedsToPlot; speed];
+                    speedsToPlot(rowNum) = speed;
                 end
             end
     
             nanIdx = any(isnan(aggData),2);
             aggData(nanIdx,:) = [];
+            speedsToPlot(nanIdx) = [];
 
             % Put it in the first quadrant
             if mean(aggData(:,1)) < 0
@@ -227,6 +228,10 @@ for varNum = 1:length(outcomeVarsNames)
                 color = speedsToPlot;
             end
             shape = shapes.(currComb.Speed{1});
+
+            if length(color) ~= size(aggData,1)
+                disp('a');
+            end
    
             % Plot            
             if isequal(currComb.PrePost{1},'PRE') && exist('colors','var')
