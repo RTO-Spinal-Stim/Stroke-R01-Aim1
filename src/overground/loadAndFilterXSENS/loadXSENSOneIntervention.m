@@ -1,6 +1,12 @@
-function [xsensData] = loadAndFilterXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [xsensData] = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig)
 
 %% PURPOSE: PROCESS ONE ENTIRE INTERVENTION OF XSENS DATA
+% Inputs:
+% xsensConfig: The configuration struct for loading XSENS data
+% intervention_folder_path: The folder path for the intervention containing
+% all of the XSENS data files
+% intervention_field_name: The name of the intervention
+% regexsConfig: Config struct containing regexs to parse the file name.
 
 file_extension = xsensConfig.FILE_EXTENSION;
 
@@ -30,12 +36,11 @@ for i = 1:length(xlsx_file_names)
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
     tmpTable = table;
-    [loadedData, filteredData] = loadAndFilterXSENSOneFile(xlsx_file_path, xsensConfig);
+    loadedData = loadXSENSOneFile(xlsx_file_path, xsensConfig.COLUMN_NAMES);
     tmpTable.Name = convertCharsToStrings(nameWithTrial);
     % Get the datetime
     tmpTable.DateTimeSaved_XSENS = getDateTimeSaved(xlsx_file_path);
     tmpTable.XSENS_Loaded = loadedData;
-    tmpTable.XSENS_Filtered = filteredData;
     xsensData = [xsensData; tmpTable];
 end
 

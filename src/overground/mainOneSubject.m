@@ -35,17 +35,25 @@ visitTable = table; % Each row is one whole session
 speedPrePostTable = table; % Each row is one combination of SSV/FV & Pre/Post
 cycleTableContraRemoved = table; % Each row is one UNMATCHED gait cycle, with the contralateral data removed and column names merged
 
-%% GaitRite Processing
+%% GaitRite Load
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
-gaitRiteTable = processGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
+gaitRiteTable = loadGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
 
-%% Delsys Processing
+%% Load Delsys
 subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
-delsysTable = processDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
+delsysTable = loadDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
 
-%% XSENS Processing
+%% Filter Delsys
+delsysTableFiltered = filterDelsys(delsysTable, 'Delsys_Loaded', 'Delsys_Filtered', delsysConfig.FILTER, delsysConfig.SAMPLING_FREQUENCY);
+delsysTable = addToTable(delsysTable, delsysTableFiltered);
+
+%% Load XSENS
 subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
-xsensTable = processXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
+xsensTable = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
+
+%% Filter XSENS
+xsensTableFiltered = filterXSENS(xsensTable, 'XSENS_Loaded', 'XSENS_Filtered', xsensConfig.FILTER, xsensConfig.SAMPLING_FREQUENCY);
+xsensTable = addToTable(xsensTable, xsensTableFiltered);
 
 %% Adjust the order of GaitRite trials as needed
 [xsensTableReordered, delsysTableReordered] = checkTrialOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});

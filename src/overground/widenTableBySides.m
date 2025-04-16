@@ -49,7 +49,7 @@ for i = 1:height(uniqueFactorTable)
             aSumm = mean(aTable.(varName),'omitnan');
         elseif strcmpi(summType, 'median')
             uSumm = median(uTable.(varName), 'omitnan');
-            aSumm = median(uTable.(varName), 'omitnan');
+            aSumm = median(aTable.(varName), 'omitnan');
         end
         tmpTableOut.([varName '_U']) = uSumm;
         tmpTableOut.([varName '_A']) = aSumm;

@@ -174,21 +174,36 @@ writetable(trialTableAllSessionNum10MWT, fullfile(tablesPathPrefixMergedUA10MWT,
 writetable(mergedMatchedCycleTableUA10MWT, fullfile(tablesPathPrefixMergedUA10MWT, 'matchedCycles.csv'));
 writetable(mergedUnmatchedCycleTableUA10MWT, fullfile(tablesPathPrefixMergedUA10MWT, 'unmatchedCycles.csv'));
 
-%% Widen the unaffected and affected side tables
+%% Widen the unaffected and affected side matchedCycle tables
 inputTableSideCol = 'Side';
 factorColNames = {'Subject','Intervention','Speed','Trial', 'PrePost'};
 preStruct.PrePost = 'PRE';
 postStruct.PrePost = 'POST';
-mergedMatchedCycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected\matchedCycles.csv';
+mergedMatchedCycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected10MWT\matchedCycles.csv';
 mergedMatchedCycleTable = readtable(mergedMatchedCycleTablePath);
 mergedMatchedCycleTableUAWidePreMean = widenTableBySides(mergedMatchedCycleTable, inputTableSideCol, factorColNames, preStruct, 'mean');
 mergedMatchedCycleTableUAWidePreMedian = widenTableBySides(mergedMatchedCycleTable, inputTableSideCol, factorColNames, preStruct, 'median');
 mergedMatchedCycleTableUAWidePostMean = widenTableBySides(mergedMatchedCycleTable, inputTableSideCol, factorColNames, postStruct, 'mean');
 mergedMatchedCycleTableUAWidePostMedian = widenTableBySides(mergedMatchedCycleTable, inputTableSideCol, factorColNames, postStruct, 'median');
 
-%% Save the widened tables
+%% Save the widened matchedCycle tables
 mergedMatchedCycleTableWidePathPrefix = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffectedWide';
 writetable(mergedMatchedCycleTableUAWidePreMean, fullfile(mergedMatchedCycleTableWidePathPrefix, 'matchedCycles_pre_mean.csv'));
 writetable(mergedMatchedCycleTableUAWidePreMedian, fullfile(mergedMatchedCycleTableWidePathPrefix, 'matchedCycles_pre_median.csv'));
 writetable(mergedMatchedCycleTableUAWidePostMean, fullfile(mergedMatchedCycleTableWidePathPrefix, 'matchedCycles_post_mean.csv'));
 writetable(mergedMatchedCycleTableUAWidePostMedian, fullfile(mergedMatchedCycleTableWidePathPrefix, 'matchedCycles_post_median.csv'));
+
+%% Widen the unaffected and affected side unmatchedCycle tables
+mergedUnmatchedCycleTablePath = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected10MWT\unmatchedCycles.csv';
+mergedUnmatchedCycleTable = readtable(mergedUnmatchedCycleTablePath);
+mergedUnmatchedCycleTableUAWidePreMean = widenTableBySides(mergedUnmatchedCycleTable, inputTableSideCol, factorColNames, preStruct, 'mean');
+mergedUnmatchedCycleTableUAWidePreMedian = widenTableBySides(mergedUnmatchedCycleTable, inputTableSideCol, factorColNames, preStruct, 'median');
+mergedUnmatchedCycleTableUAWidePostMean = widenTableBySides(mergedUnmatchedCycleTable, inputTableSideCol, factorColNames, postStruct, 'mean');
+mergedUnmatchedCycleTableUAWidePostMedian = widenTableBySides(mergedUnmatchedCycleTable, inputTableSideCol, factorColNames, postStruct, 'median');
+
+%% Save the widened unmatchedCycle tables
+mergedMatchedCycleTableWidePathPrefix = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffectedWide';
+writetable(mergedUnmatchedCycleTableUAWidePreMean, fullfile(mergedMatchedCycleTableWidePathPrefix, 'unmatchedCycles_pre_mean.csv'));
+writetable(mergedUnmatchedCycleTableUAWidePreMedian, fullfile(mergedMatchedCycleTableWidePathPrefix, 'unmatchedCycles_pre_median.csv'));
+writetable(mergedUnmatchedCycleTableUAWidePostMean, fullfile(mergedMatchedCycleTableWidePathPrefix, 'unmatchedCycles_post_mean.csv'));
+writetable(mergedUnmatchedCycleTableUAWidePostMedian, fullfile(mergedMatchedCycleTableWidePathPrefix, 'unmatchedCycles_post_median.csv'));

@@ -40,8 +40,8 @@ varNames = df.Properties.VariableNames;
 outcomeVarsNames = varNames(find(ismember(varNames, lastOutcomeMeasureColName))+1:end);
 
 %% Set plotting configuration
-% facetFactors = {'Subject','PrePost','Speed'};
-facetFactors = {'Subject'};
+facetFactors = {'Subject','PrePost','Speed'};
+% facetFactors = {'Subject'};
 color_factor = {'Intervention'};
 % color_factor = {'SessionOrder'};
 
@@ -64,10 +64,6 @@ subFolder = char(string(join(facetFactors,'_')));
 %% Plot the data
 fig = figure;
 fig.WindowState = 'maximized';
-% outcomeVarsNames = {'StepLengths_GR','StepDurations_GR','SwingDurations_GR'};
-% outcomeVarsNames = {'ANKLE_JointAngles_Min'};
-% outcomeVarsNames(ismember(outcomeVarsNames, 'NumSynergies')) = [];
-outcomeVarsNames(1:12) = []; 
 subFolderPath = fullfile(root_save_path, subFolder, saveFolder);
 if ~isfolder(subFolderPath)
     mkdir(subFolderPath);

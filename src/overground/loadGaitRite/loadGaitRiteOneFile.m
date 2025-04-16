@@ -1,6 +1,12 @@
-function [GaitRiteTable, num_data] = preprocessGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
+function [GaitRiteTable] = loadGaitRiteOneFile(gaitRitePath, gaitRiteConfig)
 
-%% PURPOSE: LOAD AND PREPROCESS THE DATA FROM ONE GAITRITE FILE.
+%% PURPOSE: LOAD THE DATA FROM ONE GAITRITE FILE.
+% Inputs:
+% gaitRitePath: Full file path to one GaitRite file.
+% gaitRiteConfig: Config struct for GaitRite
+%
+% Outputs:
+% GaitRiteTable: The table of GaitRite data. One row per walk.
 
 % Configuration
 trialsColName = strtrim(gaitRiteConfig.COLUMN_NAMES.GAIT_ID);

@@ -1,6 +1,6 @@
-function [delsysData] = loadAndFilterDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [delsysData] = loadDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig)
 
-%% PURPOSE: LOAD AND FILTER ONE ENTIRE INTERVENTION OF DELSYS EMG DURING WALKING TRIALS
+%% PURPOSE: LOAD ONE ENTIRE INTERVENTION OF DELSYS EMG DURING WALKING TRIALS
 % Inputs:
 % delsysConfig: Config struct for Delsys
 % intervention_folder_path: The full path to the intervention folder
@@ -53,13 +53,12 @@ for i = 1:length(mat_file_names)
     priorNamesNoTrial{i} = nameNoTrial;
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];    
-    [loadedData, filteredData] = loadAndFilterDelsysEMGOneFile(mat_file_path, delsysConfig);
+    loadedData = loadDelsysEMGOneFile(mat_file_path);
 
     %% Hard-coded fix for EMG muscle mappings for specific subjects & interventions
     if isfield(subjects_interventions_to_fix, subject_id) && ...
         any(strcmp(intervention_field_name, subjects_interventions_to_fix.(subject_id)))
         loadedData = fixMuscleMappings(loadedData);
-        filteredData = fixMuscleMappings(filteredData);
     end
     
     tmpTable = table;
@@ -70,8 +69,7 @@ for i = 1:length(mat_file_names)
     else
         tmpTable.DateTimeSaved_Delsys = NaT(1,'TimeZone','America/Chicago');
     end
-    tmpTable.Delsys_Loaded = loadedData;
-    tmpTable.Delsys_Filtered = filteredData;    
+    tmpTable.Delsys_Loaded = loadedData;   
     delsysData = [delsysData; tmpTable];
 end
 

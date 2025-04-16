@@ -1,24 +1,17 @@
-function [loaded_data, filtered_data] = loadAndFilterDelsysEMGOneFile(emgFilePath, delsysEMGConfig)
+function [loaded_data] = loadDelsysEMGOneFile(emgFilePath)
 
-%% PURPOSE: PREPROCESS THE DELSYS EMG DATA. PROBABLY DOES NOT WORK FOR MEPs
+%% PURPOSE: LOAD THE DELSYS EMG DATA
 % Inputs:
 % emgFilePath: The full path to the EMG file
-% delsysEMGConfig: The config struct for Delsys EMG
 %
 % Outputs:
 % loaded_data: The loaded EMG data
-% filtered_data: The filtered EMG data
-
-%% Configuration
-% validCombinations = config.VALID_COMBINATIONS;
-emgFilterConfig = delsysEMGConfig.FILTER;
-EMG_Fs = delsysEMGConfig.SAMPLING_FREQUENCY;
 
 %% Load the data
 from_file_data = load(emgFilePath);
 
 %% Initialize the outcome variable
-filtered_data = struct();
+% filtered_data = struct();
 
 %% Parse each of the muscles from the 1xN vector of EMG data
 % Extract muscle names from the loaded data
@@ -44,10 +37,4 @@ for i = 1:length(muscle_names)
         loaded_data.(muscleName) = NaN(size(loaded_data.(muscleName)));
     end
 
-end
-
-%% Filter the data
-for i = 1:length(muscle_names)
-    muscle_name = muscle_names{i};
-    filtered_data.(muscle_name) = filterEMGOneMuscle(loaded_data.(muscle_name), emgFilterConfig, EMG_Fs);
 end

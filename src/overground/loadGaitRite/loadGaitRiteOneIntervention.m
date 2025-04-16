@@ -1,6 +1,14 @@
-function [gaitRiteData] = processGaitRiteOneIntervention(gaitRiteConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [gaitRiteData] = loadGaitRiteOneIntervention(gaitRiteConfig, intervention_folder_path, intervention_field_name, regexsConfig)
 
-%% PURPOSE: PROCESS ONE ENTIRE INTERVENTION OF GAITRITE DATA
+%% PURPOSE: LOAD ONE ENTIRE INTERVENTION OF GAITRITE DATA
+% Inputs:
+% gaitRiteConfig: Config struct
+% intervention_folder_path: Path to the folder containing all files for this intervention
+% intervention_field_name: The intervention name
+% regexsConfig: The regexs to use to parse the file name.
+%
+% Outputs:
+% gaitRiteData: The loaded GaitRite data
 
 file_extension = gaitRiteConfig.FILE_EXTENSION;
 
@@ -38,7 +46,7 @@ for i = 1:length(xlsx_file_names)
     speed = parsedName{4};
     tableColName = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
 
-    [tmpTable, rawNumericData] = preprocessGaitRiteOneFile(xlsx_file_path, gaitRiteConfig); % Second output is for manual checking/validation
+    tmpTable = loadGaitRiteOneFile(xlsx_file_path, gaitRiteConfig); % Second output is for manual checking/validation
     for j = 1:height(tmpTable)
         trialName = ['trial' num2str(j)];
         cellName = [tableColName '_' trialName];
