@@ -48,7 +48,9 @@ all_data <- read_data(data_file_path, all_factors_col_names) # From fcns.R
 # Order the levels of each factor for which the levels order was specified
 factors_with_specified_levels_order <- names(factors_levels_order)
 for (factor_name in factors_with_specified_levels_order) {
-  all_data[[factor_name]] <- factor(all_data[[factor_name]], levels = factors_levels_order[[factor_name]])
+  if (factor_name %in% names(all_data)) {
+    all_data[[factor_name]] <- factor(all_data[[factor_name]], levels = factors_levels_order[[factor_name]])
+  }
 }
 
 # Remove any levels of any factors that we don't want to analyze
@@ -59,12 +61,10 @@ for (factor_name in factors_with_levels_to_remove) {
 
 # Get the column names of interest from the data table
 outcome_measures_cols <- names(all_data)[sapply(all_data, function(x) !is.factor(x))]
-col_name = outcome_measures_cols[109]
+col_name = outcome_measures_cols[1]
 
 emmeans_list <- list()
 comps_list <- list()
-
-outcome_measures_cols = rev(outcome_measures_cols)
 
 # Run the hypothesis testing and plotting functions
 for (col_name in outcome_measures_cols) {
