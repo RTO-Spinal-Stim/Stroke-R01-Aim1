@@ -15,6 +15,11 @@ Gait_Fs = gaitRiteConfig.SAMPLING_FREQUENCY;
 
 %% Get column indices
 colNames = gaitRiteConfig.COLUMN_NAMES;
+% columnFieldNames = fieldnames(colNames);
+% columnsToConvertZeroToNaN = false(1, length(header_row));
+% for i = 1:length(columnFieldNames)
+%     columnsToConvertZeroToNaN = columnsToConvertZeroToNaN | ismember(header_row, columnFieldNames{i});
+% end
 left_right_idx = ismember(header_row, colNames.LEFT_RIGHT);
 heel_on_idx = ismember(header_row, colNames.HEEL_ON);
 heel_off_idx = ismember(header_row, colNames.HEEL_OFF);
@@ -29,10 +34,12 @@ stride_lengths_idx = ismember(header_row, colNames.STRIDE_LENGTH);
 step_width_idx = ismember(header_row, colNames.STEP_WIDTH);
 stride_width_idx = ismember(header_row, colNames.STRIDE_WIDTH);
 stride_velocity_idx = ismember(header_row, colNames.STRIDE_VELOCITY);
+single_support_time_idx = ismember(header_row, colNames.SINGLE_SUPPORT_TIME);
+double_support_time_idx = ismember(header_row, colNames.DOUBLE_SUPPORT_TIME);
 
 columnsToConvertZeroToNaN = step_len_idx | swing_time_idx | step_times_idx | ...
     stance_times_idx | stride_times_idx | stride_lengths_idx | step_width_idx | stride_width_idx | ...
-    heel_on_idx | heel_off_idx | toe_on_idx | toe_off_idx | stride_velocity_idx;
+    heel_on_idx | heel_off_idx | toe_on_idx | toe_off_idx | stride_velocity_idx | single_support_time_idx | double_support_time_idx;
 for i = 1:length(columnsToConvertZeroToNaN)
     if columnsToConvertZeroToNaN(i) == 0
         continue;
@@ -56,6 +63,8 @@ step_widths = data(:, step_width_idx) / 100; % m
 stride_widths = data(:, stride_width_idx) / 100; % m
 step_durations = data(:, step_times_idx); % sec
 stride_velocities = data(:, stride_velocity_idx) / 100; % m/s
+single_support_time = data(:, single_support_time_idx); % sec
+double_support_time = data(:, double_support_time_idx); % sec
 
 if any(diff(left_right)==0)
     error('Left and right GaitRite steps are not alternating!');
@@ -113,6 +122,12 @@ processed_data.All_SwingPhasePerc_GR = swing_durations ./ stride_durations;
 processed_data.L_StancePhasePerc_GR = {1 - (swing_durations(left_events_idx) ./ stride_durations(left_events_idx))};
 processed_data.R_StancePhasePerc_GR = {1 - (swing_durations(right_events_idx) ./ stride_durations(right_events_idx))};
 processed_data.All_StancePhasePerc_GR = {1 - (swing_durations ./ stride_durations)};
+processed_data.All_Single_Support_Time = {single_support_time};
+processed_data.L_Single_Support_Time = {single_support_time(left_events_idx)};
+processed_data.R_Single_Support_Time = {single_support_time(right_events_idx)};
+processed_data.All_Double_Support_Time = {double_support_time};
+processed_data.L_Double_Support_Time = {double_support_time(left_events_idx)};
+processed_data.R_Double_Support_Time = {double_support_time(right_events_idx)};
 
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1

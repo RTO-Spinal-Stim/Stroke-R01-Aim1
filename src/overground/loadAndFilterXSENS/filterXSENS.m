@@ -1,4 +1,4 @@
-function [tableOut] = filterXSENS(tableIn, colNameToFilter, filteredColName, config, Fs)
+function [tableOut] = filterXSENS(tableIn, colNameToFilter, filteredColName, filterConfig, Fs)
 
 %% PURPOSE: FILTER THE LOADED XSENS DATA.
 % Inputs:
@@ -14,7 +14,6 @@ function [tableOut] = filterXSENS(tableIn, colNameToFilter, filteredColName, con
 tableOut = table;
 
 %% Configuration
-filterConfig = config.FILTER;
 fc = filterConfig.LOWPASS_CUTOFF;
 n = filterConfig.LOWPASS_ORDER;
 [b, a] = butter(n,fc/(Fs/2),'low');
@@ -27,11 +26,13 @@ for i = 1:height(tableIn)
     filtered_data = struct();
     for colNum = 1:length(colNamesFieldNames)
         colNameFieldName = colNamesFieldNames{colNum};
-        filtered_data.(colNameFieldName) = filtfilt(b, a, extracted_data.(colNameFieldName));
+        filtered_data.(colNameFieldName) = filtfilt(b, a, loaded_data.(colNameFieldName));
     end
 
     tmpTable = table;
     tmpTable.Name = tableIn.Name(i);
     tmpTable.(filteredColName) = filtered_data;
+
+    tableOut = [tableOut; tmpTable];
 
 end
