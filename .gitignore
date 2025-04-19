@@ -13,3 +13,4 @@
 *jquery-AUTHORS.txt
 *.pyc
 *.pdf
+.DS_Store
