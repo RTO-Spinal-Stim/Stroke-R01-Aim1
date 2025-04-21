@@ -122,12 +122,12 @@ processed_data.All_SwingPhasePerc_GR = swing_durations ./ stride_durations;
 processed_data.L_StancePhasePerc_GR = {1 - (swing_durations(left_events_idx) ./ stride_durations(left_events_idx))};
 processed_data.R_StancePhasePerc_GR = {1 - (swing_durations(right_events_idx) ./ stride_durations(right_events_idx))};
 processed_data.All_StancePhasePerc_GR = {1 - (swing_durations ./ stride_durations)};
-processed_data.All_Single_Support_Time = {single_support_time};
-processed_data.L_Single_Support_Time = {single_support_time(left_events_idx)};
-processed_data.R_Single_Support_Time = {single_support_time(right_events_idx)};
-processed_data.All_Double_Support_Time = {double_support_time};
-processed_data.L_Double_Support_Time = {double_support_time(left_events_idx)};
-processed_data.R_Double_Support_Time = {double_support_time(right_events_idx)};
+processed_data.All_Single_Support_Time_GR = {single_support_time};
+processed_data.L_Single_Support_Time_GR = {single_support_time(left_events_idx)};
+processed_data.R_Single_Support_Time_GR = {single_support_time(right_events_idx)};
+processed_data.All_Double_Support_Time_GR = {double_support_time};
+processed_data.L_Double_Support_Time_GR = {double_support_time(left_events_idx)};
+processed_data.R_Double_Support_Time_GR = {double_support_time(right_events_idx)};
 
 % A "step" is the interval between subsequent L & R footfalls
 if left_events_idx(1) == 1
