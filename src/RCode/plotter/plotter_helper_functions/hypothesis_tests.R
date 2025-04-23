@@ -61,7 +61,6 @@ hyp_tests <- function(model, data, marginal_means, col_name, column_widths_margi
 
   # Pairwise comparisons of only main effect contrasts!
   comps <- contrast(marginal_means, valid_contrasts, adjust = "holm")
-  # comps <- pairs(marginal_means, adjust = "holm")
   make_marginal_means_table(marginal_means, column_widths_marginal_means, n_decimal_places)
   make_pvals_table(comps, column_widths_p_values, n_decimal_places, factor_names)
   return(comps)

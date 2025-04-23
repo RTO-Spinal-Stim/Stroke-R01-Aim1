@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_CGAM_SessionOrder_Intervention_PrePost.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -28,8 +28,8 @@ fill_factor <- config$plots$fill_factor
 all_factors_col_names <- config$all_factor_columns
 
 # Levels in each factor
-factors_levels_order <- config$factors_levels_order
-factors_levels_to_remove <- config$factors_levels_to_remove
+factors_levels_order <- config$factor_levels_order
+factors_levels_to_remove <- config$factor_levels_to_remove
 
 # Paths
 data_file_path <- config$paths$data_file
@@ -57,6 +57,13 @@ for (factor_name in factors_with_specified_levels_order) {
 factors_with_levels_to_remove <- names(factors_levels_to_remove)
 for (factor_name in factors_with_levels_to_remove) {
   all_data <- remove_levels(all_data, factor_name, factors_levels_to_remove[[factor_name]])
+}
+
+# Remove any levels of any factors that have no observations
+for (col_name in names(all_data)) {
+  if (is.factor(all_data[[col_name]])) {
+    all_data[[col_name]] <- droplevels(all_data[[col_name]])
+  }
 }
 
 # Get the column names of interest from the data table
@@ -107,28 +114,6 @@ for (col_name in outcome_measures_cols) {
       print(gp_sig_diff_bars)
       sig_diff_bars_df_scatter <- result$sig_diff_bars_df
       
-      # Bar plot to prep for significant difference bars
-      # plot_result_bar <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "bar", fill_factor=fill_factor)
-      # plotted_df <- plot_result_bar$df
-      # gp_no_sig_diff_bars <- plot_result_bar$gp
-      # 
-      # # Add the significant difference bars to the bar graph
-      # result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, plot_grouping_factors,
-      #                              col_name, vert_bar_height=0.03, text_offset=0.005, min_y_distance=0.02, text_size=2, 
-      #                              show_p_values = TRUE, horz_offset = 0.008, step_increase=0.06)
-      # gp_sig_diff_bars <- result$plot
-      # print(gp_sig_diff_bars)
-      # sig_diff_bars_df_bar <- result$sig_diff_bars_df
-      
-      # Line plots
-      # line_plot_from_lmer(curr_data, col_name, lmer_model)
-      # 
-      # # Bar graphs
-      # bar_plot_from_lmer(curr_data, col_name, lmer_model, comps)
-      # 
-      # # Interaction plots
-      # interaction_plot_from_lmer(curr_data, col_name, lmer_model, comps, x_axis_factor = plot_grouping_factors[1], color_factor = plot_grouping_factors[2], facet_factors = NULL)
-      
       # Summarize and plot the residuals of the model
       summarize_model(lmer_model)
       
@@ -144,29 +129,3 @@ for (col_name in outcome_measures_cols) {
     }
   )
 }
-
-# toml_file_path <- "config_transverse_gaitphases.toml"
-# latex_table_path <- file.path(pkg_output_folder, "latex_table.tex")
-# 
-# # Named list to map long factor names to shorter names
-# name_mapping <- list(
-#   "Gait_Phase" = list(
-#     "LeftDoubleSupport" = "LDS",
-#     "RightDoubleSupport" = "RDS",
-#     "LeftSingleSupport" = "LSS",
-#     "RightSingleSupport" = "RSS"
-#   ),
-#   "Task" = list(
-#     "Straight_Line_Gait" = "SLG",
-#     "TWW_Preplanned" = "PP",
-#     "TWW_Latecued" = "LC"
-#   )
-# )
-# 
-# config <- read.config(file = toml_file_path, file.type = "toml")
-# vars_list <- config$vars
-# 
-# # Generate the latex table
-# latex_output <- generate_latex_table(comps_list, emmeans_list, name_mapping, vars_list, n_decimals=3)
-# string_vector <- unlist(latex_output)
-# writeLines(string_vector, latex_table_path)
