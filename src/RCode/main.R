@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_CGAM_SessionOrder_Intervention_PrePost.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_CGAM_cohensD_SessionOrder.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
