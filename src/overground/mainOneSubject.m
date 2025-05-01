@@ -251,7 +251,7 @@ prePostGRSymTableDiff = calculatePrePostChange(grSymTable, formulaNum, levelNum)
 prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
 prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
 prePostChangeGRDistributedTableDiff = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
-% Combine the two tables
+% Combine the two tables 
 prePostGRSymTable = join(prePostGRSymTablePercDiff, prePostGRSymTableDiff, 'Keys', 'Name');
 prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', 'Name');
 prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', 'Name');
