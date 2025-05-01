@@ -2,13 +2,13 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Comment this part out when running all subjects at once.
-% clc;
-% clearvars;
-% subject = 'SS27';
-% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
-% config = jsondecode(fileread(configFilePath));
-% disp(['Loaded configuration from: ' configFilePath]);
-% doPlot = false;
+clc;
+clearvars;
+subject = 'SS01';
+configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
+config = jsondecode(fileread(configFilePath));
+disp(['Loaded configuration from: ' configFilePath]);
+doPlot = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
 intervention_folders = config.INTERVENTION_FOLDERS;
@@ -54,6 +54,7 @@ xsensTable = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, interv
 %% Filter XSENS
 xsensTableFiltered = filterXSENS(xsensTable, 'XSENS_Loaded', 'XSENS_Filtered', xsensConfig.FILTER, xsensConfig.SAMPLING_FREQUENCY);
 xsensTable = addToTable(xsensTable, xsensTableFiltered);
+xsensTable.Trial = categorical(str2double(strrep(string(xsensTable.Trial), '0','')));
 
 %% Adjust the order of GaitRite trials as needed
 [xsensTableReordered, delsysTableReordered] = checkTrialOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});
@@ -177,9 +178,9 @@ cycleTable = addToTable(cycleTable, rmsTableDelsys);
 romTableXSENS = calculateRangeAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles');
 cycleTable = addToTable(cycleTable, romTableXSENS);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Below this point requires the left and right gait cycles to be matched
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Below this point, computations require the left and right gait cycles to be matched
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Match the L and R gait cycles for symmetry analysis
 matchedCycleTable = matchCycles(cycleTable);
@@ -222,49 +223,24 @@ xcorrTableDelsys = calculateLRCrossCorrAll(matchedCycleTable, 'Delsys_Normalized
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableXSENS);
 matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 
-%% Calculate symmetries
-formulaNum = 2; % The modified symmetry formula
-levelNumToMatch = 5; % 'trial'
-[colNamesL, colNamesR] = getLRColNames(cycleTable);
-% Cycle table
-cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
-scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
-allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
-nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; {'Name'}]));
-cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
-% Compute the symmetry values
-lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, levelNumToMatch);
-grSymTable = calculateSymmetryAll(grDistributedTable, '_Sym', formulaNum, levelNumToMatch);
-matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Add this participant's data to the CSV file of all participants' data.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Calculate pre to post change
-levelNum = 4; % The level to average the PRE data within
-% Percent difference
-formulaNum = 2;
-prePostGRSymTablePercDiff = calculatePrePostChange(grSymTable, formulaNum, levelNum);
-prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
-prePostChangeGRDistributedTablePercDiff = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
-% Difference
-formulaNum = 1;
-prePostGRSymTableDiff = calculatePrePostChange(grSymTable, formulaNum, levelNum);
-prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
-prePostChangeGRDistributedTableDiff = calculatePrePostChange(grDistributedTable, formulaNum, levelNum);
-% Combine the two tables 
-prePostGRSymTable = join(prePostGRSymTablePercDiff, prePostGRSymTableDiff, 'Keys', 'Name');
-prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', 'Name');
-prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', 'Name');
-prePostChangeGRDistributedTable = join(prePostChangeGRDistributedTableDiff, prePostChangeGRDistributedTablePercDiff, 'Keys', 'Name');
+%% Merge the GaitRite and unmatched cycle tables
+colNamesToMergeBy = {'Name'};
+grDistributedTable.Name = strrep(grDistributedTable.Name, 'GaitRiteRow','cycle');
+mergedCycleTable = mergeTables(grDistributedTable, cycleTable, colNamesToMergeBy);
+
+%% Save the cycle table and the matched cycle table to the all data CSV file
+addOneParticipantDataToAllDataCSV(mergedCycleTable, config.PATHS.ALL_DATA_CSV.UNMATCHED);
+addOneParticipantDataToAllDataCSV(matchedCycleTable, config.PATHS.ALL_DATA_CSV.MATCHED);
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
 if ~isfolder(subjectSaveFolder)
     mkdir(subjectSaveFolder);
 end
-save(subjectSavePath, 'visitTable', 'speedPrePostTable', 'trialTable', 'cycleTable', ...
-    'cycleTableContraRemoved', 'prePostCycleChangeTable', ...
-    'matchedCycleTable', 'prePostChangeMatchedCycleTable', ...
-    'grDistributedTable', 'prePostChangeGRDistributedTable', ...
-    'grSymTable', 'prePostGRSymTable');
+save(subjectSavePath, 'visitTable', 'speedPrePostTable', 'trialTable', 'cycleTable', 'matchedCycleTable');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);
+

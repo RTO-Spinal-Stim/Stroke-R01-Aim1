@@ -14,13 +14,13 @@ function [tableOut] = distributeGaitRiteDataToSeparateTable(grTable, colNamesToR
 % step. Therefore, the first heel strike always results in a step length of
 % 0 (should be NaN), because there's no preceding foot fall.
 
+disp('Distributing GaitRite data to each row')
+
 tableOut = table;
 
 %% Remove the scalar columns from the grTable
 scalarColumnNames = getScalarColumnNames(grTable);
-for i = 1:length(scalarColumnNames)
-    grTable.(scalarColumnNames{i}) = [];
-end
+grTable = removevars(grTable, scalarColumnNames);
 
 colNameAllIdx = 'All_Idx_GR';
 colNameLIdx = 'L_Idx_GR';
@@ -35,20 +35,23 @@ columnNames = grTable.Properties.VariableNames;
 colNamesAll = columnNames(contains(columnNames, 'All_'));
 colNamesAll(ismember(colNamesAll, colNamesToRemove)) = [];
 
+grTableCategorical = copyCategorical(grTable);
+
 %% Iterate over each trial
 for i = 1:height(grTable)
 
     allIdx = grTable.(colNameAllIdx){i};    
-    rowNamePrefix = char(grTable.Name(i));
+    rowCategorical = grTableCategorical(i,:);
     lIdx = grTable.(colNameLIdx){i};
     rIdx = grTable.(colNameRIdx){i};
 
     assert(length(lIdx) == length(allIdx) && length(rIdx) == length(allIdx));
 
+    trialTable = repmat(rowCategorical,length(allIdx),1);
+
     % Assign the data to each cycle
     for rowNum = 1:length(allIdx)
 
-        tmpTable = table;
         if lIdx(rowNum) == 1
             suffix = 'L';
         elseif rIdx(rowNum) == 1
@@ -60,15 +63,20 @@ for i = 1:height(grTable)
         else
             rowNumStr = num2str(rowNum);
         end
-        tmpTable.Name = convertCharsToStrings([rowNamePrefix '_GaitRiteRow' rowNumStr '_' suffix]);
+        trialTable.GaitRiteRow(rowNum) = string(rowNumStr);
+        trialTable.StartFoot(rowNum) = string(suffix);
+        % tmpTable.Name = convertCharsToStrings([rowCategorical '_GaitRiteRow' rowNumStr '_' suffix]);
 
         for j = 1:length(colNamesAll)
             colName = colNamesAll{j};
             currData = grTable.(colName){i};
             colName = colName(5:end);
             
-            tmpTable.(colName) = currData(rowNum);
-        end
-        tableOut = [tableOut; tmpTable];
+            trialTable.(colName)(rowNum) = currData(rowNum);
+        end        
     end
+    tableOut = [tableOut; trialTable];
 end
+
+tableOut.GaitRiteRow = categorical(tableOut.GaitRiteRow);
+tableOut.StartFoot = categorical(tableOut.StartFoot);

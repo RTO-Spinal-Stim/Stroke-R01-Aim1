@@ -11,7 +11,7 @@ function [tableOut] = splitTrialsByGaitCycle_NoMatching(tableIn, colNameToSplit,
 disp('Segmenting the data by gait cycle WITHOUT matching');
 
 tableOut = table;
-
+catTable = copyCategorical(tableIn);
 for i = 1:height(tableIn)
     
     LHS = tableIn.(gaitEventsColName)(i).gaitEvents.leftHeelStrikes;
@@ -20,7 +20,6 @@ for i = 1:height(tableIn)
     allHS(isnan(allHS)) = []; % Remove NaN
     num_gait_cycles = length(allHS) - 2; % The number of gait cycles is two less than the total number of footfalls
     currData = tableIn.(colNameToSplit)(i);
-    currTrialName = char(tableIn.Name(i));
 
     for cycleNum = 1:num_gait_cycles
         startHSIdx = allHS(cycleNum);
@@ -40,11 +39,15 @@ for i = 1:height(tableIn)
         else
             cycleNumStr = num2str(cycleNum);
         end
-        currCycleName = [currTrialName '_cycle' cycleNumStr '_' startFoot];
-        tmpTable = table;
-        tmpTable.Name = convertCharsToStrings(currCycleName);
+        tmpTable = catTable(i,:);
+        tmpTable.Cycle = string(cycleNumStr);
+        tmpTable.StartFoot = string(startFoot);
         tmpTable.(colNameToSplit) = cycleData;
+
         tableOut = [tableOut; tmpTable];
     end
 
 end
+
+tableOut.Cycle = categorical(tableOut.Cycle);
+tableOut.StartFoot = categorical(tableOut.StartFoot);

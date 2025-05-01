@@ -12,11 +12,8 @@ function [downsampledTable] = downsampleAllData(allDataTable, colNameToDownsampl
 
 disp(['Downsampling the data within each gait cycle to ' num2str(n_points) ' points']);
 
-downsampledTable = table;
+downsampledTable = copyCategorical(allDataTable);
 for i = 1:height(allDataTable)
     dataToDownsample = allDataTable.(colNameToDownsample)(i);
-    tmpTable = table;
-    tmpTable.Name = allDataTable.Name(i);
-    tmpTable.(colNameDownsampled) = downsampleData(dataToDownsample, n_points);
-    downsampledTable = [downsampledTable; tmpTable];
+    downsampledTable.(colNameDownsampled)(i) = downsampleData(dataToDownsample, n_points);
 end

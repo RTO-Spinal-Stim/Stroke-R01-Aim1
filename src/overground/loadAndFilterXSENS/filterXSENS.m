@@ -11,7 +11,9 @@ function [tableOut] = filterXSENS(tableIn, colNameToFilter, filteredColName, fil
 % Outputs:
 % tableOut: The table of filtered data
 
-tableOut = table;
+disp('Filtering XSENS');
+
+tableOut = copyCategorical(tableIn);
 
 %% Configuration
 fc = filterConfig.LOWPASS_CUTOFF;
@@ -29,10 +31,6 @@ for i = 1:height(tableIn)
         filtered_data.(colNameFieldName) = filtfilt(b, a, loaded_data.(colNameFieldName));
     end
 
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
-    tmpTable.(filteredColName) = filtered_data;
-
-    tableOut = [tableOut; tmpTable];
+    tableOut.(filteredColName)(i) = filtered_data;    
 
 end

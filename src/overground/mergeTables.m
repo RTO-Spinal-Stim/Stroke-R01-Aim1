@@ -25,8 +25,8 @@ end
 % Check the setup of the two tables.
 grVarNames = grTable.Properties.VariableNames;
 cycleVarNames = cycleTable.Properties.VariableNames;
-grColIdx = ismember(grVarNames, colNamesToMergeBy{1});
-cycleColIdx = ismember(cycleVarNames, colNamesToMergeBy{2});
+grColIdx = ismember(grVarNames, colNamesToMergeBy);
+cycleColIdx = ismember(cycleVarNames, colNamesToMergeBy);
 
 if ~any(grColIdx) || ~any(cycleColIdx)
     error('Missing the specified colNamesToMergeBy columns in one or both tables');
@@ -52,12 +52,13 @@ cycleVarNames = cycleVarNames(cycleColIdxNum+1:end);
 sharedVarNames = cycleVarNames(ismember(cycleVarNames, grVarNames));
 
 % Get all of the unique trials from the table.
-trialColsTable = unique(cycleTable(:, 1:cycleColIdxNum-1), 'rows');
-for i = 1:height(trialColsTable)
+% trialColsTable = unique(cycleTable(:, 1:cycleColIdxNum-1), 'rows');
+trialNames = unique(getNamesPrefixes(cycleTable.Name, 5));
+for i = 1:height(trialNames)
 
     % Isolate only the rows of the current trial in each table
-    currTrialIdxGR = ismember(grTable(:,1:grColIdxNum-1), trialColsTable(i,1:grColIdxNum-1),'rows');
-    currTrialIdxCycle = ismember(cycleTable(:,1:grColIdxNum-1), trialColsTable(i,1:grColIdxNum-1),'rows');
+    currTrialIdxGR = contains(grTable.Name, trialNames{i});
+    currTrialIdxCycle = contains(cycleTable.Name, trialNames{i});
     currTrialCycle = cycleTable(currTrialIdxCycle, :);
     currTrialGR = grTable(currTrialIdxGR, grColIdxNum+1:end);    
 

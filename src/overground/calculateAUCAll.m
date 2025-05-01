@@ -18,10 +18,8 @@ if ~exist('sidePrefixes','var')
     sidePrefixes = {'L','R'};
 end
 
-aucTable = table;
+aucTable = copyCategorical(tableIn);
 for i = 1:height(tableIn)
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
     currData = tableIn.(colNameIn)(i);
     structFields = fieldnames(currData);
     for fieldNum = 1:length(structFields)
@@ -33,10 +31,9 @@ for i = 1:height(tableIn)
         end
         storeFieldName = [firstLetter '_' fieldName '_' columnNameSuffix];
         if isempty(currData.(fieldNameOrig)) || all(isnan(currData.(fieldNameOrig)))
-            tmpTable.(storeFieldName) = NaN;
+            aucTable.(storeFieldName)(i) = NaN;
         else
-            tmpTable.(storeFieldName) = trapz(currData.(fieldNameOrig));
+            aucTable.(storeFieldName)(i) = trapz(currData.(fieldNameOrig));
         end
     end
-    aucTable = [aucTable; tmpTable];
 end

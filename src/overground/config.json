@@ -1,9 +1,13 @@
-{
+{    
     "PATHS": {
         "ROOT_LOAD": "Y:\\Spinal Stim_Stroke R01\\AIM 1\\Subject Data",
         "ROOT_SAVE": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim",
         "SAVE_FILE_NAME": "Overground_EMG_Kinematics.mat",
         "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\overground",
+        "ALL_DATA_CSV": {
+            "UNMATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\0_from_matlab_unmatched.csv",
+            "MATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\0_from_matlab_matched.csv"
+        },
         "PLOTS": {
             "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\plots",
             "FILTERED_NON_TIME_NORMALIZED": "Filtered_GaitCycles",
@@ -19,7 +23,8 @@
             "SHAM[12]"           
         ],        
         "PRE_POST": "PRE|POST",
-        "SPEED": "FV|SSV"
+        "SPEED": "FV|SSV",
+        "TRIAL": "[0-9]+$"
     },
     "NUM_POINTS": 101,
     "INTERVENTION_FOLDERS": [
@@ -45,6 +50,13 @@
             "TA",
             "VL"
         ],
+        "CATEGORICAL_COLUMNS": [
+            "Subject",
+            "Intervention",
+            "PrePost",
+            "Speed",
+            "Trial"
+        ],
         "SUBJECTS_INTERVENTIONS_TO_FIX": {
             "SS08": "RMT30",
             "SS09": "SHAM2",
@@ -68,6 +80,13 @@
         "FILE_EXTENSION": "*.xlsx",
         "HEADER_ROW_NUM": 3,
         "SAMPLING_FREQUENCY": 120,
+        "CATEGORICAL_COLUMNS": [
+            "Subject",
+            "Intervention",
+            "PrePost",
+            "Speed",
+            "Trial"
+        ],
         "COLUMN_NAMES": {
             "GAIT_ID": "Gait_Id",
             "LEFT_RIGHT": "Foot",
@@ -100,6 +119,13 @@
             "LKNEE": "Left Knee Flexion/Extension",
             "LANKLE": "Left Ankle Dorsiflexion/Plantarflexion"
         },
+        "CATEGORICAL_COLUMNS": [
+            "Subject",
+            "Intervention",
+            "PrePost",
+            "Speed",
+            "Trial"
+        ],
         "FILTER": {
             "LOWPASS_CUTOFF": 6,
             "LOWPASS_ORDER": 4

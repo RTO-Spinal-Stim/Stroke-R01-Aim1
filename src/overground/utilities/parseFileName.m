@@ -12,8 +12,9 @@ function [varargout] = parseFileName(regexsConfig, fileName)
 [~, intervention_name] = findPatternIndices(fileName, regexsConfig.INTERVENTIONS);
 [~, speed] = findPatternIndices(fileName, regexsConfig.PRE_POST);
 [~, pre_post] = findPatternIndices(fileName, regexsConfig.SPEED);
+[~, trial] = findPatternIndices(fileName, regexsConfig.TRIAL);
 
-nameComponents = {subject_id, intervention_name, speed, pre_post};
+nameComponents = {subject_id, intervention_name, speed, pre_post, trial};
 
 if nargout == 1
     varargout{1} = nameComponents;

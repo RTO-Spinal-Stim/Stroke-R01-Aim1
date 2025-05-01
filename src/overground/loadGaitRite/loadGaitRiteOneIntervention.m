@@ -32,6 +32,7 @@ xlsx_file_names = {xlsx_files.name}';
 %         - gaitPhases
 %         - gaitPhasesDurations
 gaitRiteData = table;
+columnNames = gaitRiteConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(xlsx_file_names)    
     xlsx_file_name_with_ext = xlsx_file_names{i};
     if startsWith(xlsx_file_name_with_ext, '~$')
@@ -40,7 +41,7 @@ for i = 1:length(xlsx_file_names)
     period_index = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:period_index-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
-    parsedName = parseFileName(regexsConfig, xlsx_file_name);
+    parsedName = parseFileName(regexsConfig, xlsx_file_name);    
     subject_id = parsedName{1};
     pre_post = parsedName{3};
     speed = parsedName{4};
@@ -48,14 +49,17 @@ for i = 1:length(xlsx_file_names)
 
     tmpTable = loadGaitRiteOneFile(xlsx_file_path, gaitRiteConfig); % Second output is for manual checking/validation
     for j = 1:height(tmpTable)
-        trialName = ['trial' num2str(j)];
-        cellName = [tableColName '_' trialName];
-
-        % Add the name.
-        tmpTable.Name(j) = convertCharsToStrings(cellName);        
-    end     
+        % Add the categorical columns.
+        for nameCount = 1:length(parsedName)
+            tmpTable.(columnNames{nameCount})(j) = string(parsedName{nameCount});
+        end
+        tmpTable.(columnNames{length(parsedName)+1})(j) = num2str(j);     
+    end    
+    for colNum = 1:length(columnNames)
+        tmpTable.(columnNames{colNum}) = categorical(string(tmpTable.(columnNames{colNum})));
+    end
     gaitRiteData = addToTable(gaitRiteData, tmpTable);
 end
 
-% Put the name column first
-gaitRiteData = [gaitRiteData(:,end), gaitRiteData(:,1:end-1)];
+% Put the categorical columns first
+gaitRiteData = [gaitRiteData(:,columnNames), gaitRiteData(:,~ismember(gaitRiteData.Properties.VariableNames, columnNames))];

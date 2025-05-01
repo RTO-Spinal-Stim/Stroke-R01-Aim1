@@ -22,6 +22,7 @@ priorNamesNoTrial = cell(length(xlsx_file_names), 1);
 for i = 1:length(priorNamesNoTrial)
     priorNamesNoTrial{i} = ''; % Initialize as chars
 end
+columnNames = xsensConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(xlsx_file_names)
     xlsx_file_name_with_ext = xlsx_file_names{i};
     periodIndex = strfind(xlsx_file_name_with_ext, '.');
@@ -36,8 +37,11 @@ for i = 1:length(xlsx_file_names)
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
     tmpTable = table;
+    for colNum = 1:length(parsedName)
+        tmpTable.(columnNames{colNum}) = string(parsedName{colNum});
+        tmpTable.(columnNames{colNum}) = categorical(tmpTable.(columnNames{colNum}));
+    end
     loadedData = loadXSENSOneFile(xlsx_file_path, xsensConfig.COLUMN_NAMES);
-    tmpTable.Name = convertCharsToStrings(nameWithTrial);
     % Get the datetime
     tmpTable.DateTimeSaved_XSENS = getDateTimeSaved(xlsx_file_path);
     tmpTable.XSENS_Loaded = loadedData;

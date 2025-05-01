@@ -22,21 +22,26 @@ foundIndVarNames = false;
 for i = 1:numVars
 
     % Remove the variables that were already labelled as collinear
-    varsToRemove = varNames(ismember(varNames, collinearVarNames));
-    currTable = removevars(tableIn, varsToRemove);
+    currTable = removevars(tableIn, collinearVarNames);
 
-    % Convert the table to a numeric matrix
+    % Convert the table to a numeric matrix    
     data = table2array(currTable);    
+
+    % Calculate VIFs
     currVIFs = VIF(data);
+
+    allVIFs = NaN(1,numVars);    
+    varsIdx = ~ismember(varNames, collinearVarNames);
+    allVIFs(varsIdx) = currVIFs;
 
     % Place the VIFs in the columns corresponding to the regressor variable
     % When fewer than all variables are in the 'data' variable, then the
     % missing variables' columns will be NaN.
-    varsIdx = ~ismember(varNames, varsToRemove);
-    VIFsMatrix(varsIdx,i) = currVIFs;
+    
+    VIFsMatrix(i,:) = allVIFs;
 
     % Store the max VIF in a vector for easy interpretation.
-    [maxVIF, maxVIFidx] = max(currVIFs);
+    [maxVIF, maxVIFidx] = max(allVIFs,[],2,'omitnan');
     VIFs(i) = maxVIF;
 
     % If all VIF < threshold for the first time, this is the set of
@@ -48,5 +53,16 @@ for i = 1:numVars
         % Otherwise, if not yet found independent set,
         % add to the collinear variable names.
         collinearVarNames = [collinearVarNames; varNames(maxVIFidx)];
+    end
+
+    % collinearStr = '';
+    % for ii = 1:length(collinearVarNames)
+    %     collinearStr = [collinearStr collinearVarNames{ii} ', '];
+    % end
+    % collinearStr = collinearStr(1:end-2);
+    if ~foundIndVarNames
+        disp(['Max VIF: ' num2str(maxVIF) ' New Collinear Variable: ' varNames{maxVIFidx}]);
+    else
+        disp(['Independent set already found']);
     end
 end

@@ -40,4 +40,6 @@ for i = 1:length(allColumnNames)
         scalarColumnNames = [scalarColumnNames; allColumnNames(i)];
     end
 end
-scalarColumnNames(ismember(scalarColumnNames, 'Name')) = [];
+
+catTable = copyCategorical(tableIn);
+scalarColumnNames(ismember(scalarColumnNames, catTable.Properties.VariableNames)) = [];

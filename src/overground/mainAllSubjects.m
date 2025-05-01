@@ -28,6 +28,49 @@ for subNum = 1:length(allSubjectsPlot)
     % plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
+%% Load the cycleTable and matchedCycleTable from all subjects
+cycleTable = readtable(config.PATHS.ALL_DATA_CSV.UNMATCHED);
+matchedCycleTable = readtable(config.PATHS.ALL_DATA_CSV.MATCHED);
+
+%% Calculate symmetries
+formulaNum = 1; % The modified symmetry formula
+levelNumToMatch = 5; % 'trial'
+[colNamesL, colNamesR] = getLRColNames(cycleTable);
+% Cycle table
+cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
+scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
+allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
+nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; {'Name'}]));
+cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
+% Compute the symmetry values
+lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, levelNumToMatch);
+matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
+
+%% Calculate CGAM from synergies
+vif_cutoff = 10;
+varNames = matchedCycleTable.Properties.VariableNames;
+varsToRemoveIdx = ~contains(varNames, '_Sym') | contains(varNames, {'_Min_Sym','_Max_Sym','_AUC','NumSynergies','RMS_EMG'});
+symmetryTable = removevars(matchedCycleTable, varNames(varsToRemoveIdx));
+independentVars = independentVarsFromVIF(symmetryTable, vif_cutoff);
+varsToRemoveIdxName = ~(contains(varNames, '_Sym') | ismember(varNames, 'Name')) | contains(varNames, {'_Min_Sym','_Max_Sym','_AUC','NumSynergies','RMS_EMG'});
+symmetryTableWithName = removevars(matchedCycleTable, varNames(varsToRemoveIdxName));
+cgamTable = calculateCGAM(symmetryTableWithName, independentVars);
+matchedCycleTable = addToTable(matchedCycleTable, cgamTable);
+
+%% Calculate pre to post change
+levelNum = 4; % The level to average the PRE data within
+% Percent difference
+formulaNum = 2;
+prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+% Difference
+formulaNum = 1;
+prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+% Combine the two tables 
+prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', 'Name');
+prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', 'Name');
+
 %% Combine all of the tables for all subjects into one main table
 % 1. Scalar values only
 % 2. Visit, trial, and gait cycle level

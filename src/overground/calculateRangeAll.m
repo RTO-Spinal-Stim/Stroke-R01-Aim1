@@ -18,11 +18,8 @@ if ~exist('sidePrefixes','var')
     sidePrefixes = {'L','R'};
 end
 
-rangeTable = table;
+rangeTable = copyCategorical(tableIn);
 for i = 1:height(tableIn)
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
-
     data = tableIn.(colNameIn)(i);
 
     structFieldNames = fieldnames(data);
@@ -42,9 +39,8 @@ for i = 1:height(tableIn)
             maxVal = NaN;
             rangeVal = NaN;
         end           
-        tmpTable.([colName '_Min']) = minVal;
-        tmpTable.([colName '_Max']) = maxVal;
-        tmpTable.([colName '_Range']) = rangeVal;
+        rangeTable.([colName '_Min'])(i) = minVal;
+        rangeTable.([colName '_Max'])(i) = maxVal;
+        rangeTable.([colName '_Range'])(i) = rangeVal;
     end
-    rangeTable = [rangeTable; tmpTable];
 end

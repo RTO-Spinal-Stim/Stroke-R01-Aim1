@@ -24,21 +24,31 @@ end
 existingVarNames = existingTable.Properties.VariableNames;
 newVarNames = newTable.Properties.VariableNames;
 
+existingCategoricalVarNames = existingTable.Properties.VariableNames(vartype('categorical'));
+newCategoricalVarNames = newTable.Properties.VariableNames(vartype('categorical'));
+
 %% If the "Name" entries are different but all column names are the same, vertically concatenate.
 if all(ismember(existingVarNames, newVarNames)) && length(existingVarNames) == length(newVarNames)
-    if ~any(ismember(newTable.Name, existingTable.Name))
+    if isequal(existingCategoricalVarNames, newCategoricalVarNames)
         mergedTable = [existingTable; newTable];
         return;
     end
 end
 
+categoricalVars = existingCategoricalVarNames;
+
 %% Otherwise, perform the horizontal concatenation
-assert(height(newTable) == height(existingTable),'Both tables must have the same number of rows!');
-mergedTable = join(newTable, existingTable, 'Keys', 'Name', ...
+assert(height(newTable) == height(existingTable),'Both tables must have the same number of rows for horizontal concatenation!');
+mergedTable = join(newTable, existingTable, 'Keys', categoricalVars, ...
         'LeftVariables', newVarNames, ...
-        'RightVariables', setdiff(existingVarNames, 'Name'),...
+        'RightVariables', setdiff(existingVarNames, categoricalVars),...
         'KeepOneCopy', newVarNames);
 
-newVarNamesToAdd = setdiff(newVarNames, 'Name');
+newVarNamesToAdd = setdiff(newVarNames, categoricalVars);
 finalColumnOrder = [existingVarNames, setdiff(newVarNamesToAdd, existingVarNames)];
 mergedTable = mergedTable(:, finalColumnOrder);
+
+for colNum = 1:length(categoricalVars)
+    mergedTable.(categoricalVars{colNum}) = string(mergedTable.(categoricalVars{colNum}));
+    mergedTable.(categoricalVars{colNum}) = categorical(mergedTable.(categoricalVars{colNum}));
+end

@@ -13,7 +13,7 @@ function [tableOut] = filterDelsys(tableIn, colNameToFilter, colNameOut, config,
 
 disp('Filtering Delsys');
 
-tableOut = table;
+tableOut = copyCategorical(tableIn);
 for i = 1:height(tableIn)
         
     loaded_data = tableIn.(colNameToFilter)(i);
@@ -24,8 +24,5 @@ for i = 1:height(tableIn)
         filtered_data.(muscle_name) = filterEMGOneMuscle(loaded_data.(muscle_name), config, Fs);
     end
 
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
-    tmpTable.(colNameOut) = filtered_data;
-    tableOut = [tableOut; tmpTable];
+    tableOut.(colNameOut)(i) = filtered_data;    
 end

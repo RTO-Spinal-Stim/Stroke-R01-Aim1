@@ -40,6 +40,7 @@ priorNamesNoTrial = cell(length(mat_file_names), 1);
 for i = 1:length(priorNamesNoTrial)
     priorNamesNoTrial{i} = ''; % Initialize as chars
 end
+columnNames = delsysConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(mat_file_names)
     mat_file_name_with_ext = mat_file_names{i};
     periodIndex = strfind(mat_file_name_with_ext, '.');
@@ -62,7 +63,10 @@ for i = 1:length(mat_file_names)
     end
     
     tmpTable = table;
-    tmpTable.Name = convertCharsToStrings(nameWithTrial);
+    for colNum = 1:length(parsedName)
+        tmpTable.(columnNames{colNum}) = string(parsedName{colNum});
+        tmpTable.(columnNames{colNum}) = categorical(tmpTable.(columnNames{colNum}));
+    end
     adicht_idx = ismember(adicht_file_names, strrep(mat_file_name_with_ext, '.mat', '.adicht'));
     if any(adicht_idx)
         tmpTable.DateTimeSaved_Delsys = getDateSaved(adicht_files(adicht_idx).date);

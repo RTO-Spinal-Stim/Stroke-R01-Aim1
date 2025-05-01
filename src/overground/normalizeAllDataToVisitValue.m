@@ -12,16 +12,10 @@ function [normalizedDataTable] = normalizeAllDataToVisitValue(dataTable, dataCol
 % Outputs:
 % normalizedDataTable: The normalized data.
 
-if ~exist('levelNum','var')
-    levelNum = 2;
-end
-
 disp('Normalizing data to per-visit value');
 
-normalizedDataTable = table;
+normalizedDataTable = copyCategorical(dataTable);
 for i = 1:height(dataTable)
-    tmpTable = table;
-    name = dataTable.Name(i);
     dataToNormalize = dataTable.(dataColName)(i);
     visitName = getNamesPrefixes(char(name), levelNum);
     visitRowInVisitTable = ismember(visitTable.Name, visitName);
@@ -33,7 +27,5 @@ for i = 1:height(dataTable)
         fieldName = fieldNames{fieldNum};
         normalizedStruct.(fieldName) = dataToNormalize.(fieldName) ./ visitData.(fieldName);
     end
-    tmpTable.Name = dataTable.Name(i);
-    tmpTable.(normalizedDataColName) = normalizedStruct;
-    normalizedDataTable = [normalizedDataTable; tmpTable];
+    normalizedDataTable.(normalizedDataColName)(i) = normalizedStruct;
 end

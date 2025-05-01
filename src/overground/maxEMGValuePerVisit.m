@@ -8,7 +8,7 @@ function [maxEMGTable] = maxEMGValuePerVisit(dataTable, emgColName, maxEMGColNam
 % Outputs:
 % maxEMGTable: The table of max EMG values. Each row is one visit.
 
-maxEMGTable = table;
+maxEMGTable = copyCategorical(dataTable);
 
 disp('Getting the max EMG value per muscle per visit');
 
@@ -16,7 +16,6 @@ disp('Getting the max EMG value per muscle per visit');
 visitNames = getNamesPrefixes(dataTable.Name, 2);
 for visitNum = 1:length(visitNames)
     visitName = visitNames{visitNum};
-    tmpTable = table;
     % Initialize the max EMG struct.
     maxEMGStruct = struct;
     fieldNames = fieldnames(dataTable.(emgColName)(1));
@@ -37,7 +36,5 @@ for visitNum = 1:length(visitNames)
             maxEMGStruct.(fieldName) = max([ maxEMGStruct.(fieldName),max(emgData.(fieldName)) ], [], 2, 'omitnan');            
         end
     end
-    tmpTable.Name = convertCharsToStrings(visitName);
-    tmpTable.(maxEMGColName) = maxEMGStruct;
-    maxEMGTable = [maxEMGTable; tmpTable];
+    maxEMGTable.(maxEMGColName)(i) = maxEMGStruct;
 end
