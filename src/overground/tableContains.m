@@ -5,4 +5,8 @@ function [matchIdx] = tableContains(tableWithMoreColumns, tableWithFewerColumns)
 % Using innerjoin with specific keys
 matchTable = innerjoin(tableWithMoreColumns, tableWithFewerColumns, 'Keys', tableWithFewerColumns.Properties.VariableNames);
 
-matchIdx = ismember(tableWithMoreColumns, matchTable, 'rows');
+% Handle columns that are nonscalar
+tableWithMoreColumnsCat = copyCategorical(tableWithMoreColumns);
+matchTableCat = copyCategorical(matchTable);
+
+matchIdx = ismember(tableWithMoreColumnsCat, matchTableCat, 'rows');

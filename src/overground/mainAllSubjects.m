@@ -29,18 +29,26 @@ for subNum = 1:length(allSubjectsPlot)
 end
 
 %% Load the cycleTable and matchedCycleTable from all subjects
+categoricalCols = {'Subject','Intervention','PrePost','Speed','Trial','Cycle','StartFoot'};
 cycleTable = readtable(config.PATHS.ALL_DATA_CSV.UNMATCHED);
 matchedCycleTable = readtable(config.PATHS.ALL_DATA_CSV.MATCHED);
+for i = 1:length(categoricalCols)
+    cycleTable.(categoricalCols{i}) = categorical(cycleTable.(categoricalCols{i}));
+    matchedCycleTable.(categoricalCols{i}) = categorical(matchedCycleTable.(categoricalCols{i}));
+end
 
 %% Calculate symmetries
 formulaNum = 1; % The modified symmetry formula
 levelNumToMatch = 5; % 'trial'
 [colNamesL, colNamesR] = getLRColNames(cycleTable);
 % Cycle table
-cycleTableContraRemoved = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
+cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
+grVars = cycleTable.Properties.VariableNames(contains(cycleTable.Properties.VariableNames,'_GR'));
+grTable = removevars(cycleTable, ~ismember(cycleTable.Properties.VariableNames, [grVars, categoricalCols]));
+cycleTableContraRemoved = addToTable(cycleTableContraRemoved_NoGR, grTable);
 scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
 allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
-nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; {'Name'}]));
+nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; categoricalCols']));
 cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
 % Compute the symmetry values
 lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, levelNumToMatch);
@@ -48,12 +56,19 @@ matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can c
 
 %% Calculate CGAM from synergies
 vif_cutoff = 10;
-varNames = matchedCycleTable.Properties.VariableNames;
-varsToRemoveIdx = ~contains(varNames, '_Sym') | contains(varNames, {'_Min_Sym','_Max_Sym','_AUC','NumSynergies','RMS_EMG'});
-symmetryTable = removevars(matchedCycleTable, varNames(varsToRemoveIdx));
+% Right off the bat, drop specific columns because bad data.
+columnsToDrop = {'StanceDurations_GR_Sym','StrideWidths_GR_Sym','Single_Support_Time_GR_Sym','Double_Support_Time_GR_Sym'};
+droppedColsTable = removevars(matchedCycleTable, columnsToDrop);
+% Remove the variables that are negative or not symmetries.
+varNames = droppedColsTable.Properties.VariableNames;
+varsToKeepIdx = contains(varNames, '_Sym') & ~ismember(varNames, 'NumSynergies_Sym') & ~contains(varNames, {'AUC','RMS_EMG','JointAngles_Max','JointAngles_Min'});
+symmetryTable = removevars(droppedColsTable, varNames(~varsToKeepIdx));
+
 independentVars = independentVarsFromVIF(symmetryTable, vif_cutoff);
-varsToRemoveIdxName = ~(contains(varNames, '_Sym') | ismember(varNames, 'Name')) | contains(varNames, {'_Min_Sym','_Max_Sym','_AUC','NumSynergies','RMS_EMG'});
-symmetryTableWithName = removevars(matchedCycleTable, varNames(varsToRemoveIdxName));
+varsToKeepIdxCat = varsToKeepIdx | ismember(varNames, categoricalCols);
+symmetryTableWithName = removevars(droppedColsTable, varNames(~varsToKeepIdxCat));
+nonGRvarNames = ~contains(symmetryTableWithName.Properties.VariableNames, '_GR') & ~ismember(symmetryTableWithName.Properties.VariableNames, categoricalCols);
+grSymTableWithName = removevars(symmetryTableWithName, nonGRvarNames);
 cgamTable = calculateCGAM(symmetryTableWithName, independentVars);
 matchedCycleTable = addToTable(matchedCycleTable, cgamTable);
 

@@ -17,8 +17,8 @@ disp('Normalizing data to per-visit value');
 normalizedDataTable = copyCategorical(dataTable);
 for i = 1:height(dataTable)
     dataToNormalize = dataTable.(dataColName)(i);
-    visitName = getNamesPrefixes(char(name), levelNum);
-    visitRowInVisitTable = ismember(visitTable.Name, visitName);
+    visitName = dataTable(i, 1:levelNum);
+    visitRowInVisitTable = tableContains(visitTable, visitName);
     assert(sum(visitRowInVisitTable)==1);
     visitData = visitTable.(visitColName)(visitRowInVisitTable);
     normalizedStruct = struct;

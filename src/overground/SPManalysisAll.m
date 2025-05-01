@@ -22,13 +22,13 @@ if ~exist('levelNum','var')
 end
 
 spmTable = table;
-visitNames = getNamesPrefixes(dataTable.Name, levelNum);
-for i = 1:length(visitNames)
-    visitName = visitNames{i};    
-    tmpTable = table;
+catTable = copyCategorical(dataTable);
+visitNames = unique(catTable(:,1:levelNum),'rows','stable');
+for i = 1:height(visitNames)
+    visitName = visitNames(i,:);    
     aggStruct = aggStructData(dataTable, dataColName, visitName);
     spmResult = SPM_Analysis(aggStruct, group1Names, group2Names, alphaValue);
-    tmpTable.Name = convertCharsToStrings(visitName);
+    tmpTable = visitName;
     tmpTable.(spmColName) = spmResult;
     spmTable = [spmTable; tmpTable];
 end

@@ -5,21 +5,28 @@ function [] = addOneParticipantDataToAllDataCSV(participantTable, allDataTablePa
 % participantTable: The table of one participant's data
 % allDataTablePath: The path to the CSV file
 
+catTable = copyCategorical(participantTable);
+catVars = catTable.Properties.VariableNames;
+
 % Load the table of all the data
 if isfile(allDataTablePath)
     allDataTable = readtable(allDataTablePath);
+    for i = 1:length(catVars)
+        allDataTable.(catVars{i}) = categorical(allDataTable.(catVars{i}));
+    end
 else
     allDataTable = table;
 end
 
 % Remove the non-scalar column names
 scalarColumnNames = getScalarColumnNames(participantTable);
-scalarColumnNames = unique([{'Name'}; scalarColumnNames], 'stable');
-participantTableScalar = removevars(participantTable, ~ismember(participantTable.Properties.VariableNames, scalarColumnNames));
+participantTableScalar = removevars(participantTable, ~ismember(participantTable.Properties.VariableNames, [scalarColumnNames', catTable.Properties.VariableNames]));
 
 % Remove the data that already exists that's being overwritten.
 if height(allDataTable) > 0
-    existingNameRowsIdx = ismember(allDataTable.Name, participantTableScalar.Name);
+    allDataTableCat = copyCategorical(allDataTable);
+    participantTableScalarCat = copyCategorical(participantTableScalar);
+    existingNameRowsIdx = ismember(allDataTableCat, participantTableScalarCat, 'rows');
     allDataTable(existingNameRowsIdx,:) = [];
 end
 

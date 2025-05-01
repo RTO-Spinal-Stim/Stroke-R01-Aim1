@@ -31,7 +31,6 @@ for i = 1:height(dataTable)
     currData = dataTable.(dataColName)(i);
     tmpTable = catTable(i,:);
     [nSynergies, VAFs, W, H] = calculateSynergies(currData, fieldNames, VAFthresh);
-    tmpTable.Name = dataTable.Name(i);
     tmpTable.([fieldNamePrefix 'NumSynergies']) = nSynergies;
     tmpTable.([fieldNamePrefix 'VAFs']) = {VAFs};
     tmpTable.([fieldNamePrefix 'W']) = {W};

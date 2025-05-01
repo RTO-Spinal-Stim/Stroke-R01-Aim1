@@ -13,17 +13,19 @@ function [matchedTable] = matchCycles(tableIn)
 
 disp('Matching L & R gait cycles')
 
-trialLevelNum = length(strsplit(tableIn.Name(1), '_')) - 2;
+catTable = copyCategorical(tableIn);
+trialLevelNum = length(catTable.Properties.VariableNames) - 2;
 % Get the unique trial names
-trialNamesToMatch = getNamesPrefixes(tableIn.Name, trialLevelNum); 
+trialNamesToMatch = unique(catTable(:,1:trialLevelNum),'rows','stable');
 cycleLevelNum = trialLevelNum + 1;
 colNames = tableIn.Properties.VariableNames;
-colNames(ismember(colNames,'Name')) = [];
+colNames(ismember(colNames,catTable.Properties.VariableNames)) = [];
 matchedTable = table;
 % Iterate over each trial
-for i = 1:length(trialNamesToMatch)
+for i = 1:height(trialNamesToMatch)
     % Get all the rows matching this trial name
-    matchRows = contains(tableIn.Name, trialNamesToMatch{i});
+    matchRows = tableContains(tableIn, trialNamesToMatch(i,:));
+    % matchRows = contains(tableIn.Name, trialNamesToMatch{i});
     % Filter the table for only the rows in this trial
     filteredTable = tableIn(matchRows,:);    
 
@@ -31,13 +33,9 @@ for i = 1:length(trialNamesToMatch)
     for j = 1:height(filteredTable)-1
         currCycleRow = filteredTable(j,:);
         nextCycleRow = filteredTable(j+1,:);
-        currCycleSide = char(currCycleRow.Name);
-        currCycleSide = currCycleSide(end);
-        nextCycleSide = char(nextCycleRow.Name);
-        nextCycleSide = nextCycleSide(end);
-        tmpTable = table;
-        currRowName = [char(convertCharsToStrings(getNamesPrefixes(currCycleRow.Name, cycleLevelNum))) '_' currCycleSide];
-        tmpTable.Name = convertCharsToStrings(currRowName);
+        currCycleSide = char(currCycleRow.StartFoot); 
+        nextCycleSide = char(nextCycleRow.StartFoot);                
+        tmpTable = copyCategorical(currCycleRow);
 
         % Iterate over each column in the cycle
         for colNum = 1:length(colNames)

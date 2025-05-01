@@ -10,12 +10,12 @@ function [aggStruct] = aggStructData(dataTable, dataColName, prefix)
 % matching the prefix, and M is the lengths of the data in each field (all
 % matching lengths)
 
+dataTableIdx = tableContains(dataTable, prefix);
+dataTableToAverage = dataTable(dataTableIdx,:);
+
 aggStruct = struct;
-for i = 1:height(dataTable)
-    if ~contains(dataTable.Name(i), prefix)
-        continue;
-    end
-    currData = dataTable.(dataColName)(i);
+for i = 1:height(dataTableToAverage)
+    currData = dataTableToAverage.(dataColName)(i);
     fieldNames = fieldnames(currData);
     for fieldNum = 1:length(fieldNames)
         fieldName = fieldNames{fieldNum};

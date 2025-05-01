@@ -13,7 +13,8 @@ function [tableOut] = getPeaks(tableIn, colName, colNameOutSuffix, maxMin, index
 
 disp('Finding indices and values of peaks in the data');
 
-tableOut = copyCategorical(tableIn);
+catTable = copyCategorical(tableIn);
+tableOut = table;
 
 if ~iscell(maxMin)
     maxMin = {maxMin};
@@ -38,7 +39,7 @@ for i = 1:height(tableIn)
     indexData.Max = struct;
     peaksData.Min = struct;
     indexData.Min = struct;
-    tmpTable = tableOut(i,:);
+    tmpTable = catTable(i,:);
     for fldNum = 1:length(fldNames)
         fldName = fldNames{fldNum};
         currData = rowData.(fldName);

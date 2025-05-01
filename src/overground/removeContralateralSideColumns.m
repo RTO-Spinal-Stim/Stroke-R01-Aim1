@@ -22,19 +22,19 @@ for i = 1:length(columnNamesL)
 end
 
 %% Remove the 'L_' and 'R_' tables, yielding columns with no side.
+catTable = copyCategorical(tableIn);
 for i = 1:height(tableIn)
-    rowName = char(tableIn.Name(i));
-    tmpTable = table;
-    tmpTable.Name = convertCharsToStrings(rowName);
+    tmpTable = catTable(i,:);
+    row = tableIn(i,:);
     for colNum = 1:length(colNamesNoSide)
         colNameNoSide = colNamesNoSide{colNum};
-        rowSide = rowName(end-1:end);
-        if strcmp(rowSide, '_L')
+        rowSide = char(row.StartFoot);
+        if strcmp(rowSide, 'L')
             colNameSide = columnNamesL{colNum};
-        elseif strcmp(rowSide, '_R')
+        elseif strcmp(rowSide, 'R')
             colNameSide = columnNamesR{colNum};
         end
-        tmpTable.(colNameNoSide) = tableIn.(colNameSide)(i);
+        tmpTable.(colNameNoSide) = row.(colNameSide);
     end
     tableOut = [tableOut; tmpTable];
 end

@@ -2,13 +2,13 @@
 % The main pipeline for R01 Stroke Spinal Stim Aim 1 (using tables)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Comment this part out when running all subjects at once.
-clc;
-clearvars;
-subject = 'SS01';
-configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
-config = jsondecode(fileread(configFilePath));
-disp(['Loaded configuration from: ' configFilePath]);
-doPlot = false;
+% clc;
+% clearvars;
+% subject = 'SS01';
+% configFilePath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
+% config = jsondecode(fileread(configFilePath));
+% disp(['Loaded configuration from: ' configFilePath]);
+% doPlot = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Get configuration
 intervention_folders = config.INTERVENTION_FOLDERS;
@@ -117,7 +117,7 @@ maxEMGTable = maxEMGValuePerVisit(cycleTable, 'Delsys_TimeNormalized', 'Max_EMG_
 visitTable = addToTable(visitTable, maxEMGTable);
 
 %% Normalize the time-normalized EMG data to the max value across one whole visit (all trials & gait cycles)
-normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized');
+normalizedEMGTable = normalizeAllDataToVisitValue(cycleTable, 'Delsys_TimeNormalized', visitTable, 'Max_EMG_Value', 'Delsys_Normalized_TimeNormalized', 2);
 cycleTable = addToTable(cycleTable, normalizedEMGTable);
 
 %% Get % gait cycle when peaks occur
@@ -228,9 +228,16 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Merge the GaitRite and unmatched cycle tables
-colNamesToMergeBy = {'Name'};
-grDistributedTable.Name = strrep(grDistributedTable.Name, 'GaitRiteRow','cycle');
-mergedCycleTable = mergeTables(grDistributedTable, cycleTable, colNamesToMergeBy);
+if ismember({'GaitRiteRow'}, T.Properties.VariableNames)
+    grDistributedTable.Cycle = grDistributedTable.GaitRiteRow;
+    grDistributedTable = removevars(grDistributedTable, 'GaitRiteRow');
+end
+T = copyCategorical(grDistributedTable);
+mergeVarNames = T.Properties.VariableNames(~ismember(T.Properties.VariableNames, {'StartFoot','Cycle'}));
+mergedCycleTable = mergeTables(grDistributedTable, cycleTable, mergeVarNames);
+
+mergedCycleTable.Cycle = categorical(strrep(string(mergedCycleTable.Cycle), '0', ''));
+matchedCycleTable.Cycle = categorical(strrep(string(matchedCycleTable.Cycle), '0', ''));
 
 %% Save the cycle table and the matched cycle table to the all data CSV file
 addOneParticipantDataToAllDataCSV(mergedCycleTable, config.PATHS.ALL_DATA_CSV.UNMATCHED);

@@ -26,9 +26,9 @@ firstSidePrefix = sidePrefixes{1};
 secondSidePrefix = sidePrefixes{2};
 
 crossCorrTable = table;
+catTable = copyCategorical(tableIn);
 for i = 1:height(tableIn)
-    tmpTable = table;
-    tmpTable.Name = tableIn.Name(i);
+    tmpTable = catTable(i,:);
 
     data = tableIn.(colNameIn)(i);
 

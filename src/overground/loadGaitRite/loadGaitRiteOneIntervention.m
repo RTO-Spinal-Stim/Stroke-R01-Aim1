@@ -51,9 +51,11 @@ for i = 1:length(xlsx_file_names)
     for j = 1:height(tmpTable)
         % Add the categorical columns.
         for nameCount = 1:length(parsedName)
-            tmpTable.(columnNames{nameCount})(j) = string(parsedName{nameCount});
+            if ~isempty(parsedName{nameCount})
+                tmpTable.(columnNames{nameCount})(j) = string(parsedName{nameCount});
+            end
         end
-        tmpTable.(columnNames{length(parsedName)+1})(j) = num2str(j);     
+        tmpTable.(columnNames{length(parsedName)})(j) = num2str(j);     
     end    
     for colNum = 1:length(columnNames)
         tmpTable.(columnNames{colNum}) = categorical(string(tmpTable.(columnNames{colNum})));

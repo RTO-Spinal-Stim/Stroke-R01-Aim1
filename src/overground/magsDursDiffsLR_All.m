@@ -13,12 +13,12 @@ function [magsDiffsTable] = magsDursDiffsLR_All(dataTable, spmColName, averagedC
 disp('Calculating magnitude & durations of each side''s differences from SPM');
 
 magsDiffsTable = table;
+catTable = copyCategorical(dataTable);
 for i = 1:height(dataTable)
-    tmpTable = table;
+    tmpTable = catTable(i,:);
     averageData = dataTable.(averagedColName)(i);
     spmData = dataTable.(spmColName)(i);
     [mags, durs] = mags_durs_diffsLR(spmData, averageData);
-    tmpTable.Name = dataTable.Name(i);
     tmpTable.([storeColName '_Mags']) = mags;
     tmpTable.([storeColName '_Durs']) = durs;
     magsDiffsTable = [magsDiffsTable; tmpTable];

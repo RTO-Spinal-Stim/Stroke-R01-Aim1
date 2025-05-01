@@ -17,10 +17,11 @@ if ~exist('levelNum','var')
     levelNum = 4;
 end
 
-visitNames = getNamesPrefixes(dataTable.Name, levelNum);
+catTable = copyCategorical(dataTable);
+visitNames = unique(catTable(:,1:levelNum),'rows','stable');
 avgStructTable = table;
-for i = 1:length(visitNames)
-    visitName = visitNames{i};
+for i = 1:height(visitNames)
+    visitName = visitNames(i,:);
     avgStruct = struct;
     aggStruct = aggStructData(dataTable, colNameToAverage, visitName);
     fieldNames = fieldnames(aggStruct);
@@ -28,8 +29,7 @@ for i = 1:length(visitNames)
         fieldName = fieldNames{fieldNum};
         avgStruct.(fieldName) = mean(aggStruct.(fieldName),1,'omitnan');
     end
-    tmpTable = table;
-    tmpTable.Name = convertCharsToStrings(visitName);
+    tmpTable = visitName;
     tmpTable.(averagedColName) = avgStruct;
     avgStructTable = [avgStructTable; tmpTable];
 end

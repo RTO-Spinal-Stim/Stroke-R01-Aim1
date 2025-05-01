@@ -20,25 +20,18 @@ if ~exist('levelNum','var')
     levelNum = 5;
 end
 
-colNamesToRemove = {'Name'};
+catTable = copyCategorical(tableIn);
+categoricalCols = catTable.Properties.VariableNames;
 
 colNames = tableIn.Properties.VariableNames;
-colNames(ismember(colNames, colNamesToRemove)) = [];
+colNames(ismember(colNames, categoricalCols)) = [];
 
 symmetryTable = table;
 for i = 1:height(tableIn)-1
-    tmpTable = table;    
-    tmpTable.Name = tableIn.Name(i);
-    currNameParsed = getNamesPrefixes(tableIn.Name(i), levelNum);
-    nextNameParsed = getNamesPrefixes(tableIn.Name(i+1), levelNum);
-    % Being sloppy here because I don't want to troubleshoot getNamesPrefixes
-    if iscell(currNameParsed)
-        currNameParsed = currNameParsed{1};
-    end
-    if iscell(nextNameParsed)
-        nextNameParsed = nextNameParsed{1};
-    end
-    if ~strcmp(currNameParsed, nextNameParsed)
+    tmpTable = catTable(i,:);
+    currName = catTable(i,1:levelNum);
+    nextName = catTable(i+1,1:levelNum);
+    if ~isequal(currName, nextName)
         continue;
     end
     

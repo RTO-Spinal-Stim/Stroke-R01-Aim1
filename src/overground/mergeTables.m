@@ -52,13 +52,13 @@ cycleVarNames = cycleVarNames(cycleColIdxNum+1:end);
 sharedVarNames = cycleVarNames(ismember(cycleVarNames, grVarNames));
 
 % Get all of the unique trials from the table.
-% trialColsTable = unique(cycleTable(:, 1:cycleColIdxNum-1), 'rows');
-trialNames = unique(getNamesPrefixes(cycleTable.Name, 5));
+trialNames = unique(cycleTable(:, colNamesToMergeBy), 'rows');
+% trialNames = unique(getNamesPrefixes(cycleTable.Name, 5));
 for i = 1:height(trialNames)
 
     % Isolate only the rows of the current trial in each table
-    currTrialIdxGR = contains(grTable.Name, trialNames{i});
-    currTrialIdxCycle = contains(cycleTable.Name, trialNames{i});
+    currTrialIdxGR = tableContains(grTable, trialNames(i,:));
+    currTrialIdxCycle = tableContains(cycleTable, trialNames(i,:));
     currTrialCycle = cycleTable(currTrialIdxCycle, :);
     currTrialGR = grTable(currTrialIdxGR, grColIdxNum+1:end);    
 
