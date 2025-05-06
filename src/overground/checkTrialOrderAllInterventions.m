@@ -42,7 +42,7 @@ gaitRiteTableCategorical = copyCategorical(gaitRiteTable);
 categoricalVarNames = gaitRiteTableCategorical.Properties.VariableNames;
 lastCategorical = categoricalVarNames(end);
 gaitRiteTableCategoricalNoLast = gaitRiteTableCategorical;
-gaitRiteTableCategoricalNoLast(:, lastCategorical) = [];
+gaitRiteTableCategoricalNoLast(:, lastCategorical) = []; % StartFoot. This should not be used for filtering
 uniqueCombs = unique(gaitRiteTableCategoricalNoLast,'rows','stable');
 for i = 1:height(uniqueCombs)    
     currComb = uniqueCombs(i,:);
@@ -57,14 +57,12 @@ for i = 1:height(uniqueCombs)
     
     % Join the tables together with all of the saved dates
     for tableNum = 1:length(otherTrialTables)
-        % otherTrialTables{tableNum}(:,lastCategorical) = [];
         currTable = otherTrialTables{tableNum};        
         currTableCategorical = copyCategorical(currTable);
-        % currTableCategoricalNoLast(:, lastCategorical) = [];
-        % currComb = currComb(:, categoricalVarNames);
+
         currRowsIdx = tableContains(currTableCategorical, currComb);
         currColsIdx = otherTablesDateSavedColLogical{tableNum} | ismember(otherTrialTables{tableNum}.Properties.VariableNames, categoricalVarNames); % DateSaved & Name columns only
-        currOtherTable = currTable(currRowsIdx,currColsIdx);
+        currOtherTable = currTable(currRowsIdx,currColsIdx);        
         joinedTable = join(joinedTable, currOtherTable, 'Keys', categoricalVarNames);
     end
 

@@ -8,6 +8,9 @@ function [xsensData] = loadXSENSOneIntervention(xsensConfig, intervention_folder
 % intervention_field_name: The name of the intervention
 % regexsConfig: Config struct containing regexs to parse the file name.
 
+% This regex will match leading zeros in the trial number.
+leadingZerosRegex = '^0+';
+
 file_extension = xsensConfig.FILE_EXTENSION;
 
 generic_xlsx_path = fullfile(intervention_folder_path, file_extension);
@@ -18,10 +21,10 @@ xlsx_file_names = sort(xlsx_file_names); % Ensure the trials are in order.
 
 %% Rename the fields and preprocess each file
 xsensData = table;
-priorNamesNoTrial = cell(length(xlsx_file_names), 1);
-for i = 1:length(priorNamesNoTrial)
-    priorNamesNoTrial{i} = ''; % Initialize as chars
-end
+% priorNamesNoTrial = cell(length(xlsx_file_names), 1);
+% for i = 1:length(priorNamesNoTrial)
+%     priorNamesNoTrial{i} = ''; % Initialize as chars
+% end
 columnNames = xsensConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(xlsx_file_names)
     xlsx_file_name_with_ext = xlsx_file_names{i};
@@ -29,13 +32,14 @@ for i = 1:length(xlsx_file_names)
     xlsx_file_name = xlsx_file_name_with_ext(1:periodIndex-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
     parsedName = parseFileName(regexsConfig, xlsx_file_name);
-    subject_id = parsedName{1};
-    pre_post = parsedName{3};
-    speed = parsedName{4};
-    nameNoTrial = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
-    priorNamesNoTrial{i} = nameNoTrial;
-    trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
-    nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
+    % subject_id = parsedName{1};
+    % pre_post = parsedName{3};
+    % speed = parsedName{4};
+    parsedName{5} = regexprep(parsedName{5}, leadingZerosRegex, '');
+    % nameNoTrial = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
+    % priorNamesNoTrial{i} = nameNoTrial;
+    % trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
+    % nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];
     tmpTable = table;
     for colNum = 1:length(parsedName)
         tmpTable.(columnNames{colNum}) = string(parsedName{colNum});

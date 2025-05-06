@@ -32,42 +32,43 @@ if ~any(grColIdx) || ~any(cycleColIdx)
     error('Missing the specified colNamesToMergeBy columns in one or both tables');
 end
 
-grColIdxNum = find(grColIdx,1);
-cycleColIdxNum = find(cycleColIdx,1);
+grCatTable = copyCategorical(grTable);
+cycleCatTable = copyCategorical(cycleTable);
+grCatVars = grCatTable.Properties.VariableNames;
+cycleCatVars = cycleCatTable.Properties.VariableNames;
 
-if grColIdxNum ~= cycleColIdxNum
-    error('The colNamesToMergeBy are not at the same column number in both tables');
-end
-
-if ~isequal(grVarNames(1:grColIdxNum-1), cycleVarNames(1:cycleColIdxNum-1))
+if ~isequal(sort(grCatVars), sort(cycleCatVars))
     error('The factor column names are not identical');
 end
+
+catVars = grCatVars;
+catVars(ismember(catVars, 'StartFoot')) = [];
 
 mergedTable = table;
 
 % Identify any column names to the right of the factors that are shared
 % across both tables, so we can remove duplicates.
-grVarNames = grVarNames(grColIdxNum+1:end);
-cycleVarNames = cycleVarNames(cycleColIdxNum+1:end);
+grVarNames = grVarNames(~ismember(grVarNames, grCatVars));
+cycleVarNames = cycleVarNames(~ismember(cycleVarNames, cycleCatVars));
 sharedVarNames = cycleVarNames(ismember(cycleVarNames, grVarNames));
 
 % Get all of the unique trials from the table.
-trialNames = unique(cycleTable(:, colNamesToMergeBy), 'rows');
-% trialNames = unique(getNamesPrefixes(cycleTable.Name, 5));
+trialNames = unique(cycleTable(:, colNamesToMergeBy), 'rows', 'stable');
 for i = 1:height(trialNames)
 
     % Isolate only the rows of the current trial in each table
     currTrialIdxGR = tableContains(grTable, trialNames(i,:));
     currTrialIdxCycle = tableContains(cycleTable, trialNames(i,:));
     currTrialCycle = cycleTable(currTrialIdxCycle, :);
-    currTrialGR = grTable(currTrialIdxGR, grColIdxNum+1:end);    
+    currTrialGR = grTable(currTrialIdxGR, grVarNames);    
 
-    % Remove the name variable from the cycle table.
+    % Remove shared variables from the cycle table.
     currTrialGR = removevars(currTrialGR, sharedVarNames);
 
     assert(height(currTrialGR) == height(currTrialCycle) + 2,'Wrong number of gait cycles relative to the number of GaitRite rows! Failed to merge tables.');
 
     % Horizontally concatenate the two tables so all of the data is in tmpTable.
+    % tmpTable = join(currTrialCycle, currTrialGR(3:end,:), 'Keys', catVars);    
     tmpTable = [currTrialCycle, currTrialGR(3:end,:)];
 
     % Vertically concatenate each trial

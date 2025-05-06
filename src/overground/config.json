@@ -5,8 +5,8 @@
         "SAVE_FILE_NAME": "Overground_EMG_Kinematics.mat",
         "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\overground",
         "ALL_DATA_CSV": {
-            "UNMATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\0_from_matlab_unmatched.csv",
-            "MATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\0_from_matlab_matched.csv"
+            "UNMATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_unmatched.csv",
+            "MATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_matched.csv"
         },
         "PLOTS": {
             "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\plots",
@@ -26,6 +26,7 @@
         "SPEED": "FV|SSV",
         "TRIAL": "[0-9]+$"
     },
+    "VIF_CUTOFF": 10,
     "NUM_POINTS": 101,
     "INTERVENTION_FOLDERS": [
         "30_RMT", "30_TOL", "50_RMT", "50_TOL", "SHAM1", "SHAM2"

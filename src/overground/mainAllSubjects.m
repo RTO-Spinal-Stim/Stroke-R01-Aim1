@@ -38,7 +38,7 @@ for i = 1:length(categoricalCols)
 end
 
 %% Calculate symmetries
-formulaNum = 2; % The modified symmetry formula
+formulaNum = 6; % The modified symmetry formula
 levelNumToMatch = 5; % 'trial'
 [colNamesL, colNamesR] = getLRColNames(cycleTable);
 % Cycle table
@@ -51,77 +51,10 @@ allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
 nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; categoricalCols']));
 cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
 % Compute the symmetry values
-lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, levelNumToMatch);
-matchedCycleTable = addToTable(matchedCycleTable, lrSidesCycleSymTable); % Can combine the two tables
-
-%% Calculate CGAM from synergies
-matchedCyclesPath = "Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected\matchedCycles.csv";
-matchedCycleTable = readtable(matchedCyclesPath);
-categoricalCols = {'Subject','Intervention','SessionOrder','Is_Stim','Frequency','Intensity','PrePost','Speed','Trial','Cycle','Side'};
-matchedCycleTable.Frequency(ismissing(matchedCycleTable.Frequency)) = 0;
-for i = 1:length(categoricalCols)
-    matchedCycleTable.(categoricalCols{i}) = categorical(matchedCycleTable.(categoricalCols{i}));
-end
-vif_cutoff = 10;
-% Right off the bat, drop specific columns because bad data.
-columnsToDrop = {'StanceDurations_GR_Sym','StrideWidths_GR_Sym','Single_Support_Time_GR_Sym','Double_Support_Time_GR_Sym'};
-droppedColsTable = removevars(matchedCycleTable, columnsToDrop);
-% Remove the variables that are negative or not symmetries.
-varNames = droppedColsTable.Properties.VariableNames;
-varsToKeepIdx = contains(varNames, '_Sym') & ~ismember(varNames, 'NumSynergies_Sym') & ~contains(varNames, {'AUC','RMS_EMG','JointAngles_Max','JointAngles_Min'});
-symmetryTable = removevars(droppedColsTable, varNames(~varsToKeepIdx));
-
-independentVars = independentVarsFromVIF(symmetryTable, vif_cutoff);
-varsToKeepIdxCat = varsToKeepIdx | ismember(varNames, categoricalCols);
-symmetryTableWithName = removevars(droppedColsTable, varNames(~varsToKeepIdxCat));
-nonGRvarNames = ~contains(symmetryTableWithName.Properties.VariableNames, '_GR') & ~ismember(symmetryTableWithName.Properties.VariableNames, categoricalCols);
-grSymTableWithName = removevars(symmetryTableWithName, nonGRvarNames);
-grVarNames = symmetryTableWithName.Properties.VariableNames(contains(symmetryTableWithName.Properties.VariableNames, '_GR'));
-
-[cgamTable, matrixStats] = calculateCGAM(symmetryTableWithName, independentVars);
-f = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\investigating_cgam';
-cgamLevel = 'subject_intervention_prepost_speed';
-cgamPath = fullfile(f, [cgamLevel '_CGAM.csv']);
-statsPath = fullfile(f, [cgamLevel '_Stats.csv']);
-writetable(cgamTable, cgamPath);
-writetable(matrixStats, statsPath);
-matchedCycleTable = addToTable(matchedCycleTable, cgamTable);
-
-%% cohen's d
-catVars = {'Subject', 'Intervention', 'Speed'};
-catVarsPrePost = {'Subject', 'Intervention', 'Speed', 'PrePost'};
-p = "Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\investigating_cgam\subject_CGAM.csv";
-T = readtable(p);
-uniqueRows = unique(T(:, catVars), 'rows','stable');
-cohensds = NaN(height(uniqueRows),1);
-cohensdTable = uniqueRows;
-for i = 1:height(uniqueRows)
-    row = uniqueRows(i,:);
-    preRow = row;
-    preRow.PrePost = categorical({'PRE'});
-    postRow = row;
-    postRow.PrePost = categorical({'POST'});
-    preDataIdx = ismember(T(:, catVarsPrePost), preRow, 'rows');
-    postDataIdx = ismember(T(:, catVarsPrePost), postRow, 'rows');
-    preData = T(preDataIdx,'CGAM');
-    postData = T(postDataIdx,'CGAM');
-    cohensd = meanEffectSize(preData.CGAM, postData.CGAM, 'Effect','cohen');
-    cohensds(i) = cohensd.Effect;
-    cohensdTable.cohensd(i) = cohensd.Effect;
-    disp([row.Subject{1} ' ' row.Intervention{1} ' ' row.Speed{1} ' Cohens D: ' num2str(cohensds(i))]);
-end
-scatter(1:length(cohensds), cohensds);
-ylabel('Cohens d of CGAM');
-
-%% Best day
-catVars = {'Subject'};
-uniqueSubj = unique(cohensdTable(:, catVars),'rows','stable');
-bestCohens = NaN(height(uniqueSubj),1);
-for i = 1:height(uniqueSubj)
-    subjIdx = tableContains(cohensdTable, uniqueSubj(i,:));
-    bestCohens(i) = max(cohensdTable(subjIdx,'cohensd'));
-end
-scatter(1:length(bestCohens), bestCohens);
+nonSubsetCatVars = {'Cycle', 'StartFoot'};
+lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, nonSubsetCatVars);
+categoricalColsTrial = {'Subject','Intervention','PrePost','Speed','Trial'};
+matchedCycleTableMerged = mergeTables(matchedCycleTable, lrSidesCycleSymTable, categoricalColsTrial); % Can combine the two tables
 
 %% Calculate pre to post change
 levelNum = 4; % The level to average the PRE data within
@@ -141,38 +74,38 @@ prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePos
 % 1. Scalar values only
 % 2. Visit, trial, and gait cycle level
 % 3. Split the name column by underscores, one column per part of the name
-pathTemplate = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\{subject}\{subject}_Overground_EMG_Kinematics.mat';
-colsToConvertToNumeric = {'Trial','Cycle'};
-grColsToConvertToNumeric = {'Trial','GaitRiteRow'};
-trialColToConvertToNumeric = {'Trial'};
-splitNameColumns.trialTable = {'Subject','Intervention','PrePost','Speed', 'Trial'};
-splitNameColumns.cycleTableContraRemoved = {'Subject','Intervention','PrePost','Speed', 'Trial', 'Cycle', 'Side'};
-splitNameColumns.prePostCycleChangeTable = {'Subject','Intervention','Speed', 'Trial', 'Cycle', 'Side'};
-splitNameColumns.matchedCycleTable = splitNameColumns.cycleTableContraRemoved;
-splitNameColumns.prePostChangeMatchedCycleTable = splitNameColumns.prePostCycleChangeTable;
-splitNameColumns.grDistributedTable = {'Subject','Intervention','PrePost','Speed', 'Trial', 'GaitRiteRow', 'Side'};
-splitNameColumns.prePostChangeGRDistributedTable = {'Subject','Intervention','Speed', 'Trial', 'GaitRiteRow', 'Side'};
-splitNameColumns.grSymTable = splitNameColumns.grDistributedTable;
-splitNameColumns.prePostGRSymTable = splitNameColumns.prePostChangeGRDistributedTable;
-
-% trialTable
-trialTableAll = combineSubjectTables(allSubjects, pathTemplate, 'trialTable', splitNameColumns.trialTable, trialColToConvertToNumeric);
-% cycleTableContraRemoved
-cycleTableContraRemovedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'cycleTableContraRemoved', splitNameColumns.cycleTableContraRemoved, colsToConvertToNumeric);
-% prePostCycleChangeTable
-prePostCycleChangeTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostCycleChangeTable', splitNameColumns.prePostCycleChangeTable, colsToConvertToNumeric);
-% matchedCycleTable
-matchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'matchedCycleTable', splitNameColumns.matchedCycleTable, colsToConvertToNumeric);
-% prePostChangeMatchedCycleTable
-prePostChangeMatchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeMatchedCycleTable', splitNameColumns.prePostChangeMatchedCycleTable, colsToConvertToNumeric);
-% grDistributedTable
-grDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grDistributedTable', splitNameColumns.grDistributedTable, grColsToConvertToNumeric);
-% prePostChangeGRDistributedTable
-prePostChangeGRDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeGRDistributedTable', splitNameColumns.prePostChangeGRDistributedTable, grColsToConvertToNumeric);
-% grSymTable
-grSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grSymTable', splitNameColumns.grSymTable, grColsToConvertToNumeric);
-% prePostGRSymTable
-prePostGRSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostGRSymTable', splitNameColumns.prePostGRSymTable, grColsToConvertToNumeric);
+% pathTemplate = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\{subject}\{subject}_Overground_EMG_Kinematics.mat';
+% colsToConvertToNumeric = {'Trial','Cycle'};
+% grColsToConvertToNumeric = {'Trial','GaitRiteRow'};
+% trialColToConvertToNumeric = {'Trial'};
+% splitNameColumns.trialTable = {'Subject','Intervention','PrePost','Speed', 'Trial'};
+% splitNameColumns.cycleTableContraRemoved = {'Subject','Intervention','PrePost','Speed', 'Trial', 'Cycle', 'Side'};
+% splitNameColumns.prePostCycleChangeTable = {'Subject','Intervention','Speed', 'Trial', 'Cycle', 'Side'};
+% splitNameColumns.matchedCycleTable = splitNameColumns.cycleTableContraRemoved;
+% splitNameColumns.prePostChangeMatchedCycleTable = splitNameColumns.prePostCycleChangeTable;
+% splitNameColumns.grDistributedTable = {'Subject','Intervention','PrePost','Speed', 'Trial', 'GaitRiteRow', 'Side'};
+% splitNameColumns.prePostChangeGRDistributedTable = {'Subject','Intervention','Speed', 'Trial', 'GaitRiteRow', 'Side'};
+% splitNameColumns.grSymTable = splitNameColumns.grDistributedTable;
+% splitNameColumns.prePostGRSymTable = splitNameColumns.prePostChangeGRDistributedTable;
+% 
+% % trialTable
+% trialTableAll = combineSubjectTables(allSubjects, pathTemplate, 'trialTable', splitNameColumns.trialTable, trialColToConvertToNumeric);
+% % cycleTableContraRemoved
+% cycleTableContraRemovedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'cycleTableContraRemoved', splitNameColumns.cycleTableContraRemoved, colsToConvertToNumeric);
+% % prePostCycleChangeTable
+% prePostCycleChangeTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostCycleChangeTable', splitNameColumns.prePostCycleChangeTable, colsToConvertToNumeric);
+% % matchedCycleTable
+% matchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'matchedCycleTable', splitNameColumns.matchedCycleTable, colsToConvertToNumeric);
+% % prePostChangeMatchedCycleTable
+% prePostChangeMatchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeMatchedCycleTable', splitNameColumns.prePostChangeMatchedCycleTable, colsToConvertToNumeric);
+% % grDistributedTable
+% grDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grDistributedTable', splitNameColumns.grDistributedTable, grColsToConvertToNumeric);
+% % prePostChangeGRDistributedTable
+% prePostChangeGRDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeGRDistributedTable', splitNameColumns.prePostChangeGRDistributedTable, grColsToConvertToNumeric);
+% % grSymTable
+% grSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grSymTable', splitNameColumns.grSymTable, grColsToConvertToNumeric);
+% % prePostGRSymTable
+% prePostGRSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostGRSymTable', splitNameColumns.prePostGRSymTable, grColsToConvertToNumeric);
 
 %% Add the StimNoStim, Intensity, and Frequency columns
 interventionColumnName = 'Intervention';

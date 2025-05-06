@@ -54,9 +54,11 @@ xsensTable = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, interv
 %% Filter XSENS
 xsensTableFiltered = filterXSENS(xsensTable, 'XSENS_Loaded', 'XSENS_Filtered', xsensConfig.FILTER, xsensConfig.SAMPLING_FREQUENCY);
 xsensTable = addToTable(xsensTable, xsensTableFiltered);
-xsensTable.Trial = categorical(str2double(strrep(string(xsensTable.Trial), '0','')));
 
-%% Adjust the order of GaitRite trials as needed
+%% Correct the GaitRite trial numbers when there's fewer than 3 trials
+gaitRiteTable = correctGRTrialNumbersWhenLessThan3(gaitRiteTable, {xsensTable, delsysTable});
+
+%% Adjust the order of trials to match GaitRite, as needed
 [xsensTableReordered, delsysTableReordered] = checkTrialOrderAllInterventions(gaitRiteTable, {xsensTable, delsysTable});
 trialTable = addToTable(trialTable, gaitRiteTable);
 trialTable = addToTable(trialTable, delsysTableReordered);
@@ -228,6 +230,7 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Merge the GaitRite and unmatched cycle tables
+T = copyCategorical(grDistributedTable);
 if ismember({'GaitRiteRow'}, T.Properties.VariableNames)
     grDistributedTable.Cycle = grDistributedTable.GaitRiteRow;
     grDistributedTable = removevars(grDistributedTable, 'GaitRiteRow');
@@ -236,8 +239,8 @@ T = copyCategorical(grDistributedTable);
 mergeVarNames = T.Properties.VariableNames(~ismember(T.Properties.VariableNames, {'StartFoot','Cycle'}));
 mergedCycleTable = mergeTables(grDistributedTable, cycleTable, mergeVarNames);
 
-mergedCycleTable.Cycle = categorical(strrep(string(mergedCycleTable.Cycle), '0', ''));
-matchedCycleTable.Cycle = categorical(strrep(string(matchedCycleTable.Cycle), '0', ''));
+leadingZeroRegex = '^0+'; % Regex to remove leading zeros
+mergedCycleTable.Cycle = categorical(regexprep(string(mergedCycleTable.Cycle),leadingZeroRegex,''));
 
 %% Save the cycle table and the matched cycle table to the all data CSV file
 addOneParticipantDataToAllDataCSV(mergedCycleTable, config.PATHS.ALL_DATA_CSV.UNMATCHED);

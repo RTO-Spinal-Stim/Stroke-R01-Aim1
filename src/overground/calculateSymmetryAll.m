@@ -1,11 +1,11 @@
-function [symmetryTable] = calculateSymmetryAll(tableIn, colNameSuffix, formulaNum, levelNum)
+function [symmetryTable] = calculateSymmetryAll(tableIn, colNameSuffix, formulaNum, nonSubsetCatVars)
 
 %% PURPOSE: CALCULATE THE SYMMETRY VALUES BETWEEN THE TWO COLUMNS.
 % Inputs:
 % tableIn: The table with the input data
 % colNameSuffix: The suffix to append to the column names
 % formulaNum: The number of the formula to use
-% levelNum: The level to match the name at to parse repetitions
+% nonSubsetCatVars: The categorical variables to not include in the subsetting
 %
 % Outputs:
 % symmetryTable: The table of computed symmetry values.
@@ -22,6 +22,7 @@ end
 
 catTable = copyCategorical(tableIn);
 categoricalCols = catTable.Properties.VariableNames;
+subsetCatVars = categoricalCols(~ismember(categoricalCols, nonSubsetCatVars));
 
 colNames = tableIn.Properties.VariableNames;
 colNames(ismember(colNames, categoricalCols)) = [];
@@ -29,8 +30,8 @@ colNames(ismember(colNames, categoricalCols)) = [];
 symmetryTable = table;
 for i = 1:height(tableIn)-1
     tmpTable = catTable(i,:);
-    currName = catTable(i,1:levelNum);
-    nextName = catTable(i+1,1:levelNum);
+    currName = catTable(i,subsetCatVars);
+    nextName = catTable(i+1,subsetCatVars);
     if ~isequal(currName, nextName)
         continue;
     end

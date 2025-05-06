@@ -13,6 +13,7 @@ function [formula] = symmetryFormulae(formulaNum)
 % 3: Split-belt literature symmetry equation: (x2-x1)/(x1+x2)
 % 4: Equation from the grant: 100 * (1-abs(1-x1/x2))
 % 5: Simple ratio: x1/x2
+% 6: The same formula as #1, but multiplied by 100
 
 switch formulaNum
     case 1
@@ -24,7 +25,9 @@ switch formulaNum
     case 4
         formula = @(x1, x2) 100 * (1-abs(1-x1/x2));
     case 5
-        formula = @(x1, x2) x1/x2;    
+        formula = @(x1, x2) x1/x2;  
+    case 6
+        formula = @(x1, x2) 100 * ( 2*abs(x2-x1) / (x2 + x1) );
     otherwise
         error('Wrong formulaNum entered!');
 end
