@@ -6,7 +6,9 @@
         "CODE_FOLDER_PATH": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\overground",
         "ALL_DATA_CSV": {
             "UNMATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_unmatched.csv",
-            "MATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_matched.csv"
+            "MATCHED": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_matched.csv",
+            "TRIAL": "Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_trial.csv",
+            "VISIT":"Y:\\LabMembers\\MTillman\\SavedOutcomes\\StrokeSpinalStim\\Overground_EMG_Kinematics\\FromMATLAB\\0_from_matlab_visit.csv"
         },
         "PLOTS": {
             "ROOT": "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\plots",

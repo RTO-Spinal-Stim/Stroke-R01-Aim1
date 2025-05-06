@@ -70,12 +70,12 @@ for i = 1:height(uniqueCombs)
     joinedTableOrders = joinedTable;
     joinedTableVarNames = joinedTable.Properties.VariableNames;
     joinedTableVarNames(ismember(joinedTableVarNames, categoricalVarNames)) = [];
+    % All the columns being sorted here are date times.
     for colNum = 1:length(joinedTableVarNames)
         [~,orderNums] = sort(joinedTable.(joinedTableVarNames{colNum}));
         joinedTableOrders.(joinedTableVarNames{colNum}) = orderNums;
     end
 
-    [~,grOrder]= sort(joinedTable.(grDateTimeColName));
     % Check that all of the non-gaitrite orders match
     joinedTableOrdersGRRemoved = removevars(joinedTableOrders, [{grDateTimeColName}, categoricalVarNames]);
     ordersGRRemoved = table2array(joinedTableOrdersGRRemoved);

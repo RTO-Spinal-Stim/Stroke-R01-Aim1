@@ -23,18 +23,24 @@ tableOut.(sessionNumberColName) = NaN(height(tableOut),1);
 allColNames = tableIn.Properties.VariableNames;
 removeColNames = allColNames(~ismember(allColNames, {'Subject', tableInColName}));
 tableInRemoved = removevars(tableIn, removeColNames);
+varNames = tepsLog.Properties.VariableNames;
+for i = 1:width(tepsLog)
+    tepsLog.(varNames{i}) = categorical(tepsLog.(varNames{i}));
+end
 
 % Add the session number from each row of the TEPs log.
 for i = 1:height(tepsLog)
     tmpTable = table;
-    tmpTable.Subject = tepsLog.Subject{i};    
-    tmpTable.(tableInColName) = tepsLog.(sessionNameColName){i};
+    tmpTable.Subject = tepsLog.Subject(i);    
+    tmpTable.(tableInColName) = tepsLog.(sessionNameColName)(i);
 
     sessionRowsIdx = ismember(tableInRemoved, tmpTable, 'rows');
     tableOut.(sessionNumberColName)(sessionRowsIdx) = tepsLog.(sessionNumberColName)(i);
 end
 
 % Move the sessionNumberColName column to after the specified column
-specifiedColIdxNum = find(ismember(allColNames, colNameToTheLeft));
+% specifiedColIdxNum = find(ismember(allColNames, colNameToTheLeft));
 
-tableOut = [tableOut(:,1:specifiedColIdxNum), tableOut(:,end), tableOut(:,specifiedColIdxNum+1:end-1)];
+tableOut = movevars(tableOut, sessionNumberColName, 'After', colNameToTheLeft);
+% tableOut = [tableOut(:,1:specifiedColIdxNum), tableOut(:,end), tableOut(:,specifiedColIdxNum+1:end-1)];
+tableOut.(sessionNumberColName) = categorical(tableOut.(sessionNumberColName));

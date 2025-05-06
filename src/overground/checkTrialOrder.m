@@ -1,7 +1,8 @@
 function [allTrials] = checkTrialOrder(subjectDataPath, subjectList)
 
 %% PURPOSE: RETURN A LIST OF TRIALS THAT ARE OUT OF ORDER IN THE GAITRITE DATA.
-% Checks the GaitRite, XSENS, and EMG data
+% Checks the GaitRite, XSENS, and EMG data. This code is intended to be run
+% as a standalone!
 % Inputs:
 % subjectDataPath: Path to the subject data folder
 % subjectList: Cell array of subject names to go through

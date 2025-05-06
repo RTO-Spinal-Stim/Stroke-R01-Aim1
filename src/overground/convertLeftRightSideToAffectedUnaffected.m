@@ -16,9 +16,14 @@ disp('Converting L(eft) & R(ight) to U(naffected) & A(ffected)')
 
 tableOut = tableIn;
 
+varNames = demsTable.Properties.VariableNames;
+for i = 1:width(demsTable)
+    demsTable.(varNames{i}) = categorical(demsTable.(varNames{i}));
+end
+
 for i = 1:height(demsTable)
-    currSubject = demsTable.Subject{i};
-    affectedSide = demsTable.(demsTableColName){i};
+    currSubject = demsTable.Subject(i);
+    affectedSide = demsTable.(demsTableColName)(i);
 
     currSubjectIdx = ismember(tableIn.Subject, currSubject);
 
@@ -29,3 +34,5 @@ for i = 1:height(demsTable)
     tableOut.(tableInColToConvert)(currSubjectUnaffectedSideIdx) = 'U';
 
 end
+
+tableOut.(tableInColToConvert) = categorical(tableOut.(tableInColToConvert));

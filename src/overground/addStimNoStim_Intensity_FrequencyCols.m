@@ -1,4 +1,4 @@
-function [tableOut] = addStimNoStim_Intensity_FrequencyCols(tableIn, intColName)
+function [tableOut] = addStimNoStim_Intensity_FrequencyCols(tableIn, intColName, intervention_map)
 
 %% PURPOSE: ADD COLUMNS TO THE TABLE INDICATING STIM/NO STIM, INTENSITY, AND FREQUENCY
 % Helps with machine learning classifications
@@ -41,10 +41,14 @@ tableOut.Intensity = repmat("", height(tableOut), 1);
 
 for i = 1:height(tableIn)
     intervention = tableIn.(intColName)(i);
-    tableOut.Is_Stim(i) = ints.(intervention).IS_STIM;
-    tableOut.Frequency(i) = ints.(intervention).FREQ;
-    tableOut.Intensity(i) = ints.(intervention).INTENSITY;
+    mapped_intervention = intervention_map(char(intervention));
+    tableOut.Is_Stim(i) = ints.(mapped_intervention).IS_STIM;
+    tableOut.Frequency(i) = ints.(mapped_intervention).FREQ;
+    tableOut.Intensity(i) = ints.(mapped_intervention).INTENSITY;
 end
 
 % Move the IS_STIM, FREQ, and INTENSITY columns to the right of the intColName column
 tableOut = movevars(tableOut, {'Is_Stim', 'Frequency', 'Intensity'}, 'After', intColName);
+tableOut.Is_Stim = categorical(tableOut.Is_Stim);
+tableOut.Frequency = categorical(tableOut.Frequency);
+tableOut.Intensity = categorical(tableOut.Intensity);

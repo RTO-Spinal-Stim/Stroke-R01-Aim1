@@ -230,6 +230,7 @@ matchedCycleTable = addToTable(matchedCycleTable, xcorrTableDelsys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Merge the GaitRite and unmatched cycle tables
+leadingZeroRegex = '^0+'; % Regex to remove leading zeros
 T = copyCategorical(grDistributedTable);
 if ismember({'GaitRiteRow'}, T.Properties.VariableNames)
     grDistributedTable.Cycle = grDistributedTable.GaitRiteRow;
@@ -237,20 +238,24 @@ if ismember({'GaitRiteRow'}, T.Properties.VariableNames)
 end
 T = copyCategorical(grDistributedTable);
 mergeVarNames = T.Properties.VariableNames(~ismember(T.Properties.VariableNames, {'StartFoot','Cycle'}));
+
+cycleTable.Cycle = categorical(regexprep(string(cycleTable.Cycle),leadingZeroRegex,''));
 mergedCycleTable = mergeTables(grDistributedTable, cycleTable, mergeVarNames);
 
-leadingZeroRegex = '^0+'; % Regex to remove leading zeros
-mergedCycleTable.Cycle = categorical(regexprep(string(mergedCycleTable.Cycle),leadingZeroRegex,''));
+matchedCycleTable.Cycle = categorical(regexprep(string(matchedCycleTable.Cycle),leadingZeroRegex,''));
 
 %% Save the cycle table and the matched cycle table to the all data CSV file
 addOneParticipantDataToAllDataCSV(mergedCycleTable, config.PATHS.ALL_DATA_CSV.UNMATCHED);
 addOneParticipantDataToAllDataCSV(matchedCycleTable, config.PATHS.ALL_DATA_CSV.MATCHED);
+addOneParticipantDataToAllDataCSV(trialTable, config.PATHS.ALL_DATA_CSV.TRIAL);
+% addOneParticipantDataToAllDataCSV(visitTable, config.PATHS.ALL_DATA_CSV.VISIT);
 
 %% Save the structs to the participant's save folder.
 subjectSavePath = fullfile(subjectSaveFolder, [subject '_' saveFileName]);
 if ~isfolder(subjectSaveFolder)
     mkdir(subjectSaveFolder);
 end
+cycleTable = mergedCycleTable;
 save(subjectSavePath, 'visitTable', 'speedPrePostTable', 'trialTable', 'cycleTable', 'matchedCycleTable');
 disp(['Saved ' subject ' tables to: ' subjectSavePath]);
 

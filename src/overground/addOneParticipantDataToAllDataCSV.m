@@ -30,8 +30,10 @@ if height(allDataTable) > 0
     allDataTable(existingNameRowsIdx,:) = [];
 end
 
-% Append the participant data to the all data table
+% Append the participant data to the all data table, ensuring it's in the
+% proper order.
 allDataTable = addToTable(allDataTable, participantTableScalar);
+allDataTable = sortrows(allDataTable, catVars);
 
 % Write the table back to the CSV
 writetable(allDataTable, allDataTablePath);

@@ -30,122 +30,62 @@ end
 
 %% Load the cycleTable and matchedCycleTable from all subjects
 categoricalCols = {'Subject','Intervention','PrePost','Speed','Trial','Cycle','StartFoot'};
-cycleTable = readtable(config.PATHS.ALL_DATA_CSV.UNMATCHED);
-matchedCycleTable = readtable(config.PATHS.ALL_DATA_CSV.MATCHED);
+cycleTableAll = readtable(config.PATHS.ALL_DATA_CSV.UNMATCHED);
+matchedCycleTableAll = readtable(config.PATHS.ALL_DATA_CSV.MATCHED);
 for i = 1:length(categoricalCols)
-    cycleTable.(categoricalCols{i}) = categorical(cycleTable.(categoricalCols{i}));
-    matchedCycleTable.(categoricalCols{i}) = categorical(matchedCycleTable.(categoricalCols{i}));
+    cycleTableAll.(categoricalCols{i}) = categorical(cycleTableAll.(categoricalCols{i}));
+    matchedCycleTableAll.(categoricalCols{i}) = categorical(matchedCycleTableAll.(categoricalCols{i}));
 end
+
+%% Load the trialTable from all subjects
+trialTableCategoricalCols = {'Subject','Intervention','PrePost','Speed','Trial'};
+trialTableAll = readtable(config.PATHS.ALL_DATA_CSV.TRIAL);
+for i = 1:length(trialTableCategoricalCols)
+    trialTableAll.(trialTableCategoricalCols{i}) = categorical(trialTableAll.(trialTableCategoricalCols{i}));
+end
+
+%% Replace 'StartFoot' with 'Side'
+categoricalCols = {'Subject','Intervention','PrePost','Speed','Trial','Cycle','Side'};
+if ismember('StartFoot', cycleTableAll.Properties.VariableNames)
+    cycleTableAll.Side = cycleTableAll.StartFoot;
+    cycleTableAll = removevars(cycleTableAll, 'StartFoot');
+end
+if ismember('StartFoot', matchedCycleTableAll.Properties.VariableNames)
+    matchedCycleTableAll.Side = matchedCycleTableAll.StartFoot;
+    matchedCycleTableAll = removevars(matchedCycleTableAll, 'StartFoot');
+end
+cycleTableAll = movevars(cycleTableAll,'Side','After','Cycle');
+matchedCycleTableAll = movevars(matchedCycleTableAll,'Side','After','Cycle');
 
 %% Calculate symmetries
 formulaNum = 6; % The modified symmetry formula
 levelNumToMatch = 5; % 'trial'
-[colNamesL, colNamesR] = getLRColNames(cycleTable);
+[colNamesL, colNamesR] = getLRColNames(cycleTableAll);
 % Cycle table
-cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTable, colNamesL, colNamesR);
-grVars = cycleTable.Properties.VariableNames(contains(cycleTable.Properties.VariableNames,'_GR'));
-grTable = removevars(cycleTable, ~ismember(cycleTable.Properties.VariableNames, [grVars, categoricalCols]));
+cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTableAll, colNamesL, colNamesR);
+grVars = cycleTableAll.Properties.VariableNames(contains(cycleTableAll.Properties.VariableNames,'_GR'));
+grTable = removevars(cycleTableAll, ~ismember(cycleTableAll.Properties.VariableNames, [grVars, categoricalCols]));
 cycleTableContraRemoved = addToTable(cycleTableContraRemoved_NoGR, grTable);
 scalarColumnNames = getScalarColumnNames(cycleTableContraRemoved);
 allColumnNames = cycleTableContraRemoved.Properties.VariableNames;
 nonscalarColumnNames = allColumnNames(~ismember(allColumnNames, [scalarColumnNames; categoricalCols']));
 cycleTableContraRemovedScalarColumns = removevars(cycleTableContraRemoved, nonscalarColumnNames);
 % Compute the symmetry values
-nonSubsetCatVars = {'Cycle', 'StartFoot'};
+nonSubsetCatVars = {'Cycle','Side'};
 lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, nonSubsetCatVars);
 categoricalColsTrial = {'Subject','Intervention','PrePost','Speed','Trial'};
-matchedCycleTableMerged = mergeTables(matchedCycleTable, lrSidesCycleSymTable, categoricalColsTrial); % Can combine the two tables
-
-%% Calculate pre to post change
-levelNum = 4; % The level to average the PRE data within
-% Percent difference
-formulaNum = 2;
-prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
-% Difference
-formulaNum = 1;
-prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
-% Combine the two tables 
-prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', 'Name');
-prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', 'Name');
-
-%% Combine all of the tables for all subjects into one main table
-% 1. Scalar values only
-% 2. Visit, trial, and gait cycle level
-% 3. Split the name column by underscores, one column per part of the name
-% pathTemplate = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\{subject}\{subject}_Overground_EMG_Kinematics.mat';
-% colsToConvertToNumeric = {'Trial','Cycle'};
-% grColsToConvertToNumeric = {'Trial','GaitRiteRow'};
-% trialColToConvertToNumeric = {'Trial'};
-% splitNameColumns.trialTable = {'Subject','Intervention','PrePost','Speed', 'Trial'};
-% splitNameColumns.cycleTableContraRemoved = {'Subject','Intervention','PrePost','Speed', 'Trial', 'Cycle', 'Side'};
-% splitNameColumns.prePostCycleChangeTable = {'Subject','Intervention','Speed', 'Trial', 'Cycle', 'Side'};
-% splitNameColumns.matchedCycleTable = splitNameColumns.cycleTableContraRemoved;
-% splitNameColumns.prePostChangeMatchedCycleTable = splitNameColumns.prePostCycleChangeTable;
-% splitNameColumns.grDistributedTable = {'Subject','Intervention','PrePost','Speed', 'Trial', 'GaitRiteRow', 'Side'};
-% splitNameColumns.prePostChangeGRDistributedTable = {'Subject','Intervention','Speed', 'Trial', 'GaitRiteRow', 'Side'};
-% splitNameColumns.grSymTable = splitNameColumns.grDistributedTable;
-% splitNameColumns.prePostGRSymTable = splitNameColumns.prePostChangeGRDistributedTable;
-% 
-% % trialTable
-% trialTableAll = combineSubjectTables(allSubjects, pathTemplate, 'trialTable', splitNameColumns.trialTable, trialColToConvertToNumeric);
-% % cycleTableContraRemoved
-% cycleTableContraRemovedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'cycleTableContraRemoved', splitNameColumns.cycleTableContraRemoved, colsToConvertToNumeric);
-% % prePostCycleChangeTable
-% prePostCycleChangeTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostCycleChangeTable', splitNameColumns.prePostCycleChangeTable, colsToConvertToNumeric);
-% % matchedCycleTable
-% matchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'matchedCycleTable', splitNameColumns.matchedCycleTable, colsToConvertToNumeric);
-% % prePostChangeMatchedCycleTable
-% prePostChangeMatchedCycleTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeMatchedCycleTable', splitNameColumns.prePostChangeMatchedCycleTable, colsToConvertToNumeric);
-% % grDistributedTable
-% grDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grDistributedTable', splitNameColumns.grDistributedTable, grColsToConvertToNumeric);
-% % prePostChangeGRDistributedTable
-% prePostChangeGRDistributedTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostChangeGRDistributedTable', splitNameColumns.prePostChangeGRDistributedTable, grColsToConvertToNumeric);
-% % grSymTable
-% grSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'grSymTable', splitNameColumns.grSymTable, grColsToConvertToNumeric);
-% % prePostGRSymTable
-% prePostGRSymTableAll = combineSubjectTables(allSubjects, pathTemplate, 'prePostGRSymTable', splitNameColumns.prePostGRSymTable, grColsToConvertToNumeric);
+trialTableAllSym = trialTableAll;
+cycleTableAllSym = cycleTableAll;
+matchedCycleTableAllSym = addToTable(matchedCycleTableAll, lrSidesCycleSymTable);
 
 %% Add the StimNoStim, Intensity, and Frequency columns
 interventionColumnName = 'Intervention';
-trialTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(trialTableAll, interventionColumnName);
-cycleTableContraRemovedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(cycleTableContraRemovedTableAll, interventionColumnName);
-prePostCycleChangeTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostCycleChangeTableAll, interventionColumnName);
-matchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(matchedCycleTableAll, interventionColumnName);
-prePostChangeMatchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostChangeMatchedCycleTableAll, interventionColumnName);
-grDistributedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(grDistributedTableAll, interventionColumnName);
-prePostChangeGRDistributedTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostChangeGRDistributedTableAll, interventionColumnName);
-grSymTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(grSymTableAll, interventionColumnName);
-prePostGRSymTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(prePostGRSymTableAll, interventionColumnName);
-
-%% Write the tables to file.
-tablesPathPrefixUnmerged = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\UnmergedTables';
-% trialTableAll
-writetable(trialTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'trialTableAll.csv'));
-% cycleTableContraRemoved
-writetable(cycleTableContraRemovedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'cycleTableContraRemoved.csv'));
-% prePostCycleChangeTable
-writetable(prePostCycleChangeTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostCycleChangeTable.csv'));
-% matchedCycleTable
-writetable(matchedCycleTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'matchedCycleTable.csv'));
-% prePostChangeMatchedCycleTable
-writetable(prePostChangeMatchedCycleTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostChangeMatchedCycleTable.csv'));
-% grDistributedTable
-writetable(grDistributedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'grDistributedTable.csv'));
-% prePostChangeGRDistributedTable
-writetable(prePostChangeGRDistributedTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostChangeGRDistributedTable.csv'));
-% grSymTable
-writetable(grSymTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'grSymTable.csv'));
-% prePostGRSymTable
-writetable(prePostGRSymTableAllAddedCols, fullfile(tablesPathPrefixUnmerged, 'prePostGRSymTable.csv'));
-
-%% Merge the tables that can be merged.
-% colNamesToMergeBy = {'GaitRiteRow', 'Cycle'};
-% mergedMatchedCycleTable = mergeTables(grSymTableAllAddedCols, matchedCycleTableAllAddedCols, colNamesToMergeBy);
-% mergedPrePostMatchedCycleTable = mergeTables(prePostGRSymTableAllAddedCols, prePostChangeMatchedCycleTableAllAddedCols, colNamesToMergeBy);
-% mergedUnmatchedCycleTable = mergeTables(grDistributedTableAllAddedCols, cycleTableContraRemovedTableAllAddedCols, colNamesToMergeBy);
-% mergedPrePostUnmatchedCycleTable = mergeTables(prePostChangeGRDistributedTableAllAddedCols, prePostCycleChangeTableAllAddedCols, colNamesToMergeBy);
+mapped_interventions = config.MAPPED_INTERVENTION_FIELDS;
+interventions = config.INTERVENTION_FOLDERS;
+intervention_map = containers.Map(interventions, mapped_interventions);
+trialTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(trialTableAllSym, interventionColumnName, intervention_map);
+cycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(cycleTableAllSym, interventionColumnName, intervention_map);
+matchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(matchedCycleTableAllSym, interventionColumnName, intervention_map);
 
 %% Add session number
 addpath('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MEPs\MEPs Processing AIM 1');
@@ -158,25 +98,17 @@ reducedTEPsLog = unique(tepsLog(:, colNamesIdx), 'rows');
 for i = 1:height(reducedTEPsLog)
     reducedTEPsLog.Subject{i} = ['SS' reducedTEPsLog.Subject{i}];
 end
+subjectIdx = ismember(string(reducedTEPsLog.Subject), string(trialTableAll.Subject));
+reducedTEPsLog(~subjectIdx,:) = [];
 % Map the intervention names
 mappedInterventions = containers.Map(config.INTERVENTION_FOLDERS, config.MAPPED_INTERVENTION_FIELDS);
 reducedTEPsLog.SessionCode = cellfun(@(x) mappedInterventions(x), reducedTEPsLog.SessionCode, 'UniformOutput', false);
 sessionOrderColName = 'SessionOrder';
 sessionCodeColName = 'SessionCode';
 interventionColName = 'Intervention';
-trialTableAllSessionNum = addSessionOrder(trialTableAll, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
-mergedMatchedCycleTableSessionNum = addSessionOrder(mergedMatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
-mergedPrePostMatchedCycleTableSessionNum = addSessionOrder(mergedPrePostMatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
-mergedUnmatchedCycleTableSessionNum = addSessionOrder(mergedUnmatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
-mergedPrePostUnmatchedCycleTableSessionNum = addSessionOrder(mergedPrePostUnmatchedCycleTable, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
-
-%% Save the merged tables
-tablesPathPrefixMerged = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTables';
-writetable(trialTableAllSessionNum, fullfile(tablesPathPrefixMerged, 'trialTableAll.csv'));
-writetable(mergedMatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'matchedCycles.csv'));
-writetable(mergedPrePostMatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'matchedCyclesPrePost.csv'));
-writetable(mergedUnmatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'unmatchedCycles.csv'));
-writetable(mergedPrePostUnmatchedCycleTableSessionNum, fullfile(tablesPathPrefixMerged, 'unmatchedCyclesPrePost.csv'));
+trialTableAllSessionNum = addSessionOrder(trialTableAllAddedCols, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+cycleTableAllSessionNum = addSessionOrder(cycleTableAllAddedCols, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
+matchedCycleTableAllSessionNum = addSessionOrder(matchedCycleTableAllAddedCols, reducedTEPsLog, sessionOrderColName, sessionCodeColName, interventionColName, interventionColName);
 
 %% Adjust the L & R sides to "U" and "A" for unaffected and affected sides
 tepsLogPath = 'Y:\Spinal Stim_Stroke R01\AIM 1\Subject Data\TEPs_log.xlsx';
@@ -190,25 +122,38 @@ reducedTEPsLog = unique(tepsLog(:, colNamesIdx), 'rows');
 for i = 1:height(reducedTEPsLog)
     reducedTEPsLog.Subject{i} = ['SS' reducedTEPsLog.Subject{i}];
 end
-mergedMatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedMatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
-mergedPrePostMatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedPrePostMatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
-mergedUnmatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedUnmatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
-mergedPrePostUnmatchedCycleTableUA = convertLeftRightSideToAffectedUnaffected(mergedPrePostUnmatchedCycleTableSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+subjectIdx = ismember(string(reducedTEPsLog.Subject), string(trialTableAll.Subject));
+reducedTEPsLog(~subjectIdx,:) = [];
+trialTableAllUA = trialTableAllSessionNum;
+cycleTableAllUA = convertLeftRightSideToAffectedUnaffected(cycleTableAllSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+matchedCycleTableAllUA = convertLeftRightSideToAffectedUnaffected(matchedCycleTableAllSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
+
+%% Calculate pre to post change
+levelNum = 4; % The level to average the PRE data within
+% Percent difference
+formulaNum = 2;
+prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+% Difference
+formulaNum = 1;
+prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
+prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+% Combine the two tables 
+prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', categoricalCols);
+prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', categoricalCols);
 
 %% Save the unaffected and affected side tables
 tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected';
-writetable(trialTableAllSessionNum, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
-writetable(mergedMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'));
-writetable(mergedPrePostMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'));
-writetable(mergedUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));
-writetable(mergedPrePostUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'));
+writetable(trialTableAllUA, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
+writetable(matchedCycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycleTableAll.csv'));
+% writetable(mergedPrePostMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'));
+writetable(cycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'cycleTableAll.csv'));
+% writetable(mergedPrePostUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'));
 
 %% Add the 10MWT data to each table
 trialTableAllSessionNum10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'), configPath);
 mergedMatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'), configPath);
-% mergedPrePostMatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'), configPath);
 mergedUnmatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'), configPath);
-% mergedPrePostUnmatchedCycleTableUA10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'), configPath);
 
 %% Save the 10MWT tables
 tablesPathPrefixMergedUA10MWT = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected10MWT';

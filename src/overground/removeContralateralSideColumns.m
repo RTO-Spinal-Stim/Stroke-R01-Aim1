@@ -28,7 +28,7 @@ for i = 1:height(tableIn)
     row = tableIn(i,:);
     for colNum = 1:length(colNamesNoSide)
         colNameNoSide = colNamesNoSide{colNum};
-        rowSide = char(row.StartFoot);
+        rowSide = char(row.Side);
         if strcmp(rowSide, 'L')
             colNameSide = columnNamesL{colNum};
         elseif strcmp(rowSide, 'R')

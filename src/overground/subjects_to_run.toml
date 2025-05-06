@@ -1,6 +1,6 @@
 [subjects]
 run = [
-    "SS01",
+    # "SS01",
     "SS02",
     "SS03",
     "SS04",
