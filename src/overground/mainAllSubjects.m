@@ -29,6 +29,8 @@ for subNum = 1:length(allSubjectsPlot)
 end
 
 %% Load the cycleTable and matchedCycleTable from all subjects
+configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
+config = jsondecode(fileread(configPath));
 categoricalCols = {'Subject','Intervention','PrePost','Speed','Trial','Cycle','StartFoot'};
 cycleTableAll = readtable(config.PATHS.ALL_DATA_CSV.UNMATCHED);
 matchedCycleTableAll = readtable(config.PATHS.ALL_DATA_CSV.MATCHED);
@@ -58,7 +60,7 @@ cycleTableAll = movevars(cycleTableAll,'Side','After','Cycle');
 matchedCycleTableAll = movevars(matchedCycleTableAll,'Side','After','Cycle');
 
 %% Calculate symmetries
-formulaNum = 6; % The modified symmetry formula
+formulaNum = 2;
 levelNumToMatch = 5; % 'trial'
 [colNamesL, colNamesR] = getLRColNames(cycleTableAll);
 % Cycle table
@@ -78,14 +80,25 @@ trialTableAllSym = trialTableAll;
 cycleTableAllSym = cycleTableAll;
 matchedCycleTableAllSym = addToTable(matchedCycleTableAll, lrSidesCycleSymTable);
 
-%% Add the StimNoStim, Intensity, and Frequency columns
-interventionColumnName = 'Intervention';
+%% Adjust intervention name to mapped names
 mapped_interventions = config.MAPPED_INTERVENTION_FIELDS;
 interventions = config.INTERVENTION_FOLDERS;
 intervention_map = containers.Map(interventions, mapped_interventions);
-trialTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(trialTableAllSym, interventionColumnName, intervention_map);
-cycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(cycleTableAllSym, interventionColumnName, intervention_map);
-matchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(matchedCycleTableAllSym, interventionColumnName, intervention_map);
+for i = 1:height(trialTableAllSym)
+    trialTableAllSym.Intervention(i) = intervention_map(string(trialTableAllSym.Intervention(i)));
+end
+for i = 1:height(cycleTableAllSym)
+    cycleTableAllSym.Intervention(i) = intervention_map(string(cycleTableAllSym.Intervention(i)));
+end
+for i = 1:height(matchedCycleTableAllSym)
+    matchedCycleTableAllSym.Intervention(i) = intervention_map(string(matchedCycleTableAllSym.Intervention(i)));
+end
+
+%% Add the StimNoStim, Intensity, and Frequency columns
+interventionColumnName = 'Intervention';
+trialTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(trialTableAllSym, interventionColumnName);
+cycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(cycleTableAllSym, interventionColumnName);
+matchedCycleTableAllAddedCols = addStimNoStim_Intensity_FrequencyCols(matchedCycleTableAllSym, interventionColumnName);
 
 %% Add session number
 addpath('Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MEPs\MEPs Processing AIM 1');
@@ -128,6 +141,12 @@ trialTableAllUA = trialTableAllSessionNum;
 cycleTableAllUA = convertLeftRightSideToAffectedUnaffected(cycleTableAllSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
 matchedCycleTableAllUA = convertLeftRightSideToAffectedUnaffected(matchedCycleTableAllSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
 
+%% Save the unaffected and affected side tables
+tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected_0_1_reproduced';
+writetable(trialTableAllUA, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
+writetable(matchedCycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'));
+writetable(cycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));
+
 %% Calculate pre to post change
 levelNum = 4; % The level to average the PRE data within
 % Percent difference
@@ -141,14 +160,6 @@ prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, f
 % Combine the two tables 
 prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', categoricalCols);
 prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', categoricalCols);
-
-%% Save the unaffected and affected side tables
-tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected';
-writetable(trialTableAllUA, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
-writetable(matchedCycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycleTableAll.csv'));
-% writetable(mergedPrePostMatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'matchedCyclesPrePost.csv'));
-writetable(cycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'cycleTableAll.csv'));
-% writetable(mergedPrePostUnmatchedCycleTableUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCyclesPrePost.csv'));
 
 %% Add the 10MWT data to each table
 trialTableAllSessionNum10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'), configPath);

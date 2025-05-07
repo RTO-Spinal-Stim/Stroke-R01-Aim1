@@ -35,7 +35,7 @@ for i = 1:height(tepsLog)
     tmpTable.(tableInColName) = tepsLog.(sessionNameColName)(i);
 
     sessionRowsIdx = ismember(tableInRemoved, tmpTable, 'rows');
-    tableOut.(sessionNumberColName)(sessionRowsIdx) = tepsLog.(sessionNumberColName)(i);
+    tableOut.(sessionNumberColName)(sessionRowsIdx) = double(tepsLog.(sessionNumberColName)(i));
 end
 
 % Move the sessionNumberColName column to after the specified column
