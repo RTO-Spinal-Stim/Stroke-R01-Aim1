@@ -1,4 +1,4 @@
-function [tableOut] = calculatePrePostChange(tableIn, formulaNum, levelNum)
+function [tableOut] = calculatePrePostChange(tableIn, formulaNum)
 
 %% PURPOSE: CALCULATE THE CHANGE IN POST VS. PRE
 % Inputs:
@@ -20,64 +20,68 @@ switch formulaNum
         formula = @(pre, post) post - pre;
         methodSuffix = 'Diff';
     case 2
-        formula = @(pre, post) ((post - pre) / pre) * 100;
+        formula = @(pre, post) ((post - pre) ./ pre) * 100;
         methodSuffix = 'PercDiff';
 end
 
+preStr = "PRE";
+postStr = "POST";
+prePostStr = "PrePost";
+
 tableOut = table;
 
-preStr = '_PRE_';
-postStr = '_POST_';
+catTable = copyCategorical(tableIn);
+catVars = catTable.Properties.VariableNames;
+nonSubsetCatCols = {'Cycle', 'Side', 'Trial'};
+catCols = catVars(~ismember(catVars, nonSubsetCatCols));
 
-if ~exist('levelNum','var')
-    levelNum = 4; % pre/post & SSV/FV combination
-end
-
-colNamesToRemove = {'Name'};
-colNames = tableIn.Properties.VariableNames;
 scalarColNames = getScalarColumnNames(tableIn);
-nonScalarColNames = colNames(~ismember(colNames, scalarColNames));
-colNamesToRemove = [colNamesToRemove, nonScalarColNames];
-colNames(ismember(colNames, colNamesToRemove)) = [];
 
-preRowsIdx = contains(tableIn.Name, preStr);
-preTable = tableIn(preRowsIdx,:);
-uniquePreNames = getNamesPrefixes(preTable.Name, levelNum);
+preRowsIdx = ismember(string(catTable.PrePost), preStr);
+preTable = tableIn(preRowsIdx,[catCols, scalarColNames']);
+preTableCat = catTable(preRowsIdx,catVars);
+
+uniquePreNames = unique(preTableCat(:, catCols),'rows','stable');
+
 %% Average the PRE values in each group
-meanPreTableWithPostNames = table;
-for i = 1:length(uniquePreNames)
-    currPreName = uniquePreNames{i};
-    currPreIdx = contains(preTable.Name, currPreName);
-    tmpTable = table;
-    currPostName = strrep(currPreName, preStr, postStr);
-    tmpTable.Name = convertCharsToStrings(currPostName);
+meanPreTable = table;
+for i = 1:height(uniquePreNames)
+    currPreName = uniquePreNames(i,:);
+    currPreIdx = tableContains(preTable, currPreName);
+    tmpTable = currPreName;
 
-    for colNum = 1:length(colNames)
-        colName = colNames{colNum};
+    for colNum = 1:length(scalarColNames)
+        colName = scalarColNames{colNum};
         currPreData = preTable.(colName)(currPreIdx);
         tmpTable.(colName) = mean(currPreData,'omitnan');
     end
-    meanPreTableWithPostNames = [meanPreTableWithPostNames; tmpTable];
+    meanPreTable = [meanPreTable; tmpTable];
 end
+meanPreTableCat = copyCategorical(meanPreTable);
+meanPreTableCat = removevars(meanPreTableCat, prePostStr);
 
 %% Compute the change values in each group
-postRowsIdx = contains(tableIn.Name, postStr);
-postTable = tableIn(postRowsIdx,:);
-for i = 1:height(postTable)
-    tmpTable = table;
-    namePostRemoved = strrep(postTable.Name(i), postStr, '_');
-    tmpTable.Name = convertCharsToStrings(namePostRemoved);
-    currNamePrefix = getNamesPrefixes(postTable.Name(i), levelNum);
-    if iscell(currNamePrefix)
-        currNamePrefix = currNamePrefix{1};
-    end
-    currMeanPreRowIdx = ismember(meanPreTableWithPostNames.Name, currNamePrefix);
-    assert(sum(currMeanPreRowIdx) == 1);
+postRowsIdx = ismember(string(tableIn.PrePost), postStr);
+postTable = tableIn(postRowsIdx,[catVars, scalarColNames']);
+prePostTable = removevars(postTable, prePostStr);
+prePostTableCat = copyCategorical(prePostTable);
+prePostTableUnique = removevars(prePostTableCat, nonSubsetCatCols);
+prePostTableUnique = unique(prePostTableUnique, 'rows','stable');
+catVarsNoPrePost = catVars(~ismember(catVars, {char(prePostStr)}));
 
-    for colNum = 1:length(colNames)
-        colName = colNames{colNum};
-        postValue = postTable.(colName)(i);
-        preMeanValue = meanPreTableWithPostNames.(colName)(currMeanPreRowIdx);
+prePostTableCatSubsetOnly = removevars(prePostTableCat, nonSubsetCatCols);
+for i = 1:height(prePostTableUnique)    
+    currPostRowIdx = ismember(prePostTableCatSubsetOnly, prePostTableUnique(i,:),'rows');
+    currRows = prePostTable(currPostRowIdx, catVarsNoPrePost);
+    currRowsSubset = removevars(currRows, nonSubsetCatCols);
+    currMeanPreRowIdx = ismember(meanPreTableCat, currRowsSubset);
+    assert(sum(currMeanPreRowIdx) == 1);
+    tmpTable = currRows;
+
+    for colNum = 1:length(scalarColNames)
+        colName = scalarColNames{colNum};
+        postValue = postTable.(colName)(currPostRowIdx);
+        preMeanValue = meanPreTable.(colName)(currMeanPreRowIdx);
         tmpTable.([colName '_' methodSuffix]) = formula(preMeanValue, postValue);
     end
     tableOut = [tableOut; tmpTable];

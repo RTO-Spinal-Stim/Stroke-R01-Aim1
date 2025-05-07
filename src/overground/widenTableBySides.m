@@ -11,6 +11,8 @@ function [tableOut] = widenTableBySides(tableIn, sideColName, factorColNames, pr
 % Outputs:
 % tableOut: The output data table
 
+disp('Widening tables by sides');
+
 tableOut = table;
 
 allVarNames = tableIn.Properties.VariableNames;

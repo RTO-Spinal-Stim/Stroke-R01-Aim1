@@ -60,8 +60,7 @@ cycleTableAll = movevars(cycleTableAll,'Side','After','Cycle');
 matchedCycleTableAll = movevars(matchedCycleTableAll,'Side','After','Cycle');
 
 %% Calculate symmetries
-formulaNum = 2;
-levelNumToMatch = 5; % 'trial'
+formulaNum = 1;
 [colNamesL, colNamesR] = getLRColNames(cycleTableAll);
 % Cycle table
 cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTableAll, colNamesL, colNamesR);
@@ -77,7 +76,7 @@ nonSubsetCatVars = {'Cycle','Side'};
 lrSidesCycleSymTable = calculateSymmetryAll(cycleTableContraRemovedScalarColumns, '_Sym', formulaNum, nonSubsetCatVars);
 categoricalColsTrial = {'Subject','Intervention','PrePost','Speed','Trial'};
 trialTableAllSym = trialTableAll;
-cycleTableAllSym = cycleTableAll;
+cycleTableAllSym = cycleTableContraRemovedScalarColumns;
 matchedCycleTableAllSym = addToTable(matchedCycleTableAll, lrSidesCycleSymTable);
 
 %% Adjust intervention name to mapped names
@@ -148,18 +147,18 @@ writetable(matchedCycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'matchedCy
 writetable(cycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));
 
 %% Calculate pre to post change
-levelNum = 4; % The level to average the PRE data within
+categoricalColsNoPrePost = {'Subject','Intervention','Speed','Trial','Cycle','Side'};
 % Percent difference
 formulaNum = 2;
-prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+prePostCycleChangeTablePercDiff = calculatePrePostChange(cycleTableAllUA, formulaNum);
+prePostChangeMatchedCycleTablePercDiff = calculatePrePostChange(matchedCycleTableAllUA, formulaNum);
 % Difference
 formulaNum = 1;
-prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableContraRemovedScalarColumns, formulaNum, levelNum);
-prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTable, formulaNum, levelNum);
+prePostCycleChangeTableDiff = calculatePrePostChange(cycleTableAllUA, formulaNum);
+prePostChangeMatchedCycleTableDiff = calculatePrePostChange(matchedCycleTableAllUA, formulaNum);
 % Combine the two tables 
-prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', categoricalCols);
-prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', categoricalCols);
+prePostCycleChangeTable = join(prePostCycleChangeTableDiff, prePostCycleChangeTablePercDiff, 'Keys', categoricalColsNoPrePost);
+prePostChangeMatchedCycleTable = join(prePostChangeMatchedCycleTableDiff, prePostChangeMatchedCycleTablePercDiff, 'Keys', categoricalColsNoPrePost);
 
 %% Add the 10MWT data to each table
 trialTableAllSessionNum10MWT = join10MWTSpeedToCycleLevelTable(tepsLogPath, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'), configPath);

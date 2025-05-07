@@ -28,19 +28,18 @@ config = jsondecode(fileread(configPath));
 tepsLog = readExcelFileOneSheet(tepsLogPath, 'Subject', 'Sheet1');
 cycleTable = readtable(cycleTablePath);
 
+%% Add "SS" to the Subject name in TEPs log
+tepsLog.Subject = "SS" + convertCharsToStrings(tepsLog.Subject);
+
+%% Filter for subjects
+subjects = unique(string(cycleTable.Subject),'stable');
+existSubjectIdx = ismember(tepsLog.Subject, subjects);
+tepsLog(~existSubjectIdx,:) = [];
+
 %% Map the intervention names
 mapped_fields = containers.Map(config.INTERVENTION_FOLDERS, config.MAPPED_INTERVENTION_FIELDS);
 for i = 1:height(tepsLog)
     tepsLog.Intervention(i) = {mapped_fields(tepsLog.SessionCode{i})};
-end
-
-%% Create the merged "Name" column name in the cycleTable.
-tepsLog.Subject = "SS" + convertCharsToStrings(tepsLog.Subject);
-cycleTable.Name = convertCharsToStrings(cycleTable.(cycleNamesColumns{1}));
-sep = "_";
-for colNum = 2:length(cycleNamesColumns)
-    colName = cycleNamesColumns{colNum};
-    cycleTable.Name = cycleTable.Name + sep + convertCharsToStrings(cycleTable.(colName));
 end
 
 %% Put the speed data into column form
@@ -67,17 +66,9 @@ for i = 1:height(tepsLogName)
     tepsLogTall = [tepsLogTall; tmpTable];
 end
 
-%% Make the name column
-tepsLogTall.Name = convertCharsToStrings(tepsLogTall.(tepsNameColumns{1}));
-sep = "_";
-for colNum = 2:length(tepsNameColumns)
-    colName = tepsNameColumns{colNum};
-    tepsLogTall.Name = tepsLogTall.Name + sep + convertCharsToStrings(tepsLogTall.(colName));
-end
-varsToKeep = {'Name','TenMWT'};
-varsToRemove = tepsLogTall.Properties.VariableNames(~ismember(tepsLogTall.Properties.VariableNames, varsToKeep));
-tepsLogTallRemoved = removevars(tepsLogTall, varsToRemove);
-
 %% Join the speed data in the tepsLog with the cycleTable
-tableOut = innerjoin(cycleTable, tepsLogTallRemoved, 'Keys', 'Name');
-tableOut = removevars(tableOut, 'Name');
+tepsLogTall.PrePost = tepsLogTall.Pre_Post;
+tepsLogTall = removevars(tepsLogTall, 'Pre_Post');
+catVars = tepsLogTall.Properties.VariableNames;
+catVars(ismember(catVars,{'TenMWT'})) = [];
+tableOut = innerjoin(cycleTable, tepsLogTall, 'Keys', catVars);
