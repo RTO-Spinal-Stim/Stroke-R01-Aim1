@@ -60,7 +60,7 @@ cycleTableAll = movevars(cycleTableAll,'Side','After','Cycle');
 matchedCycleTableAll = movevars(matchedCycleTableAll,'Side','After','Cycle');
 
 %% Calculate symmetries
-formulaNum = 1;
+formulaNum = 6; % computing Sym using the original equation * 100
 [colNamesL, colNamesR] = getLRColNames(cycleTableAll);
 % Cycle table
 cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTableAll, colNamesL, colNamesR);
