@@ -21,6 +21,7 @@ jobs:
         script: |
           const issue = context.payload.issue;
           const issueBody = issue.body;
+          const projectNumber = 2; // Assuming project #2 is the target project
           
           // Extract JSON data from the comment
           const dataMatch = issueBody.match(/<!-- STATUS_UPDATE_DATA\n([\s\S]*?)\n-->/);
@@ -39,24 +40,21 @@ jobs:
           
           console.log('Processing updates:', updates);
           
-          // Get repository project information (much simpler after transfer)
           const projectQuery = `
-            query($owner: String!, $repo: String!) {
-              repository(owner: $owner, name: $repo) {
-                projectsV2(first: 10) {
-                  nodes {
+              query($owner: String!, $number: Int!) {
+                organization(login: $owner) {
+                  projectV2(number: $number) {
                     id
                     title
                     number
                   }
                 }
               }
-            }
           `;
           
           const projectResponse = await github.graphql(projectQuery, {
             owner: context.repo.owner,
-            repo: context.repo.repo
+            number: projectNumber
           });
           
           // Find project #2 or use the first available project
