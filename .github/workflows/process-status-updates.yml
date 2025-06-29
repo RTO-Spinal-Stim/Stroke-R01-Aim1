@@ -81,7 +81,7 @@ jobs:
           });
           
           // Find project #2 or use the first available project
-          const project = projectResponse.repository.projectsV2
+          const project = projectResponse.organization.projectV2;
           
           if (!project) {
             console.log('No project with that number found for this repository (using secret).');
