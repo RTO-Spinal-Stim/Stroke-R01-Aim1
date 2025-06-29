@@ -39,7 +39,30 @@ jobs:
           }
           
           console.log('Processing updates:', updates);
+
+          // Debug query to see all accessible projects
+          const debugQuery = `
+            query($owner: String!) {
+              organization(login: $owner) {
+              projectsV2(first: 10) {
+                  nodes {
+                    id
+                    title
+                    number
+                    public
+                  }
+                }
+              }
+            }
+          `;
+
+          const debugResponse = await github.graphql(debugQuery, {
+            owner: context.repo.owner
+          });
+
+          console.log('Accessible projects:', debugResponse.organization.projectsV2.nodes);
           
+          // Query the project by number
           const projectQuery = `
               query($owner: String!, $number: Int!) {
                 organization(login: $owner) {
