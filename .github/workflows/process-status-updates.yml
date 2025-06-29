@@ -21,7 +21,10 @@ jobs:
         script: |
           const issue = context.payload.issue;
           const issueBody = issue.body;
-          const projectNumber = 2; // Assuming project #2 is the target project
+          const projectMatch = issueBody.match(/\*\*Project:\*\*\s*(\d+)/);
+          const projectNumber = projectMatch ? parseInt(projectMatch[1], 10) : null;
+
+          console.log(`Processing status update for project #${projectNumber}`);
           
           // Extract JSON data from the comment
           const dataMatch = issueBody.match(/<!-- STATUS_UPDATE_DATA\n([\s\S]*?)\n-->/);
@@ -217,6 +220,7 @@ jobs:
               });
               
               // Add comment to the issue if provided
+              let updateComment;
               if (comment) {
                 const updateComment = `**Status Update by @${user}:**\n` +
                   `Status: ${prettifyStatus(status)}\n\n` +
