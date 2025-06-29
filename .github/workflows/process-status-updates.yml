@@ -39,32 +39,28 @@ jobs:
           
           console.log('Processing updates:', updates);
           
-          // Get project information
+          // Get organization project information
           const projectQuery = `
-            query($owner: String!, $repo: String!) {
-              repository(owner: $owner, name: $repo) {
-                projectsV2(first: 10) {
-                  nodes {
-                    id
-                    title
-                    number
-                  }
+            query($org: String!, $projectNumber: Int!) {
+              organization(login: $org) {
+                projectV2(number: $projectNumber) {
+                  id
+                  title
+                  number
                 }
               }
             }
           `;
           
           const projectResponse = await github.graphql(projectQuery, {
-            owner: context.repo.owner,
-            repo: context.repo.repo
+            org: context.repo.owner,
+            projectNumber: 2  // Your project number from the URL
           });
           
-          // Assuming you want to work with the first project or find by title
-          // You may need to modify this logic based on your specific project setup
-          const project = projectResponse.repository.projectsV2.nodes[0];
+          const project = projectResponse.organization.projectV2;
           
           if (!project) {
-            console.log('No project found for this repository');
+            console.log('No project found for this organization');
             return;
           }
           
@@ -252,7 +248,7 @@ jobs:
           if (successfulUpdates.length > 0) {
             summaryComment += `✅ **Successfully updated ${successfulUpdates.length} issue(s):**\n`;
             summaryComment += successfulUpdates.map(u => 
-              `- #${u.issue_number}: ${getStatusEmoji(u.status)} ${u.status}`
+              `- #${u.issue_number}: ${prettifyStatus(u.status)} ${u.status}`
             ).join('\n');
           }
           
