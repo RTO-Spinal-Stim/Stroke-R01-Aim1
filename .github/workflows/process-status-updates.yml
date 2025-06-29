@@ -222,13 +222,13 @@ jobs:
               // Add comment to the issue if provided
               let updateComment;
               if (comment) {
-                const updateComment = `**Status Update by @${user}:**\n` +
+                updateComment = `**Status Update by @${user}:**\n` +
                   `Status: ${prettifyStatus(status)}\n\n` +
                   `Comment: ${comment}`;
                                 
               } else {
                 // If no comment provided, just log the status update
-                const updateComment = `**Status Update by @${user}:**\n` +
+                updateComment = `**Status Update by @${user}:**\n` +
                   `Status: ${prettifyStatus(status)}`;
               }
 
