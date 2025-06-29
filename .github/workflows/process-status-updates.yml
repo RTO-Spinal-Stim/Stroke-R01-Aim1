@@ -17,7 +17,7 @@ jobs:
     - name: Extract and process status data
       uses: actions/github-script@v7
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.PROJECT_TOKEN }}
         script: |
           const issue = context.payload.issue;
           const issueBody = issue.body;
@@ -81,10 +81,10 @@ jobs:
           });
           
           // Find project #2 or use the first available project
-          const project = projectResponse.repository.projectsV2.nodes[0]
+          const project = projectResponse.repository.projectsV2
           
           if (!project) {
-            console.log('No project with that number found for this repository.');
+            console.log('No project with that number found for this repository (using secret).');
             return;
           }
           
