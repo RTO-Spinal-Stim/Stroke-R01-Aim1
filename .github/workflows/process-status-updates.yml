@@ -60,10 +60,10 @@ jobs:
           });
           
           // Find project #2 or use the first available project
-          const project = projectResponse.repository.projectsV2.nodes.find(p => p.number === 2)
+          const project = projectResponse.repository.projectsV2.nodes[0]
           
           if (!project) {
-            console.log('No project found for this organization');
+            console.log('No project found for this repository.');
             return;
           }
           
