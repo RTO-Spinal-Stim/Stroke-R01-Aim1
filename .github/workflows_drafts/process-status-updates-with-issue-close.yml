@@ -216,6 +216,17 @@ jobs:
                   body: updateComment
                 });
               
+              // Close issue if status indicates completion
+              const completionStatuses = ['completed', 'done', 'closed'];
+              if (completionStatuses.some(s => status.toLowerCase().includes(s))) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue_number,
+                  state: 'closed'
+                });
+              }
+              
               processedUpdates.push({
                 issue_number,
                 status: statusOption.name,
