@@ -61,7 +61,7 @@ jobs:
           const project = projectResponse.repository.projectsV2.nodes[0]
           
           if (!project) {
-            console.log('No project found for this repository.');
+            console.log('No project with that number found for this repository.');
             return;
           }
           
