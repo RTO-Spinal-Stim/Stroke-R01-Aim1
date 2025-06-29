@@ -39,25 +39,28 @@ jobs:
           
           console.log('Processing updates:', updates);
           
-          // Get organization project information
+          // Get repository project information (much simpler after transfer)
           const projectQuery = `
-            query($org: String!, $projectNumber: Int!) {
-              organization(login: $org) {
-                projectV2(number: $projectNumber) {
-                  id
-                  title
-                  number
+            query($owner: String!, $repo: String!) {
+              repository(owner: $owner, name: $repo) {
+                projectsV2(first: 10) {
+                  nodes {
+                    id
+                    title
+                    number
+                  }
                 }
               }
             }
           `;
           
           const projectResponse = await github.graphql(projectQuery, {
-            org: context.repo.owner,
-            projectNumber: 2  // Your project number from the URL
+            owner: context.repo.owner,
+            repo: context.repo.repo
           });
           
-          const project = projectResponse.organization.projectV2;
+          // Find project #2 or use the first available project
+          const project = projectResponse.repository.projectsV2.nodes.find(p => p.number === 2)
           
           if (!project) {
             console.log('No project found for this organization');
