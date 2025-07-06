@@ -8,203 +8,147 @@ jobs:
   create-new-issues:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.body, 'NEW_ISSUE_REQUESTS')
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Extract and Create Issues
+
+      - name: Create Issues as github-actions[bot]
+        id: create_issues
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECT_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
             const issueBody = context.payload.issue.body;
-            
-            // Helper function to add issue to project using GraphQL API
-            async function addIssueToProject(projectNumber, issueNodeId) {
-              try {
-                // First, get the project ID using GraphQL
-                const projectQuery = `
-                  query($owner: String!, $repo: String!, $number: Int!) {
-                    organization(login: $owner) {
-                      projectV2(number: $number) {
-                        id
-                      }
-                    }
-                    repository(owner: $owner, name: $repo) {
-                      owner {
-                        ... on Organization {
-                          projectV2(number: $number) {
-                            id
-                          }
-                        }
-                        ... on User {
-                          projectV2(number: $number) {
-                            id
-                          }
-                        }
-                      }
-                    }
-                  }
-                `;
-                
-                const projectResult = await github.graphql(projectQuery, {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  number: projectNumber
-                });
-                
-                let projectId;
-                if (projectResult.organization?.projectV2?.id) {
-                  projectId = projectResult.organization.projectV2.id;
-                } else if (projectResult.repository?.owner?.projectV2?.id) {
-                  projectId = projectResult.repository.owner.projectV2.id;
-                } else {
-                  throw new Error(`Project ${projectNumber} not found`);
-                }
-                
-                // Add the issue to the project
-                const addItemMutation = `
-                  mutation($projectId: ID!, $contentId: ID!) {
-                    addProjectV2ItemById(input: {
-                      projectId: $projectId
-                      contentId: $contentId
-                    }) {
-                      item {
-                        id
-                      }
-                    }
-                  }
-                `;
-                
-                await github.graphql(addItemMutation, {
-                  projectId: projectId,
-                  contentId: issueNodeId
-                });
-                
-                return true;
-              } catch (error) {
-                throw new Error(`Failed to add issue to project ${projectNumber}: ${error.message}`);
-              }
-            }
-            
-            // Extract reporter from the issue body
             const reporterMatch = issueBody.match(/\*\*Reporter:\*\* @(\w+)/);
             const reporter = reporterMatch ? reporterMatch[1] : null;
-            
-            // Extract project number from the issue body
             const projectMatch = issueBody.match(/\*\*Project:\*\* (\d+)/);
             const projectNumber = projectMatch ? parseInt(projectMatch[1]) : null;
-            
-            // Extract JSON data from the HTML comment
             const jsonMatch = issueBody.match(/<!-- NEW_ISSUE_REQUESTS\s*\n([\s\S]*?)\n-->/);
-            
+
             if (!jsonMatch) {
-              console.log('No NEW_ISSUE_REQUESTS found in the issue body');
+              core.setOutput('created_issues', '[]');
+              core.setOutput('project_number', projectNumber || '');
               return;
             }
-            
+
             let issueRequests;
             try {
               issueRequests = JSON.parse(jsonMatch[1]);
             } catch (error) {
-              console.error('Failed to parse JSON:', error);
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
                 body: `❌ **Error:** Failed to parse issue requests JSON: ${error.message}`
               });
+              core.setOutput('created_issues', '[]');
+              core.setOutput('project_number', projectNumber || '');
               return;
             }
-            
-            if (!Array.isArray(issueRequests)) {
-              console.error('Issue requests is not an array');
-              await github.rest.issues.createComment({
+
+            const createdIssues = [];
+            for (const request of issueRequests) {
+              if (!request.title || !request.body) continue;
+              const newIssue = await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `❌ **Error:** Issue requests must be an array`
+                title: request.title,
+                body: request.body,
+                assignees: reporter ? [reporter] : []
               });
-              return;
+              createdIssues.push({
+                number: newIssue.data.number,
+                node_id: newIssue.data.node_id,
+                title: request.title,
+                url: newIssue.data.html_url
+              });
             }
-            
-            const createdIssues = [];
-            const errors = [];
-            
-            for (const [index, request] of issueRequests.entries()) {
-              try {
-                if (!request.title || !request.body) {
-                  errors.push(`Issue ${index + 1}: Missing title or body`);
-                  continue;
-                }
-                
-                // Create the new issue
-                const newIssue = await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: request.title,
-                  body: request.body,
-                  assignees: reporter ? [reporter] : []
-                });
-                
-                createdIssues.push({
-                  number: newIssue.data.number,
-                  title: request.title,
-                  url: newIssue.data.html_url
-                });
-                
-                console.log(`Created issue #${newIssue.data.number}: ${request.title}`);
-                
-                // Add issue to project if project number is specified
-                if (projectNumber) {
-                  try {
-                    await addIssueToProject(projectNumber, newIssue.data.node_id);
-                    console.log(`Added issue #${newIssue.data.number} to project ${projectNumber}`);
-                  } catch (projectError) {
-                    console.error(`Failed to add issue #${newIssue.data.number} to project ${projectNumber}:`, projectError);
-                    errors.push(`Issue ${index + 1}: Created but failed to add to project ${projectNumber} - ${projectError.message}`);
+            core.setOutput('created_issues', JSON.stringify(createdIssues));
+            core.setOutput('project_number', projectNumber || '');
+
+      - name: Add Issues to Project (requires personal token)
+        if: steps.create_issues.outputs.project_number != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const createdIssues = JSON.parse(process.env.CREATED_ISSUES || '[]');
+            const projectNumber = parseInt(process.env.PROJECT_NUMBER, 10);
+            if (!Array.isArray(createdIssues) || !projectNumber) return;
+
+            async function addIssueToProject(projectNumber, issueNodeId) {
+              const projectQuery = `
+                query($owner: String!, $repo: String!, $number: Int!) {
+                  organization(login: $owner) {
+                    projectV2(number: $number) { id }
+                  }
+                  repository(owner: $owner, name: $repo) {
+                    owner {
+                      ... on Organization { projectV2(number: $number) { id } }
+                      ... on User { projectV2(number: $number) { id } }
+                    }
                   }
                 }
-                
+              `;
+              const projectResult = await github.graphql(projectQuery, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                number: projectNumber
+              });
+              let projectId;
+              if (projectResult.organization?.projectV2?.id) {
+                projectId = projectResult.organization.projectV2.id;
+              } else if (projectResult.repository?.owner?.projectV2?.id) {
+                projectId = projectResult.repository.owner.projectV2.id;
+              } else {
+                throw new Error(`Project ${projectNumber} not found`);
+              }
+              const addItemMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: {
+                    projectId: $projectId
+                    contentId: $contentId
+                  }) { item { id } }
+                }
+              `;
+              await github.graphql(addItemMutation, {
+                projectId: projectId,
+                contentId: issueNodeId
+              });
+            }
+
+            for (const issue of createdIssues) {
+              try {
+                await addIssueToProject(projectNumber, issue.node_id);
+                console.log(`Added issue #${issue.number} to project ${projectNumber}`);
               } catch (error) {
-                console.error(`Failed to create issue ${index + 1}:`, error);
-                errors.push(`Issue ${index + 1} (${request.title}): ${error.message}`);
+                console.error(`Failed to add issue #${issue.number} to project:`, error);
               }
             }
-            
-            // Create a summary comment
+        env:
+          CREATED_ISSUES: ${{ steps.create_issues.outputs.created_issues }}
+          PROJECT_NUMBER: ${{ steps.create_issues.outputs.project_number }}
+
+      - name: Comment and Close Original Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const createdIssues = JSON.parse(process.env.CREATED_ISSUES || '[]');
             let summaryComment = '';
-            
             if (createdIssues.length > 0) {
               summaryComment += `✅ **Successfully created ${createdIssues.length} issue(s):**\n\n`;
               for (const issue of createdIssues) {
                 summaryComment += `- #${issue.number}: [${issue.title}](${issue.url})\n`;
               }
             }
-            
-            if (errors.length > 0) {
-              summaryComment += `\n❌ **Errors encountered:**\n\n`;
-              for (const error of errors) {
-                summaryComment += `- ${error}\n`;
-              }
-            }
-            
             if (summaryComment) {
-              if (projectNumber) {
-                summaryComment += `\n📋 **Project:** ${projectNumber}\n`;
-              }
-              
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
                 body: summaryComment
               });
-            }
-            
-            // Close the auto-generated issue after processing
-            if (createdIssues.length > 0) {
               await github.rest.issues.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -212,3 +156,5 @@ jobs:
                 state: 'closed'
               });
             }
+        env:
+          CREATED_ISSUES: ${{ steps.create_issues.outputs.created_issues }}
