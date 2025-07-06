@@ -25,7 +25,7 @@ jobs:
               try {
                 // First, get the project ID using GraphQL
                 const projectQuery = `
-                  query($owner: String!, $number: Int!) {
+                  query($owner: String!, $repo: String!, $number: Int!) {
                     organization(login: $owner) {
                       projectV2(number: $number) {
                         id
