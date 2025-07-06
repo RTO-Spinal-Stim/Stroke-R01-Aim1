@@ -19,8 +19,7 @@ jobs:
       with:
         github-token: ${{ secrets.PROJECT_TOKEN }}
         script: |
-          const { Octokit } = require("@octokit/core");
-          const botOctokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          const botOctokit = new github.constructor({ auth: process.env.GITHUB_TOKEN });
           const issue = context.payload.issue;
           const issueBody = issue.body;
           const projectMatch = issueBody.match(/\*\*Project:\*\*\s*(\d+)/);
