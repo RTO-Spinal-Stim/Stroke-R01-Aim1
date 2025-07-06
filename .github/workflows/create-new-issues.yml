@@ -20,27 +20,71 @@ jobs:
           script: |
             const issueBody = context.payload.issue.body;
             
-            // Helper function to get the first column ID of a project
-            async function getProjectColumnId(projectNumber) {
+            // Helper function to add issue to project using GraphQL API
+            async function addIssueToProject(projectNumber, issueNodeId) {
               try {
-                // Get project details
-                const project = await github.rest.projects.get({
-                  project_id: projectNumber
+                // First, get the project ID using GraphQL
+                const projectQuery = `
+                  query($owner: String!, $number: Int!) {
+                    organization(login: $owner) {
+                      projectV2(number: $number) {
+                        id
+                      }
+                    }
+                    repository(owner: $owner, name: $repo) {
+                      owner {
+                        ... on Organization {
+                          projectV2(number: $number) {
+                            id
+                          }
+                        }
+                        ... on User {
+                          projectV2(number: $number) {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                `;
+                
+                const projectResult = await github.graphql(projectQuery, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  number: projectNumber
                 });
                 
-                // Get project columns
-                const columns = await github.rest.projects.listColumns({
-                  project_id: projectNumber
-                });
-                
-                if (columns.data.length === 0) {
-                  throw new Error(`No columns found in project ${projectNumber}`);
+                let projectId;
+                if (projectResult.organization?.projectV2?.id) {
+                  projectId = projectResult.organization.projectV2.id;
+                } else if (projectResult.repository?.owner?.projectV2?.id) {
+                  projectId = projectResult.repository.owner.projectV2.id;
+                } else {
+                  throw new Error(`Project ${projectNumber} not found`);
                 }
                 
-                // Return the first column ID (you can modify this logic if needed)
-                return columns.data[0].id;
+                // Add the issue to the project
+                const addItemMutation = `
+                  mutation($projectId: ID!, $contentId: ID!) {
+                    addProjectV2ItemById(input: {
+                      projectId: $projectId
+                      contentId: $contentId
+                    }) {
+                      item {
+                        id
+                      }
+                    }
+                  }
+                `;
+                
+                await github.graphql(addItemMutation, {
+                  projectId: projectId,
+                  contentId: issueNodeId
+                });
+                
+                return true;
               } catch (error) {
-                throw new Error(`Failed to get project ${projectNumber} details: ${error.message}`);
+                throw new Error(`Failed to add issue to project ${projectNumber}: ${error.message}`);
               }
             }
             
@@ -115,15 +159,11 @@ jobs:
                 // Add issue to project if project number is specified
                 if (projectNumber) {
                   try {
-                    await github.rest.projects.createCard({
-                      column_id: await getProjectColumnId(projectNumber),
-                      content_id: newIssue.data.id,
-                      content_type: 'Issue'
-                    });
+                    await addIssueToProject(projectNumber, newIssue.data.node_id);
                     console.log(`Added issue #${newIssue.data.number} to project ${projectNumber}`);
                   } catch (projectError) {
                     console.error(`Failed to add issue #${newIssue.data.number} to project ${projectNumber}:`, projectError);
-                    errors.push(`Issue ${index + 1}: Created but failed to add to project ${projectNumber}`);
+                    errors.push(`Issue ${index + 1}: Created but failed to add to project ${projectNumber} - ${projectError.message}`);
                   }
                 }
                 
