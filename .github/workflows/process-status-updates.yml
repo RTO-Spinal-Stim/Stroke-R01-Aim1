@@ -19,6 +19,8 @@ jobs:
       with:
         github-token: ${{ secrets.PROJECT_TOKEN }}
         script: |
+          const { Octokit } = require("@octokit/core");
+          const botOctokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
           const issue = context.payload.issue;
           const issueBody = issue.body;
           const projectMatch = issueBody.match(/\*\*Project:\*\*\s*(\d+)/);
@@ -233,7 +235,7 @@ jobs:
               }
 
               // Create a comment on the issue
-              await github.rest.issues.createComment({
+              await botOctokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue_number,
@@ -291,7 +293,7 @@ jobs:
             summaryComment += `⚠️ No issues were updated. Please check the status update data format.`;
           }
           
-          await github.rest.issues.createComment({
+          await botOctokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: issue.number,
@@ -301,3 +303,5 @@ jobs:
           function prettifyStatus(status) {
             return status.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase());
           }
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
