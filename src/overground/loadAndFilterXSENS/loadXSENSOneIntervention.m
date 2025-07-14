@@ -24,6 +24,7 @@ xsensData = table;
 columnNames = xsensConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(xlsx_file_names)
     xlsx_file_name_with_ext = xlsx_file_names{i};
+    % disp(xlsx_file_name_with_ext);
     periodIndex = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:periodIndex-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);

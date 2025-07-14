@@ -89,10 +89,11 @@ trialTable = addToTable(trialTable, syncedTableXSENS);
 % end
 
 %% Split data by gait cycle without doing any matching between L & R gait cycles
-xsensCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'XSENS_Filtered','XSENS_Frames');
-delsysCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'Delsys_Filtered','Delsys_Frames');
-cycleTable = addToTable(cycleTable, xsensCyclesTable);
-cycleTable = addToTable(cycleTable, delsysCyclesTable);
+cycleTable = splitTrialsByGaitCycle_NoMatching_IgnoreExtraGaitEvents(trialTable, {'XSENS_Filtered', 'Delsys_Filtered'}, {'XSENS_Frames', 'Delsys_Frames'});
+% xsensCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'XSENS_Filtered','XSENS_Frames');
+% delsysCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'Delsys_Filtered','Delsys_Frames');
+% cycleTable = addToTable(cycleTable, xsensCyclesTable);
+% cycleTable = addToTable(cycleTable, delsysCyclesTable);
 
 %% Distribute GaitRite vectors from the trial table to the gait cycle table.
 % e.g. step/stride lengths/widths/durations/etc.
