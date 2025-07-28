@@ -1,4 +1,4 @@
-function [xsensData] = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [xsensData] = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck)
 
 %% PURPOSE: PROCESS ONE ENTIRE INTERVENTION OF XSENS DATA
 % Inputs:
@@ -24,6 +24,11 @@ xsensData = table;
 columnNames = xsensConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(xlsx_file_names)
     xlsx_file_name_with_ext = xlsx_file_names{i};
+    % Check if the file is missing
+    isMissing = checkMissing(xlsx_file_name_with_ext, missingFilesPartsToCheck);
+    if isMissing
+        continue;
+    end
     % disp(xlsx_file_name_with_ext);
     periodIndex = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:periodIndex-1);

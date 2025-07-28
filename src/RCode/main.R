@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_CGAM_cohensD_SessionOrder.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\siesta\\src\\peak_occ_nights_within_subject.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -90,6 +90,7 @@ for (col_name in outcome_measures_cols) {
       curr_data <- curr_col_data(all_data, col_name, all_factors_col_names)
       
       # Create the lmer model
+      debugonce(make_model)
       lmer_model <- make_model(curr_data, lmer_formula, col_name)
       
       # Get the marginal means

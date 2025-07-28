@@ -1,4 +1,4 @@
-function [gaitRiteData] = loadGaitRiteOneIntervention(gaitRiteConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [gaitRiteData] = loadGaitRiteOneIntervention(gaitRiteConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck)
 
 %% PURPOSE: LOAD ONE ENTIRE INTERVENTION OF GAITRITE DATA
 % Inputs:

@@ -1,4 +1,4 @@
-function [xsensTable] = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig)
+function [xsensTable] = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig, missingFilesPartsToCheck)
 
 %% PURPOSE: LOAD AND PREPROCESS THE XSENS DATA.
 % Inputs:
@@ -21,6 +21,6 @@ for i = 1:length(intervention_folders)
     % if ~isfolder(intervention_folder_path)
     %     continue;
     % end
-    tmpTable = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig);
+    tmpTable = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck);
     xsensTable = addToTable(xsensTable, tmpTable);
 end
