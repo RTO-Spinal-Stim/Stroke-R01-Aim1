@@ -8,13 +8,19 @@ make_model <- function(data, formula_str, col_name) {
   # Format the formula and create the model
   formula <- as.formula(paste0("`", col_name, "`", formula_str))
   model <- lme4::lmer(formula, data = data, REML = FALSE)
+  # print(summary(model))
+  # print(class(model))
+  # print(model@call)
   return (model)
 }
 
-get_emmeans <- function(model, fixed_effects_from_model, col_name) {
+get_emmeans <- function(model, emmeans_formula_str, col_name) {
   library(emmeans)
-  # Get the emmeans object
-  emmeans_formula_str <- paste("~", paste(fixed_effects_from_model, collapse = "*"))
+  # Check that the first non-space character is "~"
+  trimmed_string <- sub("^\\s+", "", emmeans_formula_str)
+  if (substr(trimmed_string, 1, 1) != "~") {
+    stop("The emmeans formula string must start with '~'")
+  }
   emmeans_formula <- as.formula(emmeans_formula_str)
   marginal_means <- emmeans(model, emmeans_formula)
   return(marginal_means)
@@ -44,6 +50,8 @@ hyp_tests <- function(model, data, marginal_means, col_name, column_widths_margi
   library(grid)
   library(lme4)
 
+  # TODO: IMPLEMENTA CHECK FOR WHETHER THE MARGINAL_MEANS AND THE LMER MODEL HAVE THE SAME NUMBER OF FIXED EFFECT FACTORS.
+  
   if (is.null(column_widths_marginal_means)) {
     n_columns = length(get_fixed_effects_from_model(model)) + 3 # 3 for estimate, lower CL, upper CL
     column_widths_marginal_means <- rep(unit(1/n_columns, "npc"), n_columns)
