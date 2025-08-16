@@ -119,6 +119,7 @@ processedRow.LogInfo = {logInfo};
 %% Try to pattern match a MEP with a sine wave
 resultsTable = table;
 channels = fieldnames(processedRow.Raw_EMG);
+largestSpikeRegression = struct;
 for channelNum = 1:length(channels)
     for pulseNum=1:total_pulses        
         tic;
@@ -192,16 +193,17 @@ for channelNum = 1:length(channels)
         b = X \ y;  
         yhat = X * b;
 
-        figure;
-        scatter(topPercP2P, topPercLags, 'filled');
-        hold on;
-        plot(topPercP2P, yhat, 'r-', 'LineWidth', 2);
-        xlabel('P2P');
-        ylabel('Lag');
-        title('Regression of Lag vs. P2P');
-        legend('Data','Fitted line');
+        % figure;
+        % scatter(topPercP2P, topPercLags, 'filled');
+        % hold on;
+        % plot(topPercP2P, yhat, 'r-', 'LineWidth', 2);
+        % xlabel('P2P');
+        % ylabel('Lag');
+        % title('Regression of Lag vs. P2P');
+        % legend('Data','Fitted line');
     end
-           
+   largestSpikeRegression.(channel).Coefficients = b; % Store the regression coefficients
+   largestSpikeRegression.(channel).FirstLagSpread = firstLagSpread; % Store the distance threshold used
 end
 
 %% Lowpass filter
