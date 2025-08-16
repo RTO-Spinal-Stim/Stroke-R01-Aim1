@@ -12,11 +12,11 @@ function [resultsTable] = patternMatchMEP(dataRaw, pulseNum)
 resultsTable = table;
 
 %% Initialize settings
-minP2P = 0.05; % Minimum peak 2 peak amplitude for a MEP
+minP2PThresh = 0.05; % Minimum peak 2 peak amplitude for a MEP
 data = dataRaw - mean(dataRaw); % Demean the data
 maxY = max(abs(data)); % Get the largest absolute value
 num_amplitudes = 20;
-p2p_amplitudes = linspace(minP2P, maxY, num_amplitudes); % The peak to peak amplitude values
+p2p_amplitudes = linspace(minP2PThresh, maxY, num_amplitudes); % The peak to peak amplitude values
 min_mep_period = 5; % The minimum duration number of points for a sine wave to be a MEP
 max_mep_period = 40; % The maximum duration number of points for a sine wave to be a MEP
 period_step = 1; % How much to change the period between iterations
@@ -25,37 +25,36 @@ mep_periods = linspace(min_mep_period, max_mep_period, num_mep_periods);
 
 %% First, check if anything has a P2P amplitude of `minP2P`
 % Find out where the peaks are
-peak_indices = [];
-first_deriv = [NaN diff(data)];
-for i = 3:length(first_deriv)
-    if sign(first_deriv(i)) == sign(first_deriv(i-1))
-        continue;
-    end
-    peak_indices = [peak_indices; i];
-end
-exceedsMinP2P = false;
-exceedsMinP2Pidx = [];
-for i = 1:length(peak_indices)-1
-    curr_peak_idx = peak_indices(i);
-    curr_peak_value = data(curr_peak_idx);
-    next_peak_idx = peak_indices(i+1);
-    next_peak_value = data(next_peak_idx);
-    if abs(next_peak_value - curr_peak_value) > minP2P
-        exceedsMinP2P = true;
-        exceedsMinP2Pidx = [exceedsMinP2Pidx; [curr_peak_idx, next_peak_idx]];
-    end
+maxP2PValue = abs(max(data) - min(data));
+% peak_indices = [];
+% first_deriv = [NaN diff(data)];
+% for i = 3:length(first_deriv)
+%     if sign(first_deriv(i)) == sign(first_deriv(i-1))
+%         continue;
+%     end
+%     peak_indices = [peak_indices; i];
+% end
+% exceedsMinP2P = false;
+% exceedsMinP2Pidx = [];
+% for i = 1:length(peak_indices)-1
+%     curr_peak_idx = peak_indices(i);
+%     curr_peak_value = data(curr_peak_idx);
+%     next_peak_idx = peak_indices(i+1);
+%     next_peak_value = data(next_peak_idx);
+%     if abs(next_peak_value - curr_peak_value) > minP2P
+%         exceedsMinP2P = true;
+%         exceedsMinP2Pidx = [exceedsMinP2Pidx; [curr_peak_idx, next_peak_idx]];
+%     end
+% end
+if maxP2PValue < minP2PThresh
+    exceedsMinP2P = false;
+else
+    exceedsMinP2P = true;
 end
 
 % No P2P large enough
 if ~exceedsMinP2P
     resultsTable = table;
-    % resultsTable.P2P = NaN;
-    % resultsTable.MEP_Period = NaN;
-    % resultsTable.rPos = NaN;
-    % resultsTable.lagPos = NaN;
-    % resultsTable.rNeg = NaN;
-    % resultsTable.lagNeg = NaN;
-    % resultsTable.Sign = NaN;
     return;
 end
 
@@ -97,7 +96,6 @@ for periodNum = 1:length(mep_periods)
         tmpTable.lag = lag;        
         tmpTable.Sign = r_sign;     
         resultsTable = [resultsTable; tmpTable];
-        % resultsTable = addToTable(resultsTable, tmpTable);
     end
 end
 

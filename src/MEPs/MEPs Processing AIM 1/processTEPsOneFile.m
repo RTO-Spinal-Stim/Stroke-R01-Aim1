@@ -124,7 +124,7 @@ for channelNum = 1:length(channels)
     for pulseNum=1:total_pulses        
         tic;
         channel = channels{channelNum};
-        channel = 'LMG';
+        % channel = 'LMG';
         channelData = processedRow.Raw_EMG.(channel)(pulseNum,:);
         [resultTable] = patternMatchMEP(channelData, pulseNum);
         if height(resultTable) > 0
@@ -133,7 +133,7 @@ for channelNum = 1:length(channels)
         end
         toc;
         resultsTable = [resultsTable; resultTable];
-        disp(['Channel ' num2str(channelNum) ' Pulse ' num2str(pulseNum)])
+        disp([channel ' Pulse ' num2str(pulseNum)])
     end
     
     % Filter for positive R^2 only
@@ -176,14 +176,6 @@ for channelNum = 1:length(channels)
         Xeligible = [ones(size(eligibleP2Pvalues)) eligibleP2Pvalues];
         yhat = Xeligible * b;
         vertical_residuals = abs(eligibleLagValues - yhat);
-        % Distances from each eligible point to the regression line
-        % distances = abs(b(2)*eligibleP2Pvalues - eligibleLagValues + b(1)) ./ sqrt(b(2)^2+1);
-        % a = -b(2);
-        % B = 1;
-        % c = -b(1);
-        % val = a.*eligibleP2Pvalues + B.*eligibleLagValues + c;
-        % den = hypot(a, B);
-        % distances = abs(val) ./ den;
         pointsIdx = vertical_residuals <= firstLagSpread / 2;
         topPercLags = topPercP2Prows.lag(pointsIdx);
         topPercP2P = topPercP2Prows.P2P(pointsIdx);
@@ -192,18 +184,19 @@ for channelNum = 1:length(channels)
         % Solve OLS
         b = X \ y;  
         yhat = X * b;
-
-        % figure;
-        % scatter(topPercP2P, topPercLags, 'filled');
-        % hold on;
-        % plot(topPercP2P, yhat, 'r-', 'LineWidth', 2);
-        % xlabel('P2P');
-        % ylabel('Lag');
-        % title('Regression of Lag vs. P2P');
-        % legend('Data','Fitted line');
+        
     end
-   largestSpikeRegression.(channel).Coefficients = b; % Store the regression coefficients
-   largestSpikeRegression.(channel).FirstLagSpread = firstLagSpread; % Store the distance threshold used
+    fig = figure;
+    scatter(topPercP2P, topPercLags, 'filled');
+    hold on;
+    plot(topPercP2P, yhat, 'r-', 'LineWidth', 2);
+    xlabel('P2P');
+    ylabel('Lag');
+    title([channel ' Regression of Lag vs. P2P']);
+    legend('Data','Fitted line');
+    close(fig);
+    largestSpikeRegression.(channel).Coefficients = b; % Store the regression coefficients
+    largestSpikeRegression.(channel).FirstLagSpread = firstLagSpread; % Store the distance threshold used
 end
 
 %% Lowpass filter
