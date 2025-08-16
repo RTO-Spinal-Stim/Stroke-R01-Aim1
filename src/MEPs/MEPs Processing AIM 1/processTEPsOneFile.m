@@ -116,6 +116,94 @@ if mod(total_pulses, pulses_perIntensity) ~= 0
 end
 processedRow.LogInfo = {logInfo};
 
+%% Try to pattern match a MEP with a sine wave
+resultsTable = table;
+channels = fieldnames(processedRow.Raw_EMG);
+for channelNum = 1:length(channels)
+    for pulseNum=1:total_pulses        
+        tic;
+        channel = channels{channelNum};
+        channel = 'LMG';
+        channelData = processedRow.Raw_EMG.(channel)(pulseNum,:);
+        [resultTable] = patternMatchMEP(channelData, pulseNum);
+        if height(resultTable) > 0
+            resultTable.PulseNum = ones(height(resultTable), 1) * pulseNum;
+            resultTable.Channel = repmat({channel},height(resultTable),1);
+        end
+        toc;
+        resultsTable = [resultsTable; resultTable];
+        disp(['Channel ' num2str(channelNum) ' Pulse ' num2str(pulseNum)])
+    end
+    
+    % Filter for positive R^2 only
+    resultsTable(resultsTable.R2 < 0,:) = [];
+    % Normalize the P2P and lags to 1
+    resultsTable.P2PNorm = resultsTable.P2P / max(resultsTable.P2P);
+    resultsTable.lagNorm = resultsTable.lag / 200;
+    
+    
+    %% Identify the line of best fit for the "mean" lag for this muscle.
+    % Create an initial guess based on the longest spike. 
+    % Compute the std. of the lags in this group, called `firstLagSpread`.
+    % Then iteratively expand the P2P range. Expand the set of data points
+    % used in the regression to include those with lags within `firstLagSpread`
+    % of the line, and P2P in the bounds.
+    % Then recompute the line of best fit using these points.
+    
+    % Get the index of the max R^2 in the highest P2P's
+    topPercStartValue = 0.8; % The first cutoff
+    maxP2P = max(resultsTable.P2P); % The largest observed P2P
+    topPercP2PValue = topPercStartValue * maxP2P;
+    minP2P = 0.05;
+    nSteps = 10; % Number of times to adjust the linear regression
+    P2Psteps = linspace(topPercP2PValue, minP2P, nSteps); % Define the P2P cutoffs for each iterative adjustment
+    firstTopPercIdx = resultsTable.P2P > topPercP2PValue; % The first set of indices of the rows in the top N percent
+    firstLagSpread = range(resultsTable.lag(firstTopPercIdx)); % The spread of the lag values in the first round of the top N percent
+    % Create an initial horizontal line for a linear regression estimate
+    clear b;
+    b(1,1) = mean(resultsTable.lag(firstTopPercIdx));
+    b(2,1) = 0;
+    for i = 2:nSteps
+        currP2P = P2Psteps(i);
+    
+        % Now at this new P2P value, which points are above this P2P level, but
+        % within `firstLagSpread` distance of the line?
+        topPercP2Pidx = resultsTable.P2P > currP2P; % Indices of values in the top N% P2P
+        topPercP2Prows = resultsTable(topPercP2Pidx,:); % The rows in the top N% P2P
+        eligibleP2Pvalues = topPercP2Prows.P2P;
+        eligibleLagValues = topPercP2Prows.lag;
+        Xeligible = [ones(size(eligibleP2Pvalues)) eligibleP2Pvalues];
+        yhat = Xeligible * b;
+        vertical_residuals = abs(eligibleLagValues - yhat);
+        % Distances from each eligible point to the regression line
+        % distances = abs(b(2)*eligibleP2Pvalues - eligibleLagValues + b(1)) ./ sqrt(b(2)^2+1);
+        % a = -b(2);
+        % B = 1;
+        % c = -b(1);
+        % val = a.*eligibleP2Pvalues + B.*eligibleLagValues + c;
+        % den = hypot(a, B);
+        % distances = abs(val) ./ den;
+        pointsIdx = vertical_residuals <= firstLagSpread / 2;
+        topPercLags = topPercP2Prows.lag(pointsIdx);
+        topPercP2P = topPercP2Prows.P2P(pointsIdx);
+        X = [ones(size(topPercP2P)) topPercP2P];
+        y = topPercLags;
+        % Solve OLS
+        b = X \ y;  
+        yhat = X * b;
+
+        figure;
+        scatter(topPercP2P, topPercLags, 'filled');
+        hold on;
+        plot(topPercP2P, yhat, 'r-', 'LineWidth', 2);
+        xlabel('P2P');
+        ylabel('Lag');
+        title('Regression of Lag vs. P2P');
+        legend('Data','Fitted line');
+    end
+           
+end
+
 %% Lowpass filter
 processedRow.Lowpass_EMG = EMG_filt(EMG_raw_struct, f, e);
 

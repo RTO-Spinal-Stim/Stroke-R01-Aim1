@@ -1,0 +1,31 @@
+{
+    "FOLDERS": [
+        "Y:\\Tech Immersion\\Patients\\SY\\MMT 07_24_25",
+        "Y:\\Tech Immersion\\Patients\\SY\\MMT 07_30_25"
+    ],
+    "PATHS_TO_ADD": [
+        "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\overground"
+    ],
+    "REMAPPING": {
+        "MGisAB_TAisOblique": {
+            "RMG": "RAB",
+            "RTA": "ROB",
+            "LMG": "LAB",
+            "LTA": "LOB"
+        }
+    },
+    "FILTER": {
+        "BANDPASS_ORDER": 4,
+        "BANDPASS_CUTOFF": [
+            10, 
+            400
+        ],
+        "LOWPASS_ORDER": 2,
+        "LOWPASS_CUTOFF": 5        
+    },
+    "IGNORE_FILES": [
+        "SitToStand",
+        "Kneeling"
+    ],
+    "RECTIFY": 0
+}

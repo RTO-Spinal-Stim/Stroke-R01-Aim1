@@ -7,8 +7,12 @@ function [loaded_data] = loadDelsysEMGOneFile(emgFilePath)
 % Outputs:
 % loaded_data: The loaded EMG data
 
-%% Load the data
-from_file_data = load(emgFilePath);
+%% Load the data, or use the data directly if the data struct is passed in.
+if ischar(emgFilePath) || isstring(emgFilePath)
+    from_file_data = load(emgFilePath);
+else
+    from_file_data = emgFilePath;
+end
 
 %% Parse each of the muscles from the 1xN vector of EMG data
 % Extract muscle names from the loaded data

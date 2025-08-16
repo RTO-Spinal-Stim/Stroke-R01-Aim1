@@ -1,10 +1,11 @@
-function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig, EMG_Fs)
+function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig, EMG_Fs, rectify)
 
 %% PURPOSE: PARSE CONFIGURATION AND FILTER THE RAW EMG DATA
 % Inputs:
 % raw_emg_one_muscle: Vector of doubles for one muscle's EMG data
 % filterEMGConfig: Config struct for the EMG filter
 % EMG_Fs: Sampling rate for the EMG
+% rectify: 0 or 1 indicating whether or not to rectify the EMG data
 %
 % Outputs:
 % filtered_emg: The filtered EMG data
@@ -23,6 +24,13 @@ function [filtered_emg] = filterEMGOneMuscle(raw_emg_one_muscle, filterEMGConfig
 %       "SAMPLING_FREQUENCY": 2000
 %   }
 % }
+
+% Provide default value
+if ~exist('rectify','var')
+    rectify = true;
+end
+
+rectify = logical(rectify);
 
 % If the input data is NaN, return NaN
 if all(isnan(raw_emg_one_muscle))
@@ -48,7 +56,11 @@ emg_subtracted_mean = raw_emg_one_muscle - mean(raw_emg_one_muscle);
 emg_bandpass = filtfilt(b_band, a_band, emg_subtracted_mean);
 
 % Rectification
-emg_rectified = abs(emg_bandpass);
+if rectify
+    emg_rectified = abs(emg_bandpass);
 
-% Low-pass filter (envelope)
-filtered_emg = filtfilt(b_low, a_low, emg_rectified);
+    % Low-pass filter (envelope)
+    filtered_emg = filtfilt(b_low, a_low, emg_rectified);
+else
+    filtered_emg = emg_bandpass; % Assign value to output if not rectifying
+end
