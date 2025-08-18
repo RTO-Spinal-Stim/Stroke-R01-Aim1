@@ -88,13 +88,17 @@ for periodNum = 1:length(mep_periods)
             r_sign = -1;
         end
         [maxR2,lag] = max(r2);
+        % Compute the P2P from the data signal (rather than template P2P)
+        data_section = data(lag:lag+mep_period_delta);
+        dataP2P = range(data_section);
         % Record the values
         tmpTable = table;
         tmpTable.P2P = p2pamplitude;
         tmpTable.MEP_Period = mep_period;
         tmpTable.R2 = maxR2;
         tmpTable.lag = lag;        
-        tmpTable.Sign = r_sign;     
+        tmpTable.Sign = r_sign;  
+        tmpTable.DataP2P = dataP2P;
         resultsTable = [resultsTable; tmpTable];
     end
 end
