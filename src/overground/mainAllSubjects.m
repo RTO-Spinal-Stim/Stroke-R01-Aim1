@@ -1,6 +1,8 @@
 configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
 config = jsondecode(fileread(configPath));
 
+addpath(genpath('Y:\LabMembers\MTillman\MATLAB_FileExchange_Repository'));
+
 runConfig = toml.map_to_struct(toml.read('subjects_to_run.toml'));
 allSubjects = runConfig.subjects.run;
 

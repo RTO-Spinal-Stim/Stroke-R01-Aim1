@@ -1,4 +1,4 @@
-function [figLoaded, figFiltered, loadedData, rawLoadedData] = processMMTFile(filePath, remapping, filter_config, fs, rectify)
+function [figLoaded, figFiltered, loadedData, rawLoadedData] = processMMTFile(filePath, remapping, filter_config, fs, rectify, motion_muscle_mapping)
 
 %% PURPOSE: PROCESS ONE FILE'S MMT EMG
 % Inputs:
@@ -8,6 +8,8 @@ function [figLoaded, figFiltered, loadedData, rawLoadedData] = processMMTFile(fi
 % filter_config: Struct providing the filter configuration
 % fs: EMG sampling rate
 % rectify: 0 or 1 indicating whether or not to rectify the EMG data
+% motion_muscle_mapping: Struct with fieldnames of MMT motion filenames,
+% and values are the corresponding muscle names (string or array of strings)
 %
 % Outputs:
 % figLoaded: Handle to the figure containing all muscles' raw data plots
@@ -38,7 +40,20 @@ end
 % Plot all muscles on the same plot.
 figLoaded = figure();
 figLoaded = plotOneTrialData(loadedData, figLoaded);
-annotateFigure(figLoaded, rawLoadedData.com, rawLoadedData.comtext);
+motionNames = fieldnames(motion_muscle_mapping);
+motionName = false;
+muscleNames = {};
+for i = 1:length(motionNames)
+    motionName = motionNames{i};
+    if contains(filePath, motionName)
+        break;
+    end
+end
+if motionName
+    muscleNames = motion_muscle_mapping.(motionName); % If a motion name from the config was found in an MMT file  path
+end
+annotateFigure(figLoaded, rawLoadedData.com, rawLoadedData.comtext, muscleNames);
+saveIndividualSubplot(figLoaded, muscleNames, '');
 
 % Filter & rectify the muscles
 channels = fieldnames(loadedData);
@@ -49,4 +64,4 @@ for channelNum = 1:length(channels)
 end
 figFiltered = figure();
 figFiltered = plotOneTrialData(filteredData, figFiltered);
-annotateFigure(figFiltered, rawLoadedData.com, rawLoadedData.comtext);
+annotateFigure(figFiltered, rawLoadedData.com, rawLoadedData.comtext, muscleNames);

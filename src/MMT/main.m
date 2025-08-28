@@ -1,5 +1,5 @@
 % 1. Define MMT folder(s)
-config_path = "Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MMT\config_UAE.json";
+config_path = "Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MMT\config_ti040.json";
 config = jsondecode(fileread(config_path));
 paths_to_add = config.PATHS_TO_ADD;
 for i = 1:length(paths_to_add)
@@ -17,6 +17,10 @@ end
 
 if ~isfield(config, 'REMAPPING')
     config.REMAPPING = struct();
+end
+
+if ~isfield(config, 'MOTION_MUSCLE_MAPPING')
+    config.MOTION_MUSCLE_MAPPING = struct();
 end
 
 % 2. For each file:
@@ -45,7 +49,7 @@ for folderNum = 1:length(folders)
             continue;
         end
         filePath = fullfile(fileRow.folder, fileRow.name);        
-        [figLoaded, figFiltered, loadedData, rawData] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY);
+        [figLoaded, figFiltered, loadedData, rawData] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY, config.MOTION_MUSCLE_MAPPING);
         disp(filePath);
         disp(rawData.comtext);
         % Prep to save the figures
