@@ -1,5 +1,6 @@
 % 1. Define MMT folder(s)
-config_path = "Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MMT\config_ti040.json";
+close all;
+config_path = "Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\MMT\config_SY.json";
 config = jsondecode(fileread(config_path));
 paths_to_add = config.PATHS_TO_ADD;
 for i = 1:length(paths_to_add)
@@ -22,6 +23,20 @@ end
 if ~isfield(config, 'MOTION_MUSCLE_MAPPING')
     config.MOTION_MUSCLE_MAPPING = struct();
 end
+
+if ~isfield(config, 'DO_MANUAL')
+    config.DO_MANUAL = true;
+end
+
+if ~isfield(config, 'INCLUDE_FILES')
+    config.INCLUDE_FILES = {};
+end
+
+if ~isfield(config, 'MUSCLE_NAMES')
+    config.MUSCLE_NAMES = struct();
+end
+
+config = init_aesthetics(config);
 
 % 2. For each file:
 % - Load the file
@@ -48,8 +63,13 @@ for folderNum = 1:length(folders)
         if isIgnored
             continue;
         end
-        filePath = fullfile(fileRow.folder, fileRow.name);        
-        [figLoaded, figFiltered, loadedData, rawData] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY, config.MOTION_MUSCLE_MAPPING);
+        % Skip files if not explicitly included
+        if ~isempty(config.INCLUDE_FILES) && ~ismember(fileRow.name, config.INCLUDE_FILES)
+            continue;
+        end
+        filePath = fullfile(fileRow.folder, fileRow.name);
+        % Plot all the muscles with comments
+        [figLoaded, figFiltered, loadedData, rawData, muscleNames] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY, config.MOTION_MUSCLE_MAPPING, config.AESTHETICS);
         disp(filePath);
         disp(rawData.comtext);
         % Prep to save the figures
@@ -57,19 +77,74 @@ for folderNum = 1:length(folders)
         mkdir(saveFolderPath);
         titleStr = strrep(fileRow.name, '.mat', ''); % Remove the .mat suffix
         titleStr = strrep(titleStr, '_', ' '); % Remove underscores
+
+        % Expand the ylabels to the full muscle names
+        pause(0.5);
+        expandMuscleYLabels(figLoaded, config.MUSCLE_NAMES);
+        expandMuscleYLabels(figFiltered, config.MUSCLE_NAMES);
+
         % Save the loaded data figure
         figLoaded.WindowState = 'maximized';
         sgtitle(figLoaded, titleStr,'Interpreter','None');
         saveFilePath = fullfile(saveFolderPath, [titleStr ' AllMusclesRaw']);
         saveas(figLoaded, [saveFilePath '.fig']);
         saveas(figLoaded, [saveFilePath '.png']);
-        close(figLoaded);
+
         % Save the filtered figure
         figFiltered.WindowState = 'maximized';
         sgtitle(figFiltered, titleStr,'Interpreter','None');
         saveFilePath = fullfile(saveFolderPath, [titleStr ' AllMusclesFiltered']);
         saveas(figFiltered, [saveFilePath '.fig']);
         saveas(figFiltered, [saveFilePath '.png']);
+
+        if ~config.DO_MANUAL
+            close(figLoaded);
+            close(figFiltered);
+            continue;
+        end
+
+        %% Manually specify where the muscles of interest are active
+        handlesStruct = ginputMuscleActivity(figFiltered);
+        musclesFigFiltered = copyIndividualSubplot(figFiltered, muscleNames);
+        ginputMuscleActivity(figLoaded, handlesStruct);
+        musclesFigLoaded = copyIndividualSubplot(figLoaded, muscleNames);
+
+        % Save the specific muscles' figures
+        if musclesFigLoaded ~= false
+            setAesthetics(musclesFigLoaded, config.AESTHETICS);
+            allAx = findobj(musclesFigLoaded, 'Type', 'Axes');
+            highestAx = allAx(1);
+            for axNum = 1:length(allAx)
+                ax = allAx(axNum);
+                if ax.Position(2) > highestAx.Position(2)
+                    highestAx = ax;
+                end
+            end
+            highestAx.PositionConstraint = 'innerposition';
+            title(highestAx, titleStr, 'Interpreter','None', 'FontSize', config.AESTHETICS.LABEL_FONT_SIZE, 'FontWeight', 'normal');             
+            saveFilePath = fullfile(saveFolderPath, [titleStr ' ' musclesFigLoaded.Name ' Loaded']);
+            saveas(musclesFigLoaded, [saveFilePath '.fig']);
+            saveas(musclesFigLoaded, [saveFilePath '.png']);
+            close(musclesFigLoaded);
+        end
+        if musclesFigFiltered ~= false
+            setAesthetics(musclesFigFiltered, config.AESTHETICS);
+            allAx = findobj(musclesFigFiltered, 'Type', 'Axes');
+            highestAx = allAx(1);
+            for axNum = 1:length(allAx)
+                ax = allAx(axNum);
+                if ax.Position(2) > highestAx.Position(2)
+                    highestAx = ax;
+                end
+            end
+            highestAx.PositionConstraint = 'innerposition';
+            title(highestAx, titleStr, 'Interpreter','None', 'FontSize', config.AESTHETICS.LABEL_FONT_SIZE, 'FontWeight', 'normal');             
+            saveFilePath = fullfile(saveFolderPath, [titleStr ' ' musclesFigFiltered.Name ' Filtered']);
+            saveas(musclesFigFiltered, [saveFilePath '.fig']);
+            saveas(musclesFigFiltered, [saveFilePath '.png']);
+            close(musclesFigFiltered);
+        end
+        close(figLoaded);
         close(figFiltered);
     end
 end

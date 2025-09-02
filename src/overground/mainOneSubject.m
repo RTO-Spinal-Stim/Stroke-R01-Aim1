@@ -185,6 +185,12 @@ cycleTable = addToTable(cycleTable, rmsTableDelsys);
 romTableXSENS = calculateRangeAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles');
 cycleTable = addToTable(cycleTable, romTableXSENS);
 
+%% Calculate path lengths
+% pathLengthsTableXSENS = calculatePathLengthsAll(cycleTable, 'XSENS_TimeNormalized', 'PathLength_JointAngles');
+% pathLengthsTableDelsys = calculatePathLengthsAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'PathLength_EMG');
+% cycleTable = addToTable(cycleTable, pathLengthsTableXSENS);
+% cycleTable = addToTable(cycleTable, pathLengthsTableDelsys);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Below this point, computations require the left and right gait cycles to be matched
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -18,6 +18,9 @@
     },
     "IGNORE_FILES": [
     ],
+    "INCLUDE_FILES": [
+        "R_plantarflex.mat"
+    ],
     "RECTIFY": 0,
     "MOTION_MUSCLE_MAPPING": {
         "L_dorsiflex": "LTA",

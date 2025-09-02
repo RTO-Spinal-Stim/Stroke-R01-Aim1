@@ -7,6 +7,10 @@ function [] = annotateFigure(fig, com, comtext, muscleNames)
 % comtext: The text of the comments
 % muscleNames: The muscles of interest during this file's motion.
 
+if ~iscell(muscleNames)
+    muscleNames = {muscleNames};
+end
+
 % Put all of the comments in as vertical lines
 figure(fig);
 axHandles = findall(fig, 'Type', 'axes');
