@@ -44,6 +44,9 @@ config = init_aesthetics(config);
 % - Plot all muscles together on the same plot (with comments as vertical
 % lines)
 % - Save the plots to a subfolder at the same location
+
+fileOfInt = 'PulltoStand'; % TESTING ONLY
+
 folders = config.FOLDERS;
 for folderNum = 1:length(folders)
     folder = folders{folderNum};
@@ -52,6 +55,10 @@ for folderNum = 1:length(folders)
         fileRow = fileList(fileNum);
         if ~endsWith(fileRow.name, '.mat')
             continue; % Ignore the non-.mat files.
+        end
+        % TESTING ONLY
+        if ~contains(fileRow.name, fileOfInt)
+            continue;
         end
         isIgnored = false;
         for ignoreFileNum = 1:length(config.IGNORE_FILES)
@@ -68,20 +75,43 @@ for folderNum = 1:length(folders)
             continue;
         end
         filePath = fullfile(fileRow.folder, fileRow.name);
-        % Plot all the muscles with comments
-        [figLoaded, figFiltered, loadedData, rawData, muscleNames] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY, config.MOTION_MUSCLE_MAPPING, config.AESTHETICS);
-        disp(filePath);
-        disp(rawData.comtext);
         % Prep to save the figures
         saveFolderPath = fullfile(fileRow.folder, 'Plots');
         mkdir(saveFolderPath);
         titleStr = strrep(fileRow.name, '.mat', ''); % Remove the .mat suffix
         titleStr = strrep(titleStr, '_', ' '); % Remove underscores
 
+        % Check if this figure needs processing
+        saveFilePathFilteredFig = fullfile(saveFolderPath, [titleStr ' AllMusclesFiltered.fig']);
+        if isfile(saveFilePathFilteredFig)
+            answer = questdlg(saveFilePathFilteredFig, ...
+                  'Re-run this file?', ...
+                  'Yes', 'No', 'Cancel', ...
+                  'Yes');
+            if ~strcmp(answer, 'Yes')
+                continue;
+            end
+        end        
+        
+        % Plot all the muscles with comments
+        [figLoaded, figFiltered, loadedData, rawData, muscleNames] = processMMTFile(filePath, config.REMAPPING, config.FILTER, fs, config.RECTIFY, config.MOTION_MUSCLE_MAPPING, config.AESTHETICS);
+        disp(filePath);
+        disp(rawData.comtext);                     
+
         % Expand the ylabels to the full muscle names
+        drawnow;
         pause(0.5);
         expandMuscleYLabels(figLoaded, config.MUSCLE_NAMES);
         expandMuscleYLabels(figFiltered, config.MUSCLE_NAMES);
+
+        %% Manually specify where the muscles of interest are active
+        handlesStruct = ginputMuscleActivity(figFiltered);
+        musclesFigFiltered = copyIndividualSubplot(figFiltered, muscleNames);
+        ginputMuscleActivity(figLoaded, handlesStruct);
+        musclesFigLoaded = copyIndividualSubplot(figLoaded, muscleNames);
+
+        setAesthetics(figFiltered, config.AESTHETICS);
+        setAesthetics(figLoaded, config.AESTHETICS);
 
         % Save the loaded data figure
         figLoaded.WindowState = 'maximized';

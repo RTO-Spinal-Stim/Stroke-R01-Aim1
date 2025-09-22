@@ -8,6 +8,7 @@ function [axesTagsStruct] = ginputMuscleActivity(fig, axesTagsStruct)
 figure(fig);
 
 %% Apply a box using x values specified from clicking on a previous plot with this function.
+patchColor = [0.8, 0.8, 0.8];
 if nargin==2
     tags = fieldnames(axesTagsStruct);
     for tagNum = 1:length(tags)
@@ -20,7 +21,7 @@ if nargin==2
                 continue;
             end
             p = patch(ax, 'XData', [x(1), x(1), x(2), x(2)], 'YData', [ylims(1), ylims(2), ylims(2), ylims(1)], ...
-                'FaceColor', [0.8 0.8 0.8], 'FaceAlpha', 0.7,'EdgeAlpha', 0);
+                'FaceColor', patchColor, 'FaceAlpha', 0.7, 'EdgeAlpha', 0);
             uistack(p, 'bottom');
         end
     end
@@ -50,7 +51,7 @@ try
         end
         if ~isempty(x)
             p = patch('XData', [x(1), x(1), x(2), x(2)], 'YData', [ylims(1), ylims(2), ylims(2), ylims(1)], ...
-          'FaceColor', [0.8 0.8 0.8], 'FaceAlpha', 0.7,'EdgeAlpha', 0);
+          'FaceColor', patchColor, 'FaceAlpha', 0.7,'EdgeAlpha', 0);
             uistack(p, 'bottom');
         end
         if ~isfield(axesTagsStruct, tag)

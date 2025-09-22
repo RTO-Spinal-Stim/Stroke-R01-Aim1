@@ -44,8 +44,9 @@ motionNames = fieldnames(motion_muscle_mapping);
 motionName = false;
 muscleNames = {};
 for i = 1:length(motionNames)
-    motionName = motionNames{i};
-    if contains(filePath, motionName)
+    currMotionName = motionNames{i};
+    if contains(filePath, currMotionName)
+        motionName = currMotionName;
         break;
     end
 end
@@ -59,6 +60,7 @@ figLoaded = figure();
 figLoaded = plotOneTrialData(loadedData, figLoaded);
 annotateFigure(figLoaded, rawLoadedData.com, rawLoadedData.comtext, muscleNames);
 figLoaded.WindowState = 'maximized';
+drawnow;
 pause(0.5);
 convertXToSec(figLoaded);
 
@@ -75,6 +77,7 @@ figFiltered = figure();
 figFiltered = plotOneTrialData(filteredData, figFiltered);
 annotateFigure(figFiltered, rawLoadedData.com, rawLoadedData.comtext, muscleNames);
 figFiltered.WindowState = 'maximized';
+drawnow;
 pause(0.5);
 convertXToSec(figFiltered);
 

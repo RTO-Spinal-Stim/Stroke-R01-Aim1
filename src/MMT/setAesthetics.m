@@ -24,10 +24,8 @@ for axNum = 1:length(allAx)
     patchHandles = findobj(ax, 'Type', 'Patch');
     for patchNum = 1:length(patchHandles)
         patchHandle = patchHandles(patchNum);
-        patchHandle.FaceColor = aesthetics_config.HIGHLIGHT_FILL_COLOR;
-        patchHandle.EdgeColor = aesthetics_config.HIGHLIGHT_EDGE_COLOR;
+        patchHandle.FaceColor = aesthetics_config.HIGHLIGHT_COLOR;
+        patchHandle.LineWidth = 3;
     end
-
-
 
 end
