@@ -26,7 +26,7 @@ unique_trials = unique(num_data(:, trialsColIdx), 'stable'); % Find the unique t
 % 1. Loop through each unique trial number to separate and preprocess the data
 GaitRiteTable = table;
 for i = 1:length(unique_trials)
-    trial_number = unique_trials(i);
+    trial_number = unique_trials(i);           
     trialData = num_data(num_data(:,trialsColIdx) == trial_number, :);
     tableOut = preprocessGaitRiteOneTrial(gaitRiteConfig, header_row, trialData);
     % Put the DateTimeSaved into tableOut column

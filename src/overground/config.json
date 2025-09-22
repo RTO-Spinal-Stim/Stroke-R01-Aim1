@@ -16,7 +16,7 @@
             "FILTERED_TIME_NORMALIZED": "Filtered_TimeNormalized",
             "FILTERED_TIME_NORMALIZED_UNSCALED": "Filtered_TimeNormalized_Unscaled"
         }
-    },
+    },    
     "REGEXS": {
         "SUBJECT_ID": "SS\\d{2}",
         "INTERVENTIONS": [
@@ -41,6 +41,10 @@
     ],
     "SPEEDS": [
         "SSV", "FV"
+    ],
+    "MISSING_FILES":[
+        "SS32_SHAM2_POST_SSV_2.",
+        "SS32_SHAM2_PRE_SSV_3."
     ],
     "DELSYS_EMG": {
         "FOLDER_NAME": "Delsys",

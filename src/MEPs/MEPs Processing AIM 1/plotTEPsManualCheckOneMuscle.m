@@ -18,8 +18,11 @@ hold(ax,'on');
 numTotalPulses = size(oneMuscleTEPsData,1);
 colors = getColorMap(numTotalPulses);
 ax1 = subplot(3,1,1);
+hold(ax1,'on');
 ax2 = subplot(3,1,2);
+hold(ax2,'on');
 ax3 = subplot(3,1,3);
+hold(ax3,'on');
 for pulseNum = numTotalPulses:-1:1
     signal = oneMuscleTEPsData(pulseNum,:);
     currentColor = colors(pulseNum,:);    

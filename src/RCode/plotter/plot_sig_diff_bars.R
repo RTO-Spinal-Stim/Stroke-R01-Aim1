@@ -34,6 +34,7 @@ plot_sig_diff_bars <- function(gp, df, comps, lmer_model, grouping_factors, col_
     # OUTPUTS:
     #   gp: ggplot object
 
+    browser()
     # Get the x data, p-values, and colors for the significant difference bars    
     sig_diff_bars_x_df <- sig_diff_bars_x_data_and_colors(comps, lmer_model, grouping_factors, df, col_name, interactions=FALSE, diff_bars_config=diff_bars_config, diff_bars_factors=diff_bars_factors, panel_id=panel_id)
 

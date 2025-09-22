@@ -25,7 +25,7 @@ plot_for_diff_bars <- function(collapsed_df, grouping_factors, col_name, plot_ty
     #
     # OUTPUTS:
     #   result: contains the ggplot object and the data frame
-  
+      
     # Check if all of the grouping factors are factors in the df
     factors <- names(collapsed_df)[sapply(collapsed_df, is.factor)]
     if (!all(grouping_factors %in% factors)) {

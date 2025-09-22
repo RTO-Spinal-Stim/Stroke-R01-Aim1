@@ -32,7 +32,8 @@ if length(v1) ~= length(v2)
 end
 
 if ~exist('formulaNum','var')
-    formulaNum = 2;
+    %formulaNum = 2;
+    formulaNum = 1;
 end
 
 % Get the specified symmetry formula

@@ -1,10 +1,10 @@
-function [rangeTable] = calculateRangeAll(tableIn, colNameIn, colNameOutPrefix, sidePrefixes)
+function [rangeTable] = calculateRangeAll(tableIn, colNameIn, colNameOutSuffix, sidePrefixes)
 
 %% PURPOSE: COMPUTE THE RANGE, MIN, AND MAX OF DATA OBSERVED.
 % Inputs:
 % tableIn: The input data table
 % colNameIn: The column of data to analyze (struct)
-% colNameOutPrefix: The prefix for the column to store the analyzed data
+% colNameOutSuffix: The suffix for the column to store the analyzed data
 % sidePrefixes: Cell array of the single char prefixes to use in the
 % columns. Default: {'L','R'} for left & right. Could also be {'A','U'} for
 % affected and unaffected, or other
@@ -30,7 +30,7 @@ for i = 1:height(tableIn)
             firstLetter = fieldNameOrig(1);
             fieldName = fieldNameOrig(2:end);
         end
-        colName = [firstLetter '_' fieldName '_' colNameOutPrefix];
+        colName = [firstLetter '_' fieldName '_' colNameOutSuffix];
         minVal = min(data.(fieldNameOrig));
         maxVal = max(data.(fieldNameOrig));
         rangeVal = maxVal - minVal;

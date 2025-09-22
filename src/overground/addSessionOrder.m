@@ -38,9 +38,5 @@ for i = 1:height(tepsLog)
     tableOut.(sessionNumberColName)(sessionRowsIdx) = double(tepsLog.(sessionNumberColName)(i));
 end
 
-% Move the sessionNumberColName column to after the specified column
-% specifiedColIdxNum = find(ismember(allColNames, colNameToTheLeft));
-
 tableOut = movevars(tableOut, sessionNumberColName, 'After', colNameToTheLeft);
-% tableOut = [tableOut(:,1:specifiedColIdxNum), tableOut(:,end), tableOut(:,specifiedColIdxNum+1:end-1)];
 tableOut.(sessionNumberColName) = categorical(tableOut.(sessionNumberColName));

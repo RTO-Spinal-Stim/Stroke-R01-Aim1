@@ -1,4 +1,4 @@
-function [delsysData] = loadDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig)
+function [delsysData] = loadDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck)
 
 %% PURPOSE: LOAD ONE ENTIRE INTERVENTION OF DELSYS EMG DURING WALKING TRIALS
 % Inputs:
@@ -43,6 +43,11 @@ end
 columnNames = delsysConfig.CATEGORICAL_COLUMNS;
 for i = 1:length(mat_file_names)
     mat_file_name_with_ext = mat_file_names{i};
+    % Check if the file is missing
+    isMissing = checkMissing(mat_file_name_with_ext, missingFilesPartsToCheck);
+    if isMissing
+        continue;
+    end
     periodIndex = strfind(mat_file_name_with_ext, '.');
     mat_file_name = mat_file_name_with_ext(1:periodIndex-1);
     mat_file_path = fullfile(intervention_folder_path, mat_file_name_with_ext);    
@@ -64,8 +69,13 @@ for i = 1:length(mat_file_names)
     
     tmpTable = table;
     for colNum = 1:length(parsedName)
-        tmpTable.(columnNames{colNum}) = string(parsedName{colNum});
-        tmpTable.(columnNames{colNum}) = categorical(tmpTable.(columnNames{colNum}));
+        try
+            tmpTable.(columnNames{colNum}) = string(parsedName{colNum});
+            tmpTable.(columnNames{colNum}) = categorical(tmpTable.(columnNames{colNum}));
+        catch e
+            disp(['Error in file name part: ' columnNames{colNum}]);
+            throw(e);
+        end
     end
     adicht_idx = ismember(adicht_file_names, strrep(mat_file_name_with_ext, '.mat', '.adicht'));
     if any(adicht_idx)

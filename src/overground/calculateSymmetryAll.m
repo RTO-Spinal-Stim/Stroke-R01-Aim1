@@ -13,7 +13,8 @@ function [symmetryTable] = calculateSymmetryAll(tableIn, colNameSuffix, formulaN
 disp('Calculating symmetry indices');
 
 if ~exist('formulaNum','var')
-    formulaNum = 2;
+    %formulaNum = 2;
+    formulaNum = 1;
 end
 
 if ~exist('levelNum','var')

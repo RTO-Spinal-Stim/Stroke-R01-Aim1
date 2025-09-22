@@ -2,7 +2,7 @@
 ## CONFIG
 ############################
 # Read the config file
-config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\Stroke-R01\\src\\RCode\\Rconfig_CGAM_cohensD_SessionOrder.toml"
+config_path <- "Y:\\LabMembers\\MTillman\\GitRepos\\siesta\\src\\peak_occ_nights_within_subject.toml"
 config <- configr::read.config(file = config_path)
 
 # Set the working directory and source the helper functions
@@ -89,7 +89,7 @@ for (col_name in outcome_measures_cols) {
       # Create a data frame for the current column
       curr_data <- curr_col_data(all_data, col_name, all_factors_col_names)
       
-      # Create the lmer model
+      # Create the lmer model      
       lmer_model <- make_model(curr_data, lmer_formula, col_name)
       
       # Get the marginal means
@@ -100,11 +100,11 @@ for (col_name in outcome_measures_cols) {
       comps <- hyp_tests(lmer_model, curr_data, emmeans, col_name)
       comps_list[[col_name]] <- comps
       
-      # Scatter plot to prep for significant difference bars
+      # Scatter plot to prep for significant difference bars      
       collapsed_df <- collapse_data(curr_data, c())
       plot_result <- plot_for_diff_bars(collapsed_df, plot_grouping_factors, col_name, plot_type = "scatter", fill_factor=fill_factor)
       plotted_df <- plot_result$df
-      gp_no_sig_diff_bars <- plot_result$gp
+      gp_no_sig_diff_bars <- plot_result$gp      
       
       # Add the significant difference bars
       result <- plot_sig_diff_bars(gp_no_sig_diff_bars, plotted_df, comps, lmer_model, plot_grouping_factors, 

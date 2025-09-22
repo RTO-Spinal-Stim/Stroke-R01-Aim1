@@ -33,6 +33,8 @@ sig_diff_bars_x_data_and_colors <- function(comps, lmer_model, grouping_factors,
     library(tidyverse)
     comps_df <- as.data.frame(comps)
 
+    browser()
+
     # Initialize diff_bars_config if it is NULL
     if (is.null(diff_bars_config)) {
         diff_bars_config <- list()
@@ -44,6 +46,8 @@ sig_diff_bars_x_data_and_colors <- function(comps, lmer_model, grouping_factors,
     }
 
     # Isolate only the main effects
+    # TODO: If the grouping variable does not include all of the fixed effects in the model,
+    # then here I should loop over only those indices in the comps_df (from hyp_tests) where the grouping variables are.
     all_main_effect_indices <- rep(FALSE, nrow(comps_df))
     for (i in 1:length(grouping_factors)) {
         indices <- filter_main_effect_comparisons_generic(comps_df, i)
@@ -71,7 +75,7 @@ sig_diff_bars_x_data_and_colors <- function(comps, lmer_model, grouping_factors,
 
     bars_xy <- lapply(seq_along(contrasts_split), function(i) {
     
-        # browser()
+        browser()
         contrast <- contrasts_split[[i]]
         
         # Remove all columns except factor_names from plotted_df

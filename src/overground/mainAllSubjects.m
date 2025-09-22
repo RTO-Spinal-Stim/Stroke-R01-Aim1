@@ -1,6 +1,8 @@
 configPath = 'Y:\LabMembers\MTillman\GitRepos\Stroke-R01\src\overground\config.json';
 config = jsondecode(fileread(configPath));
 
+addpath(genpath('Y:\LabMembers\MTillman\MATLAB_FileExchange_Repository'));
+
 runConfig = toml.map_to_struct(toml.read('subjects_to_run.toml'));
 allSubjects = runConfig.subjects.run;
 
@@ -25,7 +27,7 @@ for subNum = 1:length(allSubjectsPlot)
     baseSavePathXSENS = fullfile(baseSavePath, 'Joint Angles');
     % plotAllTrials(matchedCycleTable, 'Time-Normalized Non-Normalized EMG', baseSavePathEMG, 'Delsys_TimeNormalized'); 
     plotAllTrials(matchedCycleTable, 'Time-Normalized Scaled EMG', baseSavePathEMG, 'Delsys_Normalized_TimeNormalized'); 
-    % plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
+    plotAllTrials(matchedCycleTable, 'Time-Normalized Joint Angles', baseSavePathXSENS, 'XSENS_TimeNormalized');
 end
 
 %% Load the cycleTable and matchedCycleTable from all subjects
@@ -60,7 +62,7 @@ cycleTableAll = movevars(cycleTableAll,'Side','After','Cycle');
 matchedCycleTableAll = movevars(matchedCycleTableAll,'Side','After','Cycle');
 
 %% Calculate symmetries
-formulaNum = 1;
+formulaNum = 6; % computing Sym using the original equation * 100
 [colNamesL, colNamesR] = getLRColNames(cycleTableAll);
 % Cycle table
 cycleTableContraRemoved_NoGR = removeContralateralSideColumns(cycleTableAll, colNamesL, colNamesR);
@@ -141,7 +143,7 @@ cycleTableAllUA = convertLeftRightSideToAffectedUnaffected(cycleTableAllSessionN
 matchedCycleTableAllUA = convertLeftRightSideToAffectedUnaffected(matchedCycleTableAllSessionNum, reducedTEPsLog, inputTableSideCol, tepsLogSideCol);
 
 %% Save the unaffected and affected side tables
-tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected_0_1_reproduced';
+tablesPathPrefixMergedUA = 'Y:\LabMembers\MTillman\SavedOutcomes\StrokeSpinalStim\Overground_EMG_Kinematics\MergedTablesAffectedUnaffected';
 writetable(trialTableAllUA, fullfile(tablesPathPrefixMergedUA, 'trialTableAll.csv'));
 writetable(matchedCycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'matchedCycles.csv'));
 writetable(cycleTableAllUA, fullfile(tablesPathPrefixMergedUA, 'unmatchedCycles.csv'));

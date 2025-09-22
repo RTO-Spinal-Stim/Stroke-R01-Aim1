@@ -18,6 +18,7 @@ gaitriteConfig = config.GAITRITE;
 delsysConfig = config.DELSYS_EMG;
 xsensConfig = config.XSENS;
 regexsConfig = config.REGEXS;
+missingFilesPartsToCheck = config.MISSING_FILES;
 
 % Folder to load the data from.
 pathsConfig = config.PATHS;
@@ -37,11 +38,11 @@ cycleTableContraRemoved = table; % Each row is one UNMATCHED gait cycle, with th
 
 %% GaitRite Load
 subject_gaitrite_folder = fullfile(subjectLoadPath, gaitriteConfig.FOLDER_NAME);
-gaitRiteTable = loadGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig);
+gaitRiteTable = loadGaitRiteAllInterventions(gaitriteConfig, subject_gaitrite_folder, intervention_folders, mapped_interventions, regexsConfig, missingFilesPartsToCheck);
 
 %% Load Delsys
 subject_delsys_folder = fullfile(subjectLoadPath, delsysConfig.FOLDER_NAME);
-delsysTable = loadDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig);
+delsysTable = loadDelsysAllInterventions(delsysConfig, subject_delsys_folder, intervention_folders, mapped_interventions, regexsConfig, missingFilesPartsToCheck);
 
 %% Filter Delsys
 delsysTableFiltered = filterDelsys(delsysTable, 'Delsys_Loaded', 'Delsys_Filtered', delsysConfig.FILTER, delsysConfig.SAMPLING_FREQUENCY);
@@ -49,11 +50,18 @@ delsysTable = addToTable(delsysTable, delsysTableFiltered);
 
 %% Load XSENS
 subject_xsens_folder = fullfile(subjectLoadPath, xsensConfig.FOLDER_NAME);
-xsensTable = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig);
+xsensTable = loadXSENSAllInterventions(xsensConfig, subject_xsens_folder, intervention_folders, mapped_interventions, regexsConfig, missingFilesPartsToCheck);
 
 %% Filter XSENS
 xsensTableFiltered = filterXSENS(xsensTable, 'XSENS_Loaded', 'XSENS_Filtered', xsensConfig.FILTER, xsensConfig.SAMPLING_FREQUENCY);
 xsensTable = addToTable(xsensTable, xsensTableFiltered);
+
+%% Remove trials from GaitRite that are missing from XSENS & Delsys
+delsysCatTable = copyCategorical(delsysTable);
+xsensCatTable = copyCategorical(xsensTable);
+assert(isequal(delsysCatTable, xsensCatTable));
+rowsToKeepIdx = tableContains(gaitRiteTable, delsysCatTable);
+gaitRiteTable(~rowsToKeepIdx,:) = [];
 
 %% Correct the GaitRite trial numbers when there's fewer than 3 trials
 gaitRiteTable = correctGRTrialNumbersWhenLessThan3(gaitRiteTable, {xsensTable, delsysTable});
@@ -89,10 +97,7 @@ trialTable = addToTable(trialTable, syncedTableXSENS);
 % end
 
 %% Split data by gait cycle without doing any matching between L & R gait cycles
-xsensCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'XSENS_Filtered','XSENS_Frames');
-delsysCyclesTable = splitTrialsByGaitCycle_NoMatching(trialTable, 'Delsys_Filtered','Delsys_Frames');
-cycleTable = addToTable(cycleTable, xsensCyclesTable);
-cycleTable = addToTable(cycleTable, delsysCyclesTable);
+cycleTable = splitTrialsByGaitCycle_NoMatching_IgnoreExtraGaitEvents(trialTable, {'XSENS_Filtered', 'Delsys_Filtered'}, {'XSENS_Frames', 'Delsys_Frames'});
 
 %% Distribute GaitRite vectors from the trial table to the gait cycle table.
 % e.g. step/stride lengths/widths/durations/etc.
@@ -179,6 +184,12 @@ cycleTable = addToTable(cycleTable, rmsTableDelsys);
 %% Calculate range of motion (ROM)
 romTableXSENS = calculateRangeAll(cycleTable, 'XSENS_TimeNormalized', 'JointAngles');
 cycleTable = addToTable(cycleTable, romTableXSENS);
+
+%% Calculate path lengths
+% pathLengthsTableXSENS = calculatePathLengthsAll(cycleTable, 'XSENS_TimeNormalized', 'PathLength_JointAngles');
+% pathLengthsTableDelsys = calculatePathLengthsAll(cycleTable, 'Delsys_Normalized_TimeNormalized', 'PathLength_EMG');
+% cycleTable = addToTable(cycleTable, pathLengthsTableXSENS);
+% cycleTable = addToTable(cycleTable, pathLengthsTableDelsys);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Below this point, computations require the left and right gait cycles to be matched

@@ -10,27 +10,27 @@ function [tableOut] = addStimNoStim_Intensity_FrequencyCols(tableIn, intColName)
 % tableOut: Table with the added columns
 
 ints.RMT30.IS_STIM = "STIM";
-ints.RMT30.FREQ = "30";
+ints.RMT30.FREQ = 30;
 ints.RMT30.INTENSITY = "RMT";
 
 ints.RMT50.IS_STIM = "STIM";
-ints.RMT50.FREQ = "50";
+ints.RMT50.FREQ = 50;
 ints.RMT50.INTENSITY = "RMT";
 
 ints.TOL30.IS_STIM = "STIM";
-ints.TOL30.FREQ = "30";
+ints.TOL30.FREQ = 30;
 ints.TOL30.INTENSITY = "TOL";
 
 ints.TOL50.IS_STIM = "STIM";
-ints.TOL50.FREQ = "50";
+ints.TOL50.FREQ = 50;
 ints.TOL50.INTENSITY = "TOL";
 
 ints.SHAM1.IS_STIM = "NOSTIM";
-ints.SHAM1.FREQ = "SHAM";
+ints.SHAM1.FREQ = 0;
 ints.SHAM1.INTENSITY = "SHAM";
 
 ints.SHAM2.IS_STIM = "NOSTIM";
-ints.SHAM2.FREQ = "SHAM";
+ints.SHAM2.FREQ = 0;
 ints.SHAM2.INTENSITY = "SHAM";
 
 tableOut = tableIn;
