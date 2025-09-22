@@ -43,9 +43,8 @@ for i = 1:length(xlsx_file_names)
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
     parsedName = parseFileName(regexsConfig, xlsx_file_name);    
     subject_id = parsedName{1};
-    pre_post = parsedName{3};
-    speed = parsedName{4};
-    tableColName = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
+    speed = parsedName{3};
+    tableColName = [subject_id '_' intervention_field_name '_' speed];
 
     tmpTable = loadGaitRiteOneFile(xlsx_file_path, gaitRiteConfig); % Second output is for manual checking/validation
     for j = 1:height(tmpTable)
@@ -61,6 +60,11 @@ for i = 1:length(xlsx_file_names)
         tmpTable.(columnNames{colNum}) = categorical(string(tmpTable.(columnNames{colNum})));
     end
     gaitRiteData = addToTable(gaitRiteData, tmpTable);
+end
+
+% If the GaitRite data does not exist
+if isempty(gaitRiteData)
+    return;
 end
 
 % Put the categorical columns first

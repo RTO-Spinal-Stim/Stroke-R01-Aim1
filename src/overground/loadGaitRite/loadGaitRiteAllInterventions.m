@@ -23,5 +23,10 @@ for i = 1:length(intervention_folders)
     %     continue;
     % end
     tmpTable = loadGaitRiteOneIntervention(gaitriteConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck);
+    % Missing GaitRite data. This happens if the session being analyzed hasn't occurred yet 
+    % (OK for preliminary analysis of longitudinal data)
+    if isempty(tmpTable)
+        continue; 
+    end
     gaitRiteTable = addToTable(gaitRiteTable, tmpTable);
 end
