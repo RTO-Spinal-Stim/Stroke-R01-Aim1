@@ -11,10 +11,6 @@ function [tableOut, matrixStatsTable] = calculateCGAM(tableIn, indVars, catVars)
 
 tableOut = copyCategorical(tableIn);
 
-% catVars = {'Subject'};
-% catVars = {'Subject', 'Speed'};
-% catVars = {'Subject','Intervention'};
-% catVars = {'Subject', 'Intervention', 'PrePost'};
 catVars = {'Subject', 'Intervention', 'PrePost', 'Speed'};
 
 tableInIndep = tableIn(:, indVars);
