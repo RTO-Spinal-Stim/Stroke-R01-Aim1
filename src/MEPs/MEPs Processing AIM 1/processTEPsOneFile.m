@@ -124,7 +124,7 @@ for channelNum = 1:length(channels)
     for pulseNum=1:total_pulses        
         tic;
         channel = channels{channelNum};
-        channel = 'RRF';
+        channel = 'LHAM';
         channelData = processedRow.Raw_EMG.(channel)(pulseNum,:);
         [resultTable] = patternMatchMEP(channelData, pulseNum);
         if height(resultTable) > 0
