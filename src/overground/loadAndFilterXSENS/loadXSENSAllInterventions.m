@@ -22,5 +22,8 @@ for i = 1:length(intervention_folders)
     %     continue;
     % end
     tmpTable = loadXSENSOneIntervention(xsensConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck);
+    if isempty(tmpTable)
+        continue;
+    end
     xsensTable = addToTable(xsensTable, tmpTable);
 end
