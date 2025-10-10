@@ -1,4 +1,4 @@
-resultsTableAll = resultsTable;
+resultsTableAll = resultsTable; % Copy the data from processTEPsOneFile
 
 resultsTable = resultsTableAll;
 

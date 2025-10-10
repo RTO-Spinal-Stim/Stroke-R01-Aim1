@@ -22,8 +22,5 @@ for i = 1:length(intervention_folders)
     %     continue;
     % end
     tmpTable = loadDelsysEMGOneIntervention(delsysConfig, intervention_folder_path, intervention_field_name, regexsConfig, missingFilesPartsToCheck);
-    if isempty(tmpTable)
-        continue;
-    end
     delsysTable = addToTable(delsysTable, tmpTable);
 end

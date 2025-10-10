@@ -56,8 +56,9 @@ for i = 1:length(mat_file_names)
         error(['Intervention missing from file name: ' mat_file_name_with_ext]);
     end
     subject_id = parsedName{1};
-    speed = parsedName{3};
-    nameNoTrial = [subject_id '_' intervention_field_name '_' speed];
+    pre_post = parsedName{3};
+    speed = parsedName{4};
+    nameNoTrial = [subject_id '_' intervention_field_name '_' pre_post '_' speed];
     priorNamesNoTrial{i} = nameNoTrial;
     trialNum = sum(ismember(priorNamesNoTrial, {nameNoTrial}));
     nameWithTrial = [nameNoTrial '_trial' num2str(trialNum)];    
