@@ -8,6 +8,11 @@ function [] = addOneParticipantDataToAllDataCSV(participantTable, allDataTablePa
 catTable = copyCategorical(participantTable);
 catVars = catTable.Properties.VariableNames;
 
+folderPath = fileparts(allDataTablePath);
+if ~isfolder(folderPath)
+    mkdir(folderPath);
+end
+
 % Load the table of all the data
 if isfile(allDataTablePath)
     allDataTable = readtable(allDataTablePath);

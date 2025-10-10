@@ -24,6 +24,8 @@ end
 for i = 1:height(demsTable)
     currSubject = demsTable.Subject(i);
     affectedSide = demsTable.(demsTableColName)(i);
+    affectedSideChar = char(affectedSide);
+    affectedSide = upper(affectedSideChar(1));
 
     currSubjectIdx = ismember(tableIn.Subject, currSubject);
 

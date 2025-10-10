@@ -52,6 +52,9 @@ for i = 1:length(mat_file_names)
     mat_file_name = mat_file_name_with_ext(1:periodIndex-1);
     mat_file_path = fullfile(intervention_folder_path, mat_file_name_with_ext);    
     parsedName = parseFileName(regexsConfig, mat_file_name);
+    if isempty(parsedName{2})
+        error(['Intervention missing from file name: ' mat_file_name_with_ext]);
+    end
     subject_id = parsedName{1};
     speed = parsedName{3};
     nameNoTrial = [subject_id '_' intervention_field_name '_' speed];

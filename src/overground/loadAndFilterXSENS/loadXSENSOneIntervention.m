@@ -34,6 +34,9 @@ for i = 1:length(xlsx_file_names)
     xlsx_file_name = xlsx_file_name_with_ext(1:periodIndex-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
     parsedName = parseFileName(regexsConfig, xlsx_file_name);
+    if isempty(parsedName{2})
+        error(['Intervention missing from file name: ' xlsx_file_name_with_ext]);
+    end
     parsedName{4} = regexprep(parsedName{4}, leadingZerosRegex, '');
     tmpTable = table;
     for colNum = 1:length(parsedName)

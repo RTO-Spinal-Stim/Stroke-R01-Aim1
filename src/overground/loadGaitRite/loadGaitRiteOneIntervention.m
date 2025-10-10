@@ -41,7 +41,10 @@ for i = 1:length(xlsx_file_names)
     period_index = strfind(xlsx_file_name_with_ext, '.');
     xlsx_file_name = xlsx_file_name_with_ext(1:period_index-1);
     xlsx_file_path = fullfile(intervention_folder_path, xlsx_file_name_with_ext);
-    parsedName = parseFileName(regexsConfig, xlsx_file_name);    
+    parsedName = parseFileName(regexsConfig, xlsx_file_name);   
+    if isempty(parsedName{2})
+        error('Intervention not found in file name');
+    end
     subject_id = parsedName{1};
     speed = parsedName{3};
     tableColName = [subject_id '_' intervention_field_name '_' speed];

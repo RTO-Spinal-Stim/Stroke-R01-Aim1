@@ -1,9 +1,11 @@
-function [tableOut] = maxEMGValuePerVisit(dataTable, emgColName, maxEMGColName)
+function [tableOut] = maxEMGValuePerVisit(dataTable, emgColName, maxEMGColName, mvcMuscleMapping)
 
 %% PURPOSE: FIND THE MAX EMG PER MUSCLE
 % Inputs:
 % dataTable: Table where each row is one trial or gait cycle.
 % emgColName: The column name for the EMG data.
+% mvcMuscleMapping: Struct, where each field is the tested muscle group in
+% the MVC file name, and the values are the relevant muscle names in EMG data.
 %
 % Outputs:
 % maxEMGTable: The table of max EMG values. Each row is one visit.
@@ -15,7 +17,7 @@ disp('Getting the max EMG value per muscle per visit');
 %% Get the unique visit names.
 uniqueVisitsTable = unique(catTable(:, 1:2), 'rows', 'stable');
 tableOut = uniqueVisitsTable;
-% visitNames = getNamesPrefixes(dataTable.Name, 2);
+
 for visitNum = 1:height(uniqueVisitsTable)
     visitRow = uniqueVisitsTable(visitNum,:);
     % Initialize the max EMG struct.
@@ -30,11 +32,19 @@ for visitNum = 1:height(uniqueVisitsTable)
     % Iterate over each trial
     for i = 1:height(currDataTable)
         emgData = currDataTable.(emgColName)(i);
+        motion = char(currDataTable.('Muscle')(i));
+        if ~isfield(mvcMuscleMapping, motion)
+            continue; % Not all MVC trials are used to define EMG max
+        end
+        muscleNames = mvcMuscleMapping.(motion);
+        if ~iscell(muscleNames)
+            muscleNames = {muscleNames};
+        end
         % For each muscle, check if the max value in this trial is larger
         % than any prior trial.
-        for fieldNum = 1:length(fieldNames)
-            fieldName = fieldNames{fieldNum};
-            maxEMGStruct.(fieldName) = max([ maxEMGStruct.(fieldName), max(emgData.(fieldName)) ], [], 2, 'omitnan');            
+        for muscleNum = 1:length(muscleNames)
+            muscleName = muscleNames{muscleNum};
+            maxEMGStruct.(muscleName) = max([ maxEMGStruct.(muscleName), max(emgData.(muscleName)) ], [], 2, 'omitnan');            
         end
     end
     tableOut.(maxEMGColName)(visitNum) = maxEMGStruct;
