@@ -14,3 +14,5 @@
 *.pyc
 *.pdf
 .DS_Store
+.venv/
+.vscode/settings.json
