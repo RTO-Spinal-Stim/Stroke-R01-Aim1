@@ -9,14 +9,18 @@ except ImportError:
     print("Note: pingouin not installed. Install with 'pip install pingouin' for easier effect size calculations.")
     USE_PINGOUIN = False
 
-# tableName = 'CGAM'
-tableName = 'unmatchedCycles' # Options are 'matchedCycles', 'unmatchedCycles', 'CGAM'
-data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv"
+tableName = 'CGAM'
+# tableName = 'matchedCycles' # Options are 'matchedCycles', 'unmatchedCycles', 'CGAM'
+if tableName == 'CGAM':
+    data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/matchedCyclesCGAM.csv"
+else:
+    data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv"
 save_path = f"~/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_CSVs/cohensd_{tableName}.csv"
 save_path_ttest = f"~/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_{tableName}.csv"
 # For CGAM only. Comment out for other tables
-# data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/matchedCyclesCGAM.csv"
 df = pd.read_csv(data_path)
+# Include FV only
+df = df[df['Speed'] == 'FV']
 column_names = df.columns.tolist()
 columns_to_drop = [
     'Subject',
