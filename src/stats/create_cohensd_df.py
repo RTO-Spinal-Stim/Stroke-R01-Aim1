@@ -37,20 +37,19 @@ columns_to_drop = [
 ]
 numeric_cols = [col for col in column_names if col not in columns_to_drop]
 
-def cohens_d_manual(group1, group2):
-    """
-    Fallback function to calculate Cohen's d manually if pingouin not available.
-    """
-    n1, n2 = len(group1), len(group2)
-    var1, var2 = np.var(group1, ddof=1), np.var(group2, ddof=1)
-    pooled_std = np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2))
-    d = (np.mean(group1) - np.mean(group2)) / pooled_std
-    return d
-
 def cohens_d(group1, group2):
     """
     Calculate Cohen's d using pingouin if available, otherwise use manual calculation.
     """
+    def cohens_d_manual(group1, group2):
+        """
+        Fallback function to calculate Cohen's d manually if pingouin not available.
+        """
+        n1, n2 = len(group1), len(group2)
+        var1, var2 = np.var(group1, ddof=1), np.var(group2, ddof=1)
+        pooled_std = np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2))
+        d = (np.mean(group1) - np.mean(group2)) / pooled_std
+        return d
     if USE_PINGOUIN:
         # pingouin's compute_effsize with 'cohen' method
         return pg.compute_effsize(group1, group2, eftype='cohen')
