@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from csvstats.anova import anova1way
-from csvstats.ttest import ttest_dep
+from csvstats.ttest import ttest_dep, ttest_ind
 import pandas as pd
 
 # %%
@@ -52,17 +52,35 @@ results_nosham2 = anova1way(df_nosham2, group_column_name, "_", repeated_measure
 # %% Matched cycles
 data_path = r"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_matchedCycles.csv"
 df = pd.read_csv(data_path)
-save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/symmetry/{data_column}_ttest.pdf")
+save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_stim/symmetry/{data_column}_ttest.pdf")
 results = ttest_dep(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
+df_sham = df[df['Intervention'] == 'SHAM']
+save_path_sham = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_sham, group_column_name, "_", filename=save_path_sham)
+df_stim = df[df['Intervention'] == 'STIM']
+save_path_stim = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/stim_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_stim, group_column_name, "_", filename=save_path_stim)
 
 # %% Unmatched cycles
 data_path = r"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_unmatchedCycles.csv"
 df = pd.read_csv(data_path)
-save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/raw_values/{data_column}_ttest.pdf")
+save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_stim/raw_values/{data_column}_ttest.pdf")
 results = ttest_dep(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
+df_sham = df[df['Intervention'] == 'SHAM']
+save_path_sham = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_sham, group_column_name, "_", filename=save_path_sham)
+df_stim = df[df['Intervention'] == 'STIM']
+save_path_stim = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/stim_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_stim, group_column_name, "_", filename=save_path_stim)
 
 # %% CGAM
 data_path = r"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_CGAM.csv"
 df = pd.read_csv(data_path)
-save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/symmetry/{data_column}_ttest.pdf")
+save_path = Path("/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_stim/symmetry/{data_column}_ttest.pdf")
 results = ttest_dep(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
+df_sham = df[df['Intervention'] == 'SHAM']
+save_path_sham = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/sham_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_sham, group_column_name, "_", filename=save_path_sham)
+df_stim = df[df['Intervention'] == 'STIM']
+save_path_stim = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/stim_vs_zero/symmetry/{data_column}_ttest.pdf"
+results = ttest_ind(df_stim, group_column_name, "_", filename=save_path_stim)
