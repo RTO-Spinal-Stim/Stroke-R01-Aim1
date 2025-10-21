@@ -1,3 +1,5 @@
+"""Create a data frame of Cohen's d values from each column in the CSV."""
+from pathlib import Path
 
 import pandas as pd
 import numpy as np
@@ -9,33 +11,8 @@ except ImportError:
     print("Note: pingouin not installed. Install with 'pip install pingouin' for easier effect size calculations.")
     USE_PINGOUIN = False
 
-tableName = 'CGAM'
-# tableName = 'matchedCycles' # Options are 'matchedCycles', 'unmatchedCycles', 'CGAM'
-if tableName == 'CGAM':
-    data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/matchedCyclesCGAM.csv"
-else:
-    data_path = f"~/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv"
-save_path = f"~/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_CSVs/cohensd_{tableName}.csv"
-save_path_ttest = f"~/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_{tableName}.csv"
-# For CGAM only. Comment out for other tables
-df = pd.read_csv(data_path)
-# Include FV only
-df = df[df['Speed'] == 'FV']
-column_names = df.columns.tolist()
-columns_to_drop = [
-    'Subject',
-    'Intervention',
-    'SessionOrder',
-    'Is_Stim',
-    'Frequency',
-    'Intensity',
-    'PrePost',
-    'Speed',
-    'Trial',
-    'Cycle',
-    'Side'
-]
-numeric_cols = [col for col in column_names if col not in columns_to_drop]
+speeds = ['SSV', 'FV']
+tableNames = ['matchedCycles', 'unmatchedCycles', 'CGAM']
 
 def cohens_d(group1, group2):
     """
@@ -89,14 +66,8 @@ def make_df_for_anova(df: pd.DataFrame) -> pd.DataFrame:
     results_df = pd.DataFrame(results)
     return results_df
 
-# Save results to CSV
-results_df_for_anova = make_df_for_anova(df)
-results_df_for_anova.to_csv(save_path, index=False)
-
 def make_df_for_ttest(df: pd.DataFrame) -> pd.DataFrame:
     """Make a pd.DataFrame with two Cohen's d values per subject: one for average STIM, one for SHAM"""
-    # Initialize results dictionary
-    results = []
     # Group by subject
     sham_means = df[df['Intervention'] == 'SHAM2'].groupby('Subject').mean(numeric_only=True).reset_index()
     sham_means['Intervention'] = 'SHAM'
@@ -112,7 +83,47 @@ def make_df_for_ttest(df: pd.DataFrame) -> pd.DataFrame:
     result_df = result_df[cols]
 
     return result_df
-    
 
-results_df_for_ttest = make_df_for_ttest(results_df_for_anova)
-results_df_for_ttest.to_csv(save_path_ttest, index=False)
+for tableName in tableNames:
+    for speed in speeds:
+        if tableName == 'CGAM':
+            data_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/matchedCyclesCGAM_{speed}.csv"
+        else:
+            data_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv"
+        data_path = Path(data_path)
+        if not data_path.exists():
+            print(f"Missing path: {data_path}")
+            continue
+
+        save_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"
+        save_path_ttest = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_{tableName}_{speed}.csv"
+
+        df = pd.read_csv(data_path)
+
+        # Include one speed only
+        df = df[df['Speed'] == speed]
+        column_names = df.columns.tolist()
+        columns_to_drop = [
+            'Subject',
+            'Intervention',
+            'SessionOrder',
+            'Is_Stim',
+            'Frequency',
+            'Intensity',
+            'PrePost',
+            'Speed',
+            'Trial',
+            'Cycle',
+            'Side'
+        ]
+        numeric_cols = [col for col in column_names if col not in columns_to_drop]    
+
+        # ANOVA
+        results_df_for_anova = make_df_for_anova(df)
+        results_df_for_anova.to_csv(save_path, index=False)
+        print(f"Saved ANOVA df to {save_path}")
+
+        # t-test
+        results_df_for_ttest = make_df_for_ttest(results_df_for_anova)
+        results_df_for_ttest.to_csv(save_path_ttest, index=False)
+        print(f"Saved ttest df to {save_path_ttest}")
