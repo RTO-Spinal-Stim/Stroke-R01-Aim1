@@ -1,10 +1,13 @@
 """Run statistics on the Cohen's d CSV files"""
 # %%
+import sys
 from pathlib import Path
 
 from csvstats.anova import anova1way
 from csvstats.ttest import ttest_dep, ttest_ind
 import pandas as pd
+
+from select_best_stim import select_best_stim
 
 # %%
 ## Configuration
@@ -54,6 +57,7 @@ for speed in speeds:
         # %% Get the best stim
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
         all_df = pd.read_csv(data_path)
+        best_stim_df = select_best_stim(all_df)
 
         ##################################################################
         #################### Session Order ANOVA #########################
