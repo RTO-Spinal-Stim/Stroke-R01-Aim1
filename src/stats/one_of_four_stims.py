@@ -12,17 +12,16 @@ subject_column = "Subject"
 group_column = "Intervention"
 speeds = ["SSV", "FV"]
 tableNames = ['matchedCycles', 'unmatchedCycles', 'CGAM']
-tableNames = ['CGAM']
 
 params = (
-    # "StepLengths_GR_Sym",
-    # "SwingDurations_GR_Sym",
+    "StepLengths_GR_Sym",
+    "SwingDurations_GR_Sym",
     "CGAM",
 )
 
 for tableName in tableNames:
     for speed in speeds:
-        data_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"    
+        data_path = f"results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"    
 
         df = pd.read_csv(data_path)
         df = df[df['Intervention'] != 'SHAM1']
@@ -60,13 +59,13 @@ for tableName in tableNames:
 
         # Save the data and computation results
         all_samples_df = pd.concat(bootstrap_dfs)
-        save_path_all_samples = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/all_samples_df_{n_iterations}_{tableName}_{speed}.csv"
+        save_path_all_samples = f"results/stats/ttest_results/all_samples_df_{n_iterations}_{tableName}_{speed}.csv"
         # Reorder the columns - move "iteration_n" from last to first
         col_names = all_samples_df.columns.to_list()
         col_names.insert(0, col_names.pop())  # Remove last column and insert it at the beginning
         all_samples_df = all_samples_df[col_names]
         all_samples_df.to_csv(save_path_all_samples, index=False)
-        save_path_all_results = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/all_ttests_bootstrapped_{n_iterations}_{tableName}_{speed}.pdf"
+        save_path_all_results = f"results/stats/ttest_results/all_ttests_bootstrapped_{n_iterations}_{tableName}_{speed}.pdf"
         dict_to_pdf(all_results_stim_vs_sham, filename=save_path_all_results)
 
         # For each test, get the p-value, STIM group mean and std.
@@ -91,7 +90,7 @@ for tableName in tableNames:
             }
         }
 
-        fig_save_path = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/scatter_{param}_{n_iterations}_{tableName}_{speed}.png"
+        fig_save_path = "results/stats/ttest_results/scatter_{param}_{n_iterations}_{tableName}_{speed}.png"
         for param in params:
             if param not in all_results_stim[i].keys():
                 continue
@@ -142,7 +141,7 @@ for tableName in tableNames:
                 "CGAM": 0.30
             }
         }
-        filename_format = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/one_random_stim_vs_avg_stim_std/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
+        filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_std/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in stds.keys():
                 continue
@@ -169,7 +168,7 @@ for tableName in tableNames:
                 "CGAM": 0.254
             }
         }
-        filename_format = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/one_random_stim_vs_avg_stim_p_values/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
+        filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_p_values/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in p_values.keys():
                 continue
@@ -196,7 +195,7 @@ for tableName in tableNames:
                 "CGAM": 0.03
             }
         }
-        filename_format = "/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/ttest_results/one_random_stim_vs_avg_stim_means/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
+        filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_means/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in means.keys():
                 continue
