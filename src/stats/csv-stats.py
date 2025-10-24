@@ -52,7 +52,7 @@ for speed in speeds:
         results = ttest_ind(df_stim, group_column_name, "_", filename=save_path_stim)
 
         ##################################################################
-        #################### Best Stim vs. SHAM t-test ###################
+        ############ Best & Worst Stim vs. SHAM t-test ###################
         ##################################################################
         # %% Get the best stim
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
@@ -72,7 +72,6 @@ for speed in speeds:
         results = ttest_ind(best_stim_df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
         save_path_worst_stim = "results/stats/ttest_results/worst_stim_vs_zero/symmetry/{{data_column}}_{speed}_ttest.pdf".format(speed=speed)
         results = ttest_ind(worst_stim_df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
-
 
         ##################################################################
         #################### Session Order ANOVA #########################
