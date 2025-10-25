@@ -66,6 +66,10 @@ for speed in speeds:
         sham_df["Intervention"] = "SHAM"
         all_df_columns = all_df.columns.drop([group_column_name, repeated_measures_column])
         for column in all_df_columns:
+            # Check for NaN in the column
+            if all_df[column].isnull().any():
+                print(f"Skipping column {column} due to NaN values.", file=sys.stderr)
+                continue
             best_stim_df = select_best_stim(all_df, column).copy()
             best_stim_df["Intervention"] = "BEST_STIM"
             worst_stim_df = select_worst_stim(all_df, column).copy()
