@@ -16,9 +16,17 @@ def compute_vif_features(df: pd.DataFrame, feature_cols: list, vif_threshold=10)
     list: List of selected features after VIF filtering.
     """
     selected_features = feature_cols.copy()
+
+    # De-mean before VIF calculation
+    df_copy = df.copy()
+    for col in df_copy.columns:
+        try:
+            df_copy[col] = df_copy[col] - df_copy[col].mean()
+        except:
+            pass
     
     while len(selected_features) > 1:
-        X = df[selected_features].to_numpy()
+        X = df_copy[selected_features].to_numpy()
         vif_values = [variance_inflation_factor(X, i) for i in range(X.shape[1])]
         
         # Create a DataFrame for VIF values

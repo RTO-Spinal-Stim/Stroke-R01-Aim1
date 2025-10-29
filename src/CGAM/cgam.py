@@ -1,9 +1,8 @@
 
 import numpy as np
-import pingouin as pg
 import pandas as pd
 
-def compute_cgam(df: pd.DataFrame, groupby_cols: list, feature_cols: list):    
+def compute_cgam(df: pd.DataFrame, groupby_cols: list, feature_cols: list, cgam_column: str = "CGAM") -> pd.DataFrame:    
     """
     Compute CGAM using features selected from VIF.
 
@@ -15,10 +14,9 @@ def compute_cgam(df: pd.DataFrame, groupby_cols: list, feature_cols: list):
     Returns:
     df: DataFrame with CGAM values for each stride, grouped by specified columns.
     """
-    grouped = df.groupby(groupby_cols)
-
     all_cgam_values = []
 
+    grouped = df.groupby(groupby_cols)    
     for group_name, group_df in grouped:
         if len(group_df) < 3:
             print(f"Skipped group: {group_name} (only {len(group_df)} strides)")
@@ -35,32 +33,17 @@ def compute_cgam(df: pd.DataFrame, groupby_cols: list, feature_cols: list):
             print("Warning: Matrix is ill-conditioned")
 
         # Inverse covariance matrix
-        K_S_inv = np.linalg.inv(K_S)
-
-        denominator = np.sum(K_S_inv)
+        K_S_inv = np.linalg.inv(K_S)        
 
         # Compute CGAM for each stride
+        denominator = np.sum(K_S_inv)
         numerators = np.diag(S @ K_S_inv @ S.T)
-        cgam_values = numerators / denominator
-        all_cgam_values.append(cgam_values)
-        # for i, stride_S in enumerate(S):
-        #     numerator = stride_S @ K_S_inv @ stride_S.T
-        #     val = numerator / denominator
-        #     if val < 0 or np.isnan(val):
-        #         print(f"Warning: Invalid value inside sqrt in group {group_name}. Skipping stride {i}.")
-        #         continue
-        #     cgam_value = np.sqrt(val)
+        cgam_values = np.sqrt(numerators / denominator)
 
-        #     # Collect metadata columns for this stride
-        #     cycle_val = group_df['Cycle'].iloc[i]
-        #     trial_val = group_df['Trial'].iloc[i]
-        #     prepost_val = group_df['PrePost'].iloc[i]
+        # Put the CGAM values into a pd.DataFrame with the groupby_cols
+        group_result = group_df[groupby_cols].copy()
+        group_result[cgam_column] = cgam_values
+        all_cgam_values.append(group_result)
 
-
-            # Append all data
-            # results.append((*group_name, trial_val, prepost_val, cycle_val, cgam_value))
-
+    all_cgam_values = pd.concat(all_cgam_values, ignore_index=False)
     return all_cgam_values
-    # Create DataFrame with results
-    # result_df = pd.DataFrame(results, columns=groupby_cols + ['Trial', 'PrePost', 'Cycle', 'CGAM'])
-    # return result_df
