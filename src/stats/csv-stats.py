@@ -15,17 +15,19 @@ repeated_measures_column = 'Subject'
 group_column_name = 'Intervention'
 speeds = ['SSV', 'FV']
 table_names = [
-    "CGAM",
     "matchedCycles",
     "unmatchedCycles"
 ]
 
 # Testing
-# all_col_names_to_keep = [
-#     "StepLengths_GR_Sym",
-#     "SwingDurations_GR_Sym",
-#     "CGAM"
-# ]
+all_col_names_to_keep = [
+    "StepLengths_GR_Sym",
+    "SwingDurations_GR_Sym",
+    "CGAM_all",
+    "CGAM_GR",
+    "CGAM_EMG",
+    "CGAM_JointAngles"
+]
 
 for speed in speeds:
     for table_name in table_names:
