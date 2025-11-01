@@ -12,7 +12,21 @@ except ImportError:
     USE_PINGOUIN = False
 
 speeds = ['SSV', 'FV']
-tableNames = ['matchedCycles', 'unmatchedCycles', 'CGAM']
+tableNames = ['matchedCycles', 'unmatchedCycles']
+
+COLUMNS_TO_DROP = [
+    'Subject',
+    'Intervention',
+    'SessionOrder',
+    'Is_Stim',
+    'Frequency',
+    'Intensity',
+    'PrePost',
+    'Speed',
+    'Trial',
+    'Cycle',
+    'Side'
+]
 
 def cohens_d(group1, group2):
     """
@@ -86,37 +100,23 @@ def make_df_for_ttest(df: pd.DataFrame) -> pd.DataFrame:
 
 for tableName in tableNames:
     for speed in speeds:
-        if tableName == 'CGAM':
-            data_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/matchedCyclesCGAM_{speed}.csv"
+        if tableName == "matchedCycles":
+            data_path = Path(f"results/from_matlab/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}_withCGAM.csv")
         else:
-            data_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/SavedOutcomes/StrokeSpinalStim/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv"
-        data_path = Path(data_path)
+            data_path = Path(f"results/from_matlab/Overground_EMG_Kinematics/MergedTablesAffectedUnaffected/{tableName}.csv")
         if not data_path.exists():
             print(f"Missing path: {data_path}")
             continue
 
-        save_path = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"
-        save_path_ttest = f"/home/mtillman/mnt/rto/LabMembers/MTillman/GitRepos/Stroke-R01/results/stats/Cohensd_ttest_CSVs/cohensd_{tableName}_{speed}.csv"
+        save_path = f"results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"
+        save_path_ttest = f"results/stats/Cohensd_ttest_CSVs/cohensd_{tableName}_{speed}.csv"
 
         df = pd.read_csv(data_path)
 
         # Include one speed only
         df = df[df['Speed'] == speed]
-        column_names = df.columns.tolist()
-        columns_to_drop = [
-            'Subject',
-            'Intervention',
-            'SessionOrder',
-            'Is_Stim',
-            'Frequency',
-            'Intensity',
-            'PrePost',
-            'Speed',
-            'Trial',
-            'Cycle',
-            'Side'
-        ]
-        numeric_cols = [col for col in column_names if col not in columns_to_drop]    
+        column_names = df.columns.tolist()        
+        numeric_cols = [col for col in column_names if col not in COLUMNS_TO_DROP]    
 
         # ANOVA
         results_df_for_anova = make_df_for_anova(df)

@@ -11,13 +11,88 @@ n_iterations = 1000
 subject_column = "Subject"
 group_column = "Intervention"
 speeds = ["SSV", "FV"]
-tableNames = ['matchedCycles', 'unmatchedCycles', 'CGAM']
+tableNames = ['matchedCycles', 'unmatchedCycles']
 
 params = (
     "StepLengths_GR_Sym",
     "SwingDurations_GR_Sym",
-    "CGAM",
+    "CGAM_all",
+    # "CGAM_EMG",
+    "CGAM_GR",
+    "CGAM_JointAngles"
 )
+
+# Means of the SHAM group
+MEANS_SHAM = {
+    "FV": {
+        "StepLengths_GR_Sym": 0.17,
+        "SwingDurations_GR_Sym": 0.24,
+        "CGAM_all": 0.05,
+        "CGAM_GR": 0.18,
+        "CGAM_JointAngles": 0.13
+    },
+    "SSV": {
+        "StepLengths_GR_Sym": 0.07,
+        "SwingDurations_GR_Sym": -0.01,
+        "CGAM_all": 0.07,
+        "CGAM_GR": -0.036,
+        "CGAM_JointAngles": 0.2
+    }
+}
+
+# Std. deviation of the average stim
+AVG_STIM_STD_DEVS = {
+    "FV": {
+        "StepLengths_GR_Sym": 0.43,
+        "SwingDurations_GR_Sym": 0.36,
+        "CGAM_all": 0.15,
+        "CGAM_GR": 0.45,
+        "CGAM_JointAngles": 0.22
+    },
+    "SSV": {
+        "StepLengths_GR_Sym": 0.40,
+        "SwingDurations_GR_Sym": 0.29,
+        "CGAM_all": 0.30,
+        "CGAM_GR": 0.38,
+        "CGAM_JointAngles": 0.16
+    }
+}
+
+# P values vs zero of the average stim
+AVG_STIM_P_VALUES = {
+    "FV": {
+        "StepLengths_GR_Sym": 0.052,
+        "SwingDurations_GR_Sym": 0.01,
+        "CGAM_all": 0.0009,
+        "CGAM_GR": 0.1294,
+        "CGAM_JointAngles": 0.0003
+    },
+    "SSV": {
+        "StepLengths_GR_Sym": 0.4859,
+        "SwingDurations_GR_Sym": 0.0161,
+        "CGAM_all": 0.254,
+        "CGAM_GR": 0.775,
+        "CGAM_JointAngles": 0.12
+    }
+}
+
+# Means of the average stim group
+AVG_STIM_MEANS = {
+    "FV": {
+        "StepLengths_GR_Sym": 0.2,
+        "SwingDurations_GR_Sym": 0.22,
+        "CGAM_all": 0.13,
+        "CGAM_GR": 0.16,
+        "CGAM_JointAngles": 0.22
+    },
+    "SSV": {
+        "StepLengths_GR_Sym": 0.06,
+        "SwingDurations_GR_Sym": 0.17,
+        "CGAM_all": 0.03,
+        "CGAM_GR": -0.025,
+        "CGAM_JointAngles": 0.056
+    }
+}
 
 for tableName in tableNames:
     for speed in speeds:
@@ -75,20 +150,7 @@ for tableName in tableNames:
         for param in params:
             p_values[param] = []
             means[param] = []
-            stds[param] = []
-
-        means_sham = {
-            "FV": {
-                "StepLengths_GR_Sym": 0.17,
-                "SwingDurations_GR_Sym": 0.24,
-                "CGAM": 0.05
-            },
-            "SSV": {
-                "StepLengths_GR_Sym": 0.07,
-                "SwingDurations_GR_Sym": -0.01,
-                "CGAM": 0.07
-            }
-        }
+            stds[param] = []        
 
         fig_save_path = "results/stats/ttest_results/scatter_{param}_{n_iterations}_{tableName}_{speed}.png"
         for param in params:
@@ -106,7 +168,7 @@ for tableName in tableNames:
             p_values[param] = np.array(p_values[param])
             means[param] = np.array(means[param])
             stds[param] = np.array(stds[param])
-            deltas = means_sham[speed][param] - means[param]
+            deltas = MEANS_SHAM[speed][param] - means[param]
 
             sham_greater = deltas > 0
             sham_smaller = deltas < 0
@@ -128,19 +190,7 @@ for tableName in tableNames:
             plt.savefig(fig_save_path_param)
             plt.close()
 
-        # Run t-test to see if the standard deviations are different than the averaged STIM std.
-        avg_stim_std_devs = {
-            "FV": {
-                "StepLengths_GR_Sym": 0.43,
-                "SwingDurations_GR_Sym": 0.36,
-                "CGAM": 0.15
-            },
-            "SSV": {
-                "StepLengths_GR_Sym": 0.40,
-                "SwingDurations_GR_Sym": 0.29,
-                "CGAM": 0.30
-            }
-        }
+        # Run t-test to see if the standard deviations are different than the averaged STIM std.        
         filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_std/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in stds.keys():
@@ -152,22 +202,10 @@ for tableName in tableNames:
                                         "", 
                                         "_", 
                                         filename=filename, 
-                                        popmean=avg_stim_std_devs[speed][param],
+                                        popmean=AVG_STIM_STD_DEVS[speed][param],
                                         render_plot=True)
             
-        # Run t-test to see if the p-values are different than the averaged p-values
-        avg_stim_p_values = {
-            "FV": {
-                "StepLengths_GR_Sym": 0.052,
-                "SwingDurations_GR_Sym": 0.01,
-                "CGAM": 0.0009
-            },
-            "SSV": {
-                "StepLengths_GR_Sym": 0.4859,
-                "SwingDurations_GR_Sym": 0.0161,
-                "CGAM": 0.254
-            }
-        }
+        # Run t-test to see if the p-values are different than the averaged p-values        
         filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_p_values/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in p_values.keys():
@@ -179,22 +217,10 @@ for tableName in tableNames:
                                     "", 
                                     "_", 
                                     filename=filename, 
-                                    popmean=avg_stim_p_values[speed][param],
+                                    popmean=AVG_STIM_P_VALUES[speed][param],
                                     render_plot=True)
 
-        # Run t-test to see if the mean values are different than the averaged means
-        avg_stim_means = {
-            "FV": {
-                "StepLengths_GR_Sym": 0.2,
-                "SwingDurations_GR_Sym": 0.22,
-                "CGAM": 0.13
-            },
-            "SSV": {
-                "StepLengths_GR_Sym": 0.06,
-                "SwingDurations_GR_Sym": 0.17,
-                "CGAM": 0.03
-            }
-        }
+        # Run t-test to see if the mean values are different than the averaged means        
         filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_means/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
         for param in params:
             if param not in means.keys():
@@ -206,5 +232,5 @@ for tableName in tableNames:
                                         "", 
                                         "_", 
                                         filename=filename, 
-                                        popmean=avg_stim_means[speed][param],
+                                        popmean=AVG_STIM_MEANS[speed][param],
                                         render_plot=True)
