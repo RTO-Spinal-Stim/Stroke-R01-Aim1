@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run with "bash src/pipeline.sh"
 
 # Run this script from the project directory with "./src/pipeline.sh"
 
