@@ -1,7 +1,5 @@
 #!/bin/bash
-# Run with "bash src/pipeline.sh"
-
-# Run this script from the project directory with "./src/pipeline.sh"
+# Run with "bash src/pipeline.sh" from the project directory
 
 # Run the MATLAB pipeline to generate CSVs from raw data
 matlab -batch "addpath('src/overground'); mainAllSubjects"
