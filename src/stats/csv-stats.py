@@ -19,6 +19,17 @@ table_names = [
     "unmatchedCycles"
 ]
 
+COLUMNS_TO_DROP = [
+    'Is_Stim',
+    'Frequency',
+    'Intensity',
+    'PrePost',
+    'Speed',
+    'Trial',
+    'Cycle',
+    'Side'
+]
+
 # Testing
 all_col_names_to_keep = [
     "StepLengths_GR_Sym",
@@ -35,19 +46,37 @@ for speed in speeds:
         #################### tSCS Parameters ANOVA #######################
         ##################################################################
 
-        # %% Cohen's d ANOVA
+        # %% Cohen's d ANOVA on Intervention
+        # data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
+        # df = pd.read_csv(data_path)
+        # save_path = Path("results/stats/ANOVA results/between_interventions_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
+        # root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_interventions_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
+        # save_path.parent.mkdir(parents=True, exist_ok=True)
+        # root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
+        # df_nosham2 = df[df['Intervention'] != 'SHAM2']
+        # df = df.drop([col for col in COLUMNS_TO_DROP if col in df.columns] + ["SessionOrder"], axis=1) # Drop SessionOrder and the other columns
+        # df_nosham2 = df_nosham2.drop([col for col in df_nosham2.columns if col not in df.columns]) 
+        # results_sham2 = anova1way(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)    
+        # results_nosham2 = anova1way(df_nosham2, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=root_save_folder_no_sham2)
+
+        ##################################################################
+        #################### Session Order ANOVA #########################
+        ##################################################################
+
+        # %% Cohen's d ANOVA on SessionOrder
+        group_column_name_session_order = "SessionOrder"
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
         df = pd.read_csv(data_path)
-        # col_names_to_keep = [col for col in all_col_names_to_keep if col in df.columns]
-        # df = df[[repeated_measures_column, group_column_name] + col_names_to_keep]
-        save_path = Path("results/stats/ANOVA results/between_interventions_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
-        root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_interventions_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
+        save_path = Path("results/stats/ANOVA results/between_sessionorders_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
+        root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_sessionorders_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
         save_path.parent.mkdir(parents=True, exist_ok=True)
         root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
         df_nosham2 = df[df['Intervention'] != 'SHAM2']
-        # df = df.drop(['SessionOrder', 'Frequency'], axis=1)
-        results_sham2 = anova1way(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)    
-        results_nosham2 = anova1way(df_nosham2, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=root_save_folder_no_sham2)
+        df = df.drop([col for col in COLUMNS_TO_DROP if col in df.columns] + ["Intervention"], axis=1) # Drop SessionOrder and the other columns
+        df_nosham2 = df_nosham2.drop([col for col in df_nosham2.columns if col not in df.columns], axis=1) 
+        results_sham2 = anova1way(df, group_column_name_session_order, "_", repeated_measures_column=repeated_measures_column, filename=save_path)    
+        # Cannot run session order ANOVA without sham2 since not all session orders are present
+        # results_nosham2 = anova1way(df_nosham2, group_column_name_session_order, "_", repeated_measures_column=repeated_measures_column, filename=root_save_folder_no_sham2)
 
         #################################################################################
         #################### Single day effect t-tests (average stim) ###################
@@ -55,8 +84,6 @@ for speed in speeds:
         # %% Matched cycles
         data_path = f"results/stats/Cohensd_ttest_CSVs/cohensd_{table_name}_{speed}.csv"
         df = pd.read_csv(data_path)
-        # col_names_to_keep = [col for col in all_col_names_to_keep if col in df.columns]
-        # df = df[[repeated_measures_column, group_column_name] + col_names_to_keep]
         save_path = Path("results/stats/ttest_results/avg_stim_vs_sham/{table_name}/{{data_column}}_{speed}_ttest.pdf".format(speed=speed, table_name=table_name))
         save_path.parent.mkdir(parents=True, exist_ok=True)
         results = ttest_dep(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)
@@ -75,8 +102,6 @@ for speed in speeds:
         # %% Get the best stim
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
         all_df = pd.read_csv(data_path)
-        # col_names_to_keep = [col for col in all_col_names_to_keep if col in all_df.columns]
-        # all_df = all_df[[repeated_measures_column, group_column_name] + col_names_to_keep]
         sham_df = all_df[all_df["Intervention"] == "SHAM2"].copy()
         sham_df["Intervention"] = "SHAM"
         all_df_columns = all_df.columns.drop([group_column_name, repeated_measures_column])
@@ -106,12 +131,3 @@ for speed in speeds:
             save_path_worst_stim = Path("results/stats/ttest_results/worst_stim_vs_zero/{table_name}/{column}_{speed}_ttest.pdf".format(speed=speed, column=column, table_name=table_name))
             save_path_worst_stim.parent.mkdir(parents=True, exist_ok=True)
             results_worst_stim_vs_zero = ttest_ind(worst_stim_df, group_column_name, column, filename=save_path_worst_stim)
-
-        ##################################################################
-        #################### Session Order ANOVA #########################
-        ##################################################################
-
-        # group_column_name = "SessionOrder"
-        # data_path = r""
-        # df = pd.read_csv(data_path)
-        # save_path = anova1way(df, group_column_name, )

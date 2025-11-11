@@ -28,6 +28,16 @@ COLUMNS_TO_DROP = [
     'Side'
 ]
 
+# Columns that are consistent within a session, helpful for later statistical analyses
+SESSION_COLUMNS = [
+    "Subject",
+    "Intervention",
+    "SessionOrder",
+    "Speed",
+    "Frequency",
+    "Intensity",
+]
+
 def cohens_d(group1, group2):
     """
     Calculate Cohen's d using pingouin if available, otherwise use manual calculation.
@@ -47,10 +57,11 @@ def cohens_d(group1, group2):
     else:
         return cohens_d_manual(group1, group2)
 
-def make_df_for_anova(df: pd.DataFrame) -> pd.DataFrame:
+def make_df_for_anova(df: pd.DataFrame, NUMERIC_COLUMNS: list, SESSION_COLUMNS: list) -> pd.DataFrame:
     """Make a pd.DataFrame with one Cohen's d value per Subject & Intervention"""
-    # Initialize results dictionary
+    # Initialize results list
     results = []
+    df_columns = df.columns.tolist()
     # Group by Subject and Intervention
     for (subject, intervention), group in df.groupby(['Subject', 'Intervention']):
         pre_data = group[group['PrePost'] == 'PRE']
@@ -58,10 +69,8 @@ def make_df_for_anova(df: pd.DataFrame) -> pd.DataFrame:
         
         if len(pre_data) > 0 and len(post_data) > 0:
             # Calculate Cohen's d for each numeric variable
-            one_group_dict = {}
-            one_group_dict['Subject'] = subject
-            one_group_dict['Intervention'] = intervention
-            for col in numeric_cols:
+            one_group_dict = {col: group[col].unique().item() for col in df_columns if col in SESSION_COLUMNS}
+            for col in NUMERIC_COLUMNS:
                 pre_values = pre_data[col].dropna()
                 post_values = post_data[col].dropna()
                 
@@ -119,7 +128,7 @@ for tableName in tableNames:
         numeric_cols = [col for col in column_names if col not in COLUMNS_TO_DROP]    
 
         # ANOVA
-        results_df_for_anova = make_df_for_anova(df)
+        results_df_for_anova = make_df_for_anova(df, NUMERIC_COLUMNS=numeric_cols, SESSION_COLUMNS=SESSION_COLUMNS)
         results_df_for_anova.to_csv(save_path, index=False)
         print(f"Saved ANOVA df to {save_path}")
 
