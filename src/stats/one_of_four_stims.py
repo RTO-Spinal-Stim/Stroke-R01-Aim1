@@ -94,6 +94,65 @@ AVG_STIM_MEANS = {
     }
 }
 
+def run_ttest_random_vs_averaged_value(all_param_values: dict, avg_stim_values: dict, column_prefix: str, params: list, n_iterations: int, speed: str, tableName: str, filename_format: str) -> dict:    
+    for param in params:
+        if param not in means.keys():
+            continue
+
+        df = pd.DataFrame(all_param_values[param], columns=[f"{column_prefix}_{param}"])
+        filename = filename_format.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
+        result = ttest_ind(df, 
+                            "", 
+                            "_", 
+                            filename=filename, 
+                            popmean=avg_stim_values[speed][param],
+                            render_plot=True)
+        
+def get_all_values_from_result_dict(result_dict: dict, param: str, key: str, n_iterations: int) -> np.array:
+    values = []
+    key = param + "." + key
+    keys = key.split(".")
+    for i in range(n_iterations):
+        value = result_dict[i]
+        for k in keys:
+            value = value[k]
+        values.append(value)
+
+    return np.array(values)
+
+def plot_significances(
+                means_sham: dict,
+                speed: str,
+                param: str,
+                means_stim: dict,
+                p_values: dict,
+                title_substring: str,
+                n_iterations: int,
+                tableName: str,
+                fig_save_path: str):
+
+    deltas = means_sham[speed][param] - means_stim[param]
+
+    sham_greater = deltas > 0
+    sham_smaller = deltas < 0
+
+    perc_p_below_alpha = sum(p_values[param] < 0.05) / len(p_values[param]) * 100
+
+    plt.figure()
+    x = np.array(range(0, n_iterations))
+    plt.scatter(x[sham_greater], p_values[param][sham_greater], c="red", label="SHAM > STIM")
+    plt.scatter(x[sham_smaller], p_values[param][sham_smaller], c="blue", label="STIM > SHAM")
+    plt.xlabel("Iteration")
+    plt.ylabel('p values')
+    plt.legend(loc="upper left")
+
+    plt.title(f"{speed} {title_substring} ({round(perc_p_below_alpha,0)}% < 0.05): {param}")
+    plt.axhline(y=0.05, c="black")    
+
+    fig_save_path_param = fig_save_path.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
+    plt.savefig(fig_save_path_param)
+    plt.close()
+
 for tableName in tableNames:
     for speed in speeds:
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{tableName}_{speed}.csv"    
@@ -144,93 +203,83 @@ for tableName in tableNames:
         dict_to_pdf(all_results_stim_vs_sham, filename=save_path_all_results)
 
         # For each test, get the p-value, STIM group mean and std.
-        p_values = {}
-        means = {}
-        stds = {}
-        for param in params:
-            p_values[param] = []
-            means[param] = []
-            stds[param] = []        
-
+        p_values = {param: [] for param in params}
+        means = {param: [] for param in params}
+        stds = {param: [] for param in params}    
+        p_values_stim_vs_sham = {param: [] for param in params}   
         fig_save_path = "results/stats/ttest_results/scatter_{param}_{n_iterations}_{tableName}_{speed}.png"
+        fig_save_path_2sample = "results/stats/ttest_results/scatter_2sample_{param}_{n_iterations}_{tableName}_{speed}.png"
         for param in params:
             if param not in all_results_stim[i].keys():
                 continue
 
-            for i in range(n_iterations):    
-                p_val = all_results_stim[i][param]["p_value"]
-                mean_val = all_results_stim[i][param]["summary_statistics"]["grouped"]["mean"]["STIM"]
-                std_val = all_results_stim[i][param]["summary_statistics"]["grouped"]["std_dev"]["STIM"]
-                p_values[param].append(p_val)
-                means[param].append(mean_val)
-                stds[param].append(std_val)
+            p_values[param] = get_all_values_from_result_dict(all_results_stim, param, "p_value", n_iterations)
+            means[param] = get_all_values_from_result_dict(all_results_stim, param, "summary_statistics.grouped.mean.STIM", n_iterations)
+            stds[param] = get_all_values_from_result_dict(all_results_stim, param, "summary_statistics.grouped.std_dev.STIM", n_iterations)
 
-            p_values[param] = np.array(p_values[param])
-            means[param] = np.array(means[param])
-            stds[param] = np.array(stds[param])
-            deltas = MEANS_SHAM[speed][param] - means[param]
+            p_values_stim_vs_sham[param] = get_all_values_from_result_dict(all_results_stim_vs_sham, param, "p_value", n_iterations)
 
-            sham_greater = deltas > 0
-            sham_smaller = deltas < 0
+            # One sample t-test plot
+            plot_significances(
+                MEANS_SHAM,
+                speed=speed,
+                param=param,
+                means_stim=means,
+                p_values=p_values,
+                title_substring="Stim vs. 0",
+                n_iterations=n_iterations,
+                tableName=tableName,
+                fig_save_path=fig_save_path
+            )
 
-            perc_p_below_alpha = sum(p_values[param] < 0.05) / len(p_values[param]) * 100
-
-            plt.figure()
-            x = np.array(range(0, n_iterations))
-            plt.scatter(x[sham_greater], p_values[param][sham_greater], c="red", label="SHAM > STIM")
-            plt.scatter(x[sham_smaller], p_values[param][sham_smaller], c="blue", label="STIM > SHAM")
-            plt.xlabel("Iteration")
-            plt.ylabel('p values')
-            plt.legend(loc="upper left")
-
-            plt.title(f"{speed} One random STIM vs. 0 ({round(perc_p_below_alpha,0)}% < 0.05): {param}")
-            plt.axhline(y=0.05, c="black")    
-
-            fig_save_path_param = fig_save_path.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
-            plt.savefig(fig_save_path_param)
-            plt.close()
+            # Two sample t-test plot
+            plot_significances(
+                MEANS_SHAM,
+                speed=speed,
+                param=param,
+                means_stim=means,
+                p_values=p_values_stim_vs_sham,
+                title_substring="STIM vs. SHAM",
+                n_iterations=n_iterations,
+                tableName=tableName,
+                fig_save_path=fig_save_path_2sample
+            )
 
         # Run t-test to see if the standard deviations are different than the averaged STIM std.        
         filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_std/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
-        for param in params:
-            if param not in stds.keys():
-                continue
-
-            stds_df = pd.DataFrame(stds[param], columns=[f"std_{param}"])    
-            filename = filename_format.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
-            std_ttest_result = ttest_ind(stds_df, 
-                                        "", 
-                                        "_", 
-                                        filename=filename, 
-                                        popmean=AVG_STIM_STD_DEVS[speed][param],
-                                        render_plot=True)
+        run_ttest_random_vs_averaged_value(
+            stds,
+            avg_stim_values = AVG_STIM_STD_DEVS,
+            column_prefix="std",
+            params=params,
+            n_iterations=n_iterations,
+            speed=speed,
+            tableName=tableName,
+            filename_format=filename_format
+        )
             
         # Run t-test to see if the p-values are different than the averaged p-values        
-        filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_p_values/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
-        for param in params:
-            if param not in p_values.keys():
-                continue
-
-            p_values_df = pd.DataFrame(p_values[param], columns=[f"p_{param}"])
-            filename = filename_format.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
-            p_ttest_result = ttest_ind(p_values_df, 
-                                    "", 
-                                    "_", 
-                                    filename=filename, 
-                                    popmean=AVG_STIM_P_VALUES[speed][param],
-                                    render_plot=True)
+        filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_p_values/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"            
+        run_ttest_random_vs_averaged_value(
+            p_values,
+            avg_stim_values = AVG_STIM_P_VALUES,
+            column_prefix="p",
+            params=params,
+            n_iterations=n_iterations,
+            speed=speed,
+            tableName=tableName,
+            filename_format=filename_format
+        )
 
         # Run t-test to see if the mean values are different than the averaged means        
         filename_format = "results/stats/ttest_results/one_random_stim_vs_avg_stim_means/{param}_{n_iterations}_iterations_{tableName}_{speed}.pdf"
-        for param in params:
-            if param not in means.keys():
-                continue
-
-            means_df = pd.DataFrame(means[param], columns=[f"means_{param}"])
-            filename = filename_format.format(param=param, n_iterations=n_iterations, speed=speed, tableName=tableName)
-            means_ttest_result = ttest_ind(means_df, 
-                                        "", 
-                                        "_", 
-                                        filename=filename, 
-                                        popmean=AVG_STIM_MEANS[speed][param],
-                                        render_plot=True)
+        run_ttest_random_vs_averaged_value(
+            means,
+            avg_stim_values = AVG_STIM_MEANS,
+            column_prefix="means",
+            params=params,
+            n_iterations=n_iterations,
+            speed=speed,
+            tableName=tableName,
+            filename_format=filename_format
+        )

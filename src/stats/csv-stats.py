@@ -47,17 +47,17 @@ for speed in speeds:
         ##################################################################
 
         # %% Cohen's d ANOVA on Intervention
-        # data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
-        # df = pd.read_csv(data_path)
-        # save_path = Path("results/stats/ANOVA results/between_interventions_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
-        # root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_interventions_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
-        # save_path.parent.mkdir(parents=True, exist_ok=True)
-        # root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
-        # df_nosham2 = df[df['Intervention'] != 'SHAM2']
-        # df = df.drop([col for col in COLUMNS_TO_DROP if col in df.columns] + ["SessionOrder"], axis=1) # Drop SessionOrder and the other columns
-        # df_nosham2 = df_nosham2.drop([col for col in df_nosham2.columns if col not in df.columns]) 
-        # results_sham2 = anova1way(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)    
-        # results_nosham2 = anova1way(df_nosham2, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=root_save_folder_no_sham2)
+        data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
+        df = pd.read_csv(data_path)
+        save_path = Path("results/stats/ANOVA results/between_interventions_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
+        root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_interventions_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
+        df_nosham2 = df[df['Intervention'] != 'SHAM2']
+        df = df.drop([col for col in COLUMNS_TO_DROP if col in df.columns] + ["SessionOrder"], axis=1) # Drop SessionOrder and the other columns
+        df_nosham2 = df_nosham2.drop([col for col in df_nosham2.columns if col not in df.columns], axis=1) 
+        results_sham2 = anova1way(df, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=save_path)    
+        results_nosham2 = anova1way(df_nosham2, group_column_name, "_", repeated_measures_column=repeated_measures_column, filename=root_save_folder_no_sham2)
 
         ##################################################################
         #################### Session Order ANOVA #########################
@@ -70,7 +70,7 @@ for speed in speeds:
         save_path = Path("results/stats/ANOVA results/between_sessionorders_cohensd_with_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))        
         root_save_folder_no_sham2 = Path("results/stats/ANOVA results/between_sessionorders_cohensd_without_sham2/{table_name}/{{data_column}}_{speed}_anova1way.pdf".format(speed=speed, table_name=table_name))
         save_path.parent.mkdir(parents=True, exist_ok=True)
-        root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
+        # root_save_folder_no_sham2.parent.mkdir(parents=True, exist_ok=True)
         df_nosham2 = df[df['Intervention'] != 'SHAM2']
         df = df.drop([col for col in COLUMNS_TO_DROP if col in df.columns] + ["Intervention"], axis=1) # Drop SessionOrder and the other columns
         df_nosham2 = df_nosham2.drop([col for col in df_nosham2.columns if col not in df.columns], axis=1) 
@@ -102,6 +102,7 @@ for speed in speeds:
         # %% Get the best stim
         data_path = f"results/stats/Cohensd_CSVs/cohensd_{table_name}_{speed}.csv"
         all_df = pd.read_csv(data_path)
+        all_df = all_df.drop([col for col in COLUMNS_TO_DROP if col in all_df.columns], axis=1) # Drop the other columns
         sham_df = all_df[all_df["Intervention"] == "SHAM2"].copy()
         sham_df["Intervention"] = "SHAM"
         all_df_columns = all_df.columns.drop([group_column_name, repeated_measures_column])
